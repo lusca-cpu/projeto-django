@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Assessment Nist{% endblock%}
+
+{% block content %}
+<main>    
+    <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
+        <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 10px; padding: 5px; width: 100%; justify-content: flex-start;">NIST CSF 2.0</div>
+        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+            </svg>
+            Download
+        </button>
+        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" data-bs-toggle="modal" data-bs-target="#uploadModal" style="white-space: nowrap;">
+            <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
+            </svg>
+            Plano de ação
+        </button>
+        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <svg width="16" height="16" fill="currentColor" class="bi bi-floppy m-2" viewBox="0 0 16 16">
+                <path d="M11 2H9v3h2z"/>
+                <path d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/>
+            </svg>
+            Salvar 
+        </button>
+        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <svg width="16" height="16" fill="currentColor" class="bi bi-check-square-fill m-2" viewBox="0 0 16 16">
+                <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm10.03 4.97a.75.75 0 0 1 .011 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.75.75 0 0 1 1.08-.022z"/>
+            </svg>
+            Enviar 
+        </button>
+    </div>
+    <!-- Tabela -->
+    <div class="table-responsive font-middle px-5">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Função</th>
+                    <th>ID Cat.</th>
+                    <th>Categoria</th>
+                    <th>Id Subcat.</th>
+                    <th>Subcategoria</th>
+                    <th>Atual(CSS)</th>
+                    <th>Atual(CI.)</th>
+                    <th>Comentários</th>
+                    <th>Meta</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
+                            <!-- Ícone para informação -->
+                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                </svg>
+                            </span>
+                        </div> 
+                    </td>
+                    <td>Govern</td>
+                    <td>GV.0C</td>
+                    <td>Contexto Organizacional</td>
+                    <td>GV.0C-01</td>
+                    <td>A missão organizacional é compreendida e informa o gerenciamento de riscos de cibersegurança.</td>
+                    <td>2</td>
+                    <td>3</td>
+                    <td></td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
+                            <!-- Ícone para abrir o modal editar framework -->
+                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </td>
+                    <td>Identify</td>
+                    <td>ID.AM</td>
+                    <td>Gestão de Ativos</td>
+                    <td>ID.AM-05</td>
+                    <td>Os ativos são priorizados com base na classificação, criticidade, recursos e impacto na missão.</td>
+                    <td>2</td>
+                    <td>2</td>
+                    <td></td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
+                            <!-- Ícone para abrir o modal editar framework -->
+                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </td>
+                    <td>Protect</td>
+                    <td>PR.DS</td>
+                    <td>Segurança de Dados</td>
+                    <td>PR.DS-11</td>
+                    <td>Backups de dados são criados, protegidos, mantidos e testados.</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td></td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
+                            <!-- Ícone para abrir o modal editar framework -->
+                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                </svg>
+                            </span>
+                        </div>                                            
+                    </td>
+                    <td>Detect</td>
+                    <td>DE.AE</td>
+                    <td>Análise de Eventos Adversos</td>
+                    <td>DE.AE-02</td>
+                    <td>Eventos potencialmente adversos são analisados para entender melhor as atividades associadas.</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td></td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
+                            <!-- Ícone para abrir o modal editar framework -->
+                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                </svg>
+                            </span>
+                        </div>                                            
+                    </td>
+                    <td>Respond</td>
+                    <td>RS.AN</td>
+                    <td>Análise de Incidentes</td>
+                    <td>RS.AN-07</td>
+                    <td>Dados e metadados do incidente são coletados, e sua integridade e procedência são preservadas.</td>
+                    <td>3</td>
+                    <td>2</td>
+                    <td></td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
+                            <!-- Ícone para abrir o modal editar framework -->
+                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                </svg>
+                            </span>
+                        </div>                                            
+                    </td>
+                    <td>Recovery</td>
+                    <td>RC.CO</td>
+                    <td>Comunicação e Recuperação de Incidentes</td>
+                    <td>RC.CO-03</td>
+                    <td>As atividades de recuperação e o progresso na restauração das capacidades operacionais são comunicados às partes interessadas internas e externas designadas.</td>
+                    <td>5</td>
+                    <td>4</td>
+                    <td></td>
+                    <td>5</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>                    
+</main>
+{% endblock %}

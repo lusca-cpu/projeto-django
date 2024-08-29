@@ -1,0 +1,180 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{% endblock %}</title>
+
+        <link href="{% static 'assets/css/myStyles.css' %}" rel="stylesheet" /> <!-- css das tabelas e páginas intermiediárias  -->
+        <link href="{% static 'assets/css/base.css' %}" rel="stylesheet" />
+        <link href="{% static 'assets/css/forms.css' %}" rel="stylesheet" />
+
+        <script src="{% static 'assets/js/script.js' %}" defer></script>
+        
+    </head>
+    <body>
+        <nav class="sb-topnav navbar navbar-expand navbar-dark" style="background-color: #0e2841;">
+            <a class="navbar-brand ps-3" href="{% url 'index' %}"><img src="{% static 'assets/img/logo-da-castle.png' %}" alt="logo-da-castle" class="navbar-brand ps-5" style="margin-left: -50px;"></a>
+            <!-- Sidebar Toggle-->
+            <button class="btn btn-link order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#">
+                <svg width="16" height="16" fill="#0691c0" class="bi bi-list" viewBox="0 0 448 512">
+                    <path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z"/>
+                </svg>
+            </button>
+            <!-- Navbar Search-->
+            <form class="d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+                <div>
+                    <input id="searchInput" class="custom-input" type="text" aria-describedby="btnNavbarSearch" style="display: none;" />
+                    <button type="button" style="background: none; border: none; cursor: pointer;" onclick="toggleInput()">
+                        <svg width="16" height="16" fill="#0691c0" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+            <!-- botão de drawn.io -->
+            <div style="position: relative; display: inline-block; padding-left: 20px; margin-left: -25px;">
+                <button id="toggleButton" style="background: none; border: none; padding: 10px; cursor: pointer;">
+                    <svg width="16" height="16" fill="#0691c0" class="bi bi-grid-fill" viewBox="0 0 16 16">
+                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5z"/>
+                    </svg>                      
+                </button>
+            
+                <div id="popupBalloon" class="balloon" style="display: none; position: absolute; top: 40px; left: 0;">
+                    <div class="balloon-content">
+                        <a href="#" onclick="abrirJanela('https://app.diagrams.net/', 600, 600);">
+                            <img src="{% static 'assets/img/logodrawio.png' %}" alt="Imagem 1" class="imagem-proporcional">
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- botão de usuario -->
+             <div>
+                <button style="background: none; border: none; padding: 10px; cursor: pointer;">
+                    <svg width="16" height="16" fill="#0691c0" class="bi bi-person-fill" viewBox="0 0 16 16">
+                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                    </svg>
+                </button>
+             </div>
+            <!-- botão de sair -->
+            <div>
+                <button style="background: none; border: none; padding: 10px; cursor: pointer;">
+                    <svg width="16" height="16" fill="#0691c0" class="bi bi-door-open-fill" viewBox="0 0 16 16">
+                        <path d="M1.5 15a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1H13V2.5A1.5 1.5 0 0 0 11.5 1H11V.5a.5.5 0 0 0-.57-.495l-7 1A.5.5 0 0 0 3 1.5V15zM11 2h.5a.5.5 0 0 1 .5.5V15h-1zm-2.5 8c-.276 0-.5-.448-.5-1s.224-1 .5-1 .5.448.5 1-.224 1-.5 1"/>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" style="background-color: #0e2841;" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <div class="sb-sidenav-menu-heading"></div>
+                            <a class="nav-link" href="#" style="padding-top: 5px; padding-bottom: 5px; color: white;">
+                                <div class="sb-nav-link-icon">
+                                    <svg width="16" height="16" fill="#0691c0" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                                    </svg>
+                                </div>
+                                Gestão de Acessos
+                            </a>
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts" style="padding-top: 5px; padding-bottom: 5px; color: white;">
+                                <div class="sb-nav-link-icon">
+                                    <svg width="16" height="16" fill="#0691c0" class="bi bi-file-text-fill" viewBox="0 0 16 16">
+                                        <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M5 4h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1m-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5M5 8h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1m0 2h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1"/>
+                                    </svg>
+                                </div>
+                                Relatório
+                            </a>
+                            <div class="nav-link collapsed d-flex justify-content-between align-items-center" style="color: white; padding-top: 5px; padding-bottom: 5px;">
+                                <div class="d-flex align-items-center">
+                                    <div class="sb-nav-link-icon">
+                                        <svg width="16" height="16" fill="#0691c0" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                        </svg>
+                                    </div>
+                                    <a href="{% url 'security' %}" style="color: white; text-decoration: none; margin-left: -1px;">
+                                        Security Assessment
+                                    </a>
+                                </div>
+                                <a href="#collapseLayouts" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseLayouts" style="color: white;" onclick="toggleArrow(event)">
+                                    <div class="sb-sidenav-collapse-arrow">
+                                        <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill" viewBox="0 0 448 512">
+                                            <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
+                                        </svg>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion" style="background-color: #0691c0;">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <div style="display: inline-flex; align-items: center;">
+                                        <svg width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                                            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                                        </svg>                                        
+                                        <a class="nav-link" href="{% url 'framework' %}" style="padding-top: 5px; padding-bottom: 5px; color: white;">Frameworks</a>
+                                    </div>
+                                    <div style="display: inline-flex; align-items: center;">
+                                        <svg width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                                            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                                        </svg>                                        
+                                        <a class="nav-link" href="{% url 'assessment' %}" style="padding-top: 5px; padding-bottom: 5px; color: white;">Assessments</a>
+                                    </div>
+                                    <div style="display: inline-flex; align-items: center;">
+                                        <svg width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                                            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                                        </svg>                                        
+                                        <a class="nav-link" href="#" style="padding-top: 5px; padding-bottom: 5px; color: white;">Plano de Ação</a>
+                                    </div>
+                                    <div style="display: inline-flex; align-items: center;">
+                                        <svg width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                                            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                                        </svg>                                        
+                                        <a class="nav-link" href="#" style="padding-top: 5px; padding-bottom: 5px; color: white;">Painel de Resultado</a>
+                                    </div>
+                                </nav>
+                            </div>
+                            <a class="nav-link" href="#" style="padding-top: 5px; padding-bottom: 5px; color: white;">
+                                <div class="sb-nav-link-icon">
+                                    <svg width="16" height="16" fill="#0691c0" class="bi bi-clipboard2-pulse-fill" viewBox="0 0 16 16">
+                                        <path d="M10 .5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5.5.5 0 0 1-.5.5.5.5 0 0 0-.5.5V2a.5.5 0 0 0 .5.5h5A.5.5 0 0 0 11 2v-.5a.5.5 0 0 0-.5-.5.5.5 0 0 1-.5-.5"/>
+                                        <path d="M4.085 1H3.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1h-.585q.084.236.085.5V2a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 4 2v-.5q.001-.264.085-.5M9.98 5.356 11.372 10h.128a.5.5 0 0 1 0 1H11a.5.5 0 0 1-.479-.356l-.94-3.135-1.092 5.096a.5.5 0 0 1-.968.039L6.383 8.85l-.936 1.873A.5.5 0 0 1 5 11h-.5a.5.5 0 0 1 0-1h.191l1.362-2.724a.5.5 0 0 1 .926.08l.94 3.135 1.092-5.096a.5.5 0 0 1 .968-.039Z"/>
+                                    </svg>                                      
+                                </div>
+                                Internal Analysis
+                            </a>
+                            <a class="nav-link" href="#" style="padding-top: 5px; padding-bottom: 5px; color: white;">
+                                <div class="sb-nav-link-icon">
+                                    <svg width="16" height="16" fill="#0691c0" class="bi bi-graph-up-arrow" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5"/>
+                                    </svg>                                                                           
+                                </div>
+                                Security Rating
+                            </a>
+                            <a class="nav-link" href="#" style="padding-top: 5px; padding-bottom: 5px; color: white;">
+                                <div class="sb-nav-link-icon">
+                                    <svg width="16" height="16" fill="#0691c0" class="bi bi-exclamation-diamond-fill" viewBox="0 0 16 16">
+                                        <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM8 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                                    </svg>                                                                           
+                                </div>
+                                Risk & Cyber Issues
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+                {% block content %}
+
+                {% endblock %}
+            </div>
+        </div>            
+        
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        
+    </body>
+</html>

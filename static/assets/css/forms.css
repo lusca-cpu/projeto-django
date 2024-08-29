@@ -1,0 +1,114 @@
+/* Estilo definido para a empresa ícones e campos dos formularios */
+.font-small {
+    font-size: 11px;
+}
+
+.modal-header {
+    background-color: #0691c0;
+    color: white;
+    font-weight:bold;
+    height: 15px;
+    border-radius: 0; /* Remove o arredondamento dos cantos */
+    font-size: 12px;
+}
+.modal-content {
+    height: autopx; /* Altura determinada pelo conteúdo */
+    margin: 0.1rem;
+    border-radius: 0; /* Remove o arredondamento dos cantos */
+    font-size: 11px;
+}
+input, select, option {
+    height: 25px; /* Defina a altura desejada das entradas */
+    font-size: 11px;
+}
+.btn-sm {
+    height: 25px; /* Defina a altura desejada das entradas */
+    font-size: 11px;
+    background-color: #0691c0; /* cor do botão */
+}    
+.btn-close {
+    filter: invert(1); /* Inverter a cor do ícone para branco */
+} 
+.form-label {
+    margin-bottom: 0.05rem; /* Reduz o espaço abaixo do label */
+}
+.form-control {
+    margin-bottom: 0.05rem; /* Reduz o espaço abaixo do campo de entrada */
+}
+svg.bi-gear-fill {
+    width: 15px;   /* Estilo dos ícones da tabela */
+    height: 15px;
+    fill: #787575bd; 
+    cursor: pointer;
+}
+/* Estilo para o ícone e balão de informação tooltip */
+#infoicon {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+.infobubble {
+    visibility: hidden;
+    opacity: 0;
+    width: 400px;
+    background-color: #4b4848;
+    color: #fff;
+    text-align: justify;
+    padding: 5px; /* Ajuste o padding conforme necessário */
+    border-radius: 2px;
+    position: absolute;
+    left: 100%; /* Mudei para 100% para alinhar a caixa com a borda esquerda do ícone */
+    margin-right: 5px; /* Ajuste o espaçamento entre o ícone e a janela */
+    transform: translateX(-10%); /* Ajuste conforme necessário */
+    white-space: pre-line;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    transition: opacity 0.3s, visibility 0.3s;
+    font-size: 10px;
+    line-height: 0.9; /* Reduz o espaçamento entre linhas */
+}
+#infoicon:hover .infobubble {
+    visibility: visible;
+    opacity: 1;
+}
+
+th {
+    white-space: nowrap;
+    text-align: left; /* Centraliza o texto */
+    padding: 5px; /* Ajusta o espaçamento interno */
+}
+
+#popupBalloon {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.btn-outline-secondary-custom {
+    border-color: transparent; /* Remove a borda */
+    color: white; /* Deixa a seta branca */
+}
+
+.btn-outline-secondary-custom::after {
+    border-top-color: white; /* Altera a cor da seta para branco */
+}
+
+.btn-outline-secondary-custom:hover {
+    background-color: #0a58ca; /* Cor de fundo ao passar o mouse */
+    color: #fff; /* Texto branco ao passar o mouse */
+    border-color: transparent;
+}
+
+.btn-outline-secondary-custom:hover::after {
+    border-top-color: #fff; /* Seta continua branca ao passar o mouse */
+}
+
+.titulo-do-assess{
+    background-color: #0691c0; 
+    color: white; 
+    font-size: 11px; 
+    border-radius: 10px; 
+    padding: 5px; 
+    width: 100%; 
+    justify-content: flex-start;
+}
+

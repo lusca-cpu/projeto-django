@@ -1,0 +1,215 @@
+
+
+.btn-outline-secondary-custom {
+    border-color: transparent; /* Remove a borda */
+    color: white; /* Deixa a seta branca */
+}
+.btn-outline-secondary-custom::after {
+    border-top-color: white; /* Altera a cor da seta para branco */
+}
+
+.font-middle {
+    font-size: 12px;
+}
+
+table thead tr {
+    text-align: left;
+    border-bottom: 4px solid #000; /* Linha grossa separando os títulos dos dados */
+}
+
+table tbody tr {
+    border-bottom: 1px solid #ccc; /* Linha fina e clara entre cada linha de dados */
+}
+
+table td, table th {
+    border: none;
+}
+
+#caretIcon {
+    transition: transform 0.3s ease;
+}
+
+.rotate-down {
+    transform: rotate(90deg);
+}
+
+.custom-input {
+    width: 200px; /* Ajuste o valor conforme necessário */
+    height: 30px; /* Ajuste a altura conforme necessário */
+    padding: 5px; /* Ajuste o preenchimento conforme necessário */
+    font-size: 14px; /* Ajuste o tamanho da fonte conforme necessário */
+    border-radius: 15px; /* Bordas arredondadas */
+    border: 1px solid transparent; /* Contorno padrão invisível */
+    outline: none; /* Remove o contorno padrão do navegador */
+    transition: border-color 0.3s ease; /* Transição suave para a cor do contorno */
+}
+
+.custom-input:focus {
+    border-color: #0691c0; /* Cor do contorno ao focar */
+}
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Define 3 colunas de igual largura */
+    gap: 20px; /* Espaçamento entre os itens */
+    justify-content: center; /* Centraliza o grid horizontalmente */
+}
+
+.col-xl-3, .col-md-6 {
+    padding: 15px; /* Adiciona espaçamento interno às colunas */
+}
+
+.card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px; /* Ajusta o padding conforme necessário */
+    border-radius: 20px; /* Bordas arredondadas, menos acentuadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra mais sutil */
+    background-color: #fff; /* Cor de fundo das divs */
+    width: 250px; /* Largura ajustada para tornar o card menos quadrado */
+    height: 150px; /* Altura ajustada para tornar o card menos quadrado */
+}
+
+.card-footer .btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; /* Remove o sublinhado do link */
+    color: #0691c0; /* Cor do texto */
+    padding: 0; /* Remove o padding do link */
+}
+
+.card-footer .icon-size {
+    width: 60px; /* Aumenta o tamanho do ícone SVG */
+    height: 60px; /* Aumenta o tamanho do ícone SVG */
+    margin-bottom: 10px; /* Espaço aumentado entre o ícone e o texto */
+}
+
+.card-footer .btn span {
+    font-size: 20px; /* Ajuste o tamanho da fonte do texto */
+    margin: 0; /* Remove margens adicionais no texto */
+}
+
+/* Media queries para responsividade */
+@media (max-width: 768px) {
+    .row {
+        grid-template-columns: repeat(2, 1fr); /* Duas colunas em telas médias */
+    }
+}
+
+@media (max-width: 576px) {
+    .row {
+        grid-template-columns: 1fr; /* Uma coluna em telas pequenas */
+    }
+
+    .card-footer {
+        width: 100%; /* Ajuste a largura para ocupar 100% em telas pequenas */
+        height: auto; /* Permite que a altura se ajuste automaticamente */
+    }
+}
+
+.custom-div {
+    background-color: #0691c0;
+    color: white;
+    border-radius: 15px;
+    padding: 10px;
+    width: 130px; /* Ajuste da largura */
+    height: 30px; /* Ajuste da altura */
+    display: flex; /* Habilita o Flexbox */
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+    font-size: 12px; /* Tamanho da letra reduzido */
+    text-align: center; /* Garante que o texto fique centralizado */
+    white-space: nowrap; /* Impede a quebra de linha */
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 15px; /* Espaço entre botões e tabela */
+}
+
+.btn-sm {
+    height: 25px; /* Defina a altura desejada das entradas */
+    font-size: 11px;
+    background-color: #0691c0; /* cor do botão */
+} 
+
+.modal-header {
+    background-color: #0691c0;
+    color: white;
+    font-weight:bold;
+    height: 15px;
+    border-radius: 0; /* Remove o arredondamento dos cantos */
+    font-size: 12px;
+}
+
+.modal-content {
+    height: autopx; /* Altura determinada pelo conteúdo */
+    margin: 0.1rem;
+    border-radius: 0; /* Remove o arredondamento dos cantos */
+    font-size: 11px;
+}
+
+input, select, option {
+    height: 25px; /* Defina a altura desejada das entradas */
+    font-size: 11px;
+}
+
+.btn-sm {
+    height: 25px; /* Defina a altura desejada das entradas */
+    font-size: 11px;
+    background-color: #0691c0; /* cor do botão */
+}    
+
+.btn-close {
+    filter: invert(1); /* Inverter a cor do ícone para branco */
+
+} 
+
+.form-label {
+    margin-bottom: 0.05rem; /* Reduz o espaço abaixo do label */
+
+}
+
+.form-control {
+    margin-bottom: 0.05rem; /* Reduz o espaço abaixo do campo de entrada */
+}
+
+svg.bi-gear-fill {
+    width: 15px;   /* Estilo dos ícones da tabela */
+    height: 15px;
+    fill: #787575bd; 
+    cursor: pointer;
+}
+
+.balloon {
+    display: none; 
+    position: absolute; 
+    top: 100%; 
+    left: -10px; /* Ajuste este valor conforme necessário para afastar o balão da margem esquerda */
+    background: white; 
+    border: 1px solid #ccc; 
+    padding: 5px; /* Ajuste o padding para se adequar ao tamanho da imagem */
+    z-index: 1000; 
+    border-radius: 10px; 
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total do elemento */
+}
+
+.balloon-content {
+    display: flex; 
+    flex-direction: column; /* Coloca as imagens em coluna */
+    align-items: center; /* Centraliza as imagens horizontalmente */
+    gap: 5px; /* Espaço entre as imagens */
+}
+
+.balloon-content img {
+    height: 51px; /* Define a altura desejada */
+    width: auto;  /* Ajusta a largura proporcionalmente */
+    display: block; /* Remove o espaço extra abaixo da imagem */
+}
+

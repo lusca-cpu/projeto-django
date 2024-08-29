@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Index{% endblock  %}
+
+{% block content %}
+<main>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Gestão de Acessos -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card-footer">
+                    <a href="#gestao" class="btn">
+                        <svg fill="currentColor" class="bi bi-people-fill icon-size" viewBox="0 0 16 16">
+                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                        </svg>
+                        GESTÃO DE ACESSO
+                    </a>
+                </div>
+            </div>
+            <!-- Relatório -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card-footer">
+                    <a href="#relatorio" class="btn">
+                        <svg fill="currentColor" class="bi bi-file-text-fill icon-size" viewBox="0 0 16 16">
+                            <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M5 4h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1m-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5M5 8h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1m0 2h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1"/>
+                        </svg>
+                        RELATÓRIO
+                    </a>
+                </div>
+            </div>
+            <!-- Security Assessment -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card-footer">
+                    <a href="{% url 'security' %}" class="btn">
+                        <svg fill="currentColor" class="bi bi-pencil-square icon-size" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                        </svg>
+                        SECURITY ASSESSMENT
+                    </a>
+                </div>
+            </div>
+            <!-- Internal Analysis -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card-footer">
+                    <a href="#internal-analysis" class="btn">
+                        <svg fill="currentColor" class="bi bi-clipboard2-pulse-fill icon-size" viewBox="0 0 16 16">
+                            <path d="M10 .5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5.5.5 0 0 1-.5.5.5.5 0 0 0-.5.5V2a.5.5 0 0 0 .5.5h5A.5.5 0 0 0 11 2v-.5a.5.5 0 0 0-.5-.5.5.5 0 0 1-.5-.5"/>
+                            <path d="M4.085 1H3.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1h-.585q.084.236.085.5V2a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 4 2v-.5q.001-.264.085-.5M9.98 5.356 11.372 10h.128a.5.5 0 0 1 0 1H11a.5.5 0 0 1-.479-.356l-.94-3.135-1.092 5.096a.5.5 0 0 1-.968.039L6.383 8.85l-.936 1.873A.5.5 0 0 1 5 11h-.5a.5.5 0 0 1 0-1h.191l1.362-2.724a.5.5 0 0 1 .926.08l.94 3.135 1.092-5.096a.5.5 0 0 1 .968-.039Z"/>
+                        </svg> 
+                        INTERNAL ANALYSIS
+                    </a>
+                </div>
+            </div>
+            <!-- Security Rating -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card-footer">
+                    <a href="#security-rating" class="btn">
+                        <svg fill="currentColor" class="bi bi-graph-up-arrow icon-size" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5"/>
+                        </svg>                                          
+                        SECURITY RATING
+                    </a>
+                </div>
+            </div>
+            <!-- Risk and Cyber Issues -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card-footer">
+                    <a href="#risk-cyber-issues" class="btn">
+                        <svg fill="currentColor" class="bi bi-exclamation-diamond-fill icon-size" viewBox="0 0 16 16">
+                            <path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM8 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                        </svg>
+                        RISK AND CYBER ISSUES
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</main>
+{% endblock %}
