@@ -6,17 +6,18 @@ from .models import MeuModelo
 class MeuModeloForm(forms.ModelForm):
     class Meta:
         model = MeuModelo
-        fields = ['nome', 'descricao', 'criterio']
+        fields = ['nome', 'descricao', 'criterio', 'excel_file']  # Inclua o campo excel_file aqui
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control font-small',}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
-            'criterio': forms.Select(attrs={'class': 'form-select', 'style': 'font-size: 11px;'}),
+            'criterio': forms.Select(attrs={'class': 'select font-small', 'style': 'font-size: 8px;'}),
+            'excel_file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm me-2 font-small'}),  # Adiciona o widget do arquivo
         }    
         labels = {
-            'nome': 'Nome',  # Definindo o label com acento
-            'descricao': 'Descrição',  
-            'criterio': 'Critério',  
-        }    
+            'nome': 'Nome',
+            'descricao': 'Descrição',
+            'criterio': 'Critério',
+        }
  
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,12 +30,13 @@ class MeuModeloForm(forms.ModelForm):
 class MeuModeloEditForm(forms.ModelForm):
     class Meta:
         model = MeuModelo
-        fields = ['nome', 'descricao', 'criterio']
+        fields = ['nome', 'descricao', 'criterio', 'excel_file']  # Inclua o campo excel_file aqui
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control font-small', 'style': 'font-size: 11px;'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
             'criterio': forms.Select(attrs={'class': 'form-select', 'style': 'font-size: 11px;'}),
-        }
+            'excel_file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm me-2 font-small'}),  # Adiciona o widget do arquivo
+        }   
         labels = {
             'nome': 'Nome',
             'descricao': 'Descrição',

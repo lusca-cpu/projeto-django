@@ -66,6 +66,49 @@ window.addEventListener('DOMContentLoaded', event => {
             searchInput.style.display = "none";
         }
     }
+
+    
+
+});
+
+// Exclusão de framework
+let deleteId = null;
+
+// Captura o ID do item para exclusão quando o SVG é clicado
+document.querySelectorAll('.btn-delete').forEach(button => {
+    button.addEventListener('click', function() {
+        deleteId = this.dataset.id;  // Armazena o ID do item
+    });
+});
+
+// Exclui o item quando o botão de confirmação é clicado
+document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+    if (deleteId) {
+        const url = `/delete-framework/${deleteId}/`;  // URL de exclusão
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;  // Captura o token CSRF
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken  // Envia o token CSRF
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove a linha correspondente da tabela
+                document.querySelector(`.btn-delete[data-id="${deleteId}"]`).closest('tr').remove();
+                // Fecha a modal
+                let myModalEl = document.getElementById('confirmDeleteModal');
+                let modal = bootstrap.Modal.getInstance(myModalEl);
+                modal.hide();
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 });
 
 // Função para abrir uma nova janela em uma posição centralizada na tela do Draw.io

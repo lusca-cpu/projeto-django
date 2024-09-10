@@ -14,7 +14,7 @@
 
 table thead tr {
     text-align: left;
-    border-bottom: 4px solid #000; /* Linha grossa separando os títulos dos dados */
+    border-bottom: 4px solid #3b3939; /* Linha grossa separando os títulos dos dados */
 }
 
 table tbody tr {

@@ -17,8 +17,8 @@
     border-radius: 0; /* Remove o arredondamento dos cantos */
     font-size: 11px;
 }
-input, select, option {
-    height: 25px; /* Defina a altura desejada das entradas */
+.input .select .option {
+    height: 30px; /* Defina a altura desejada das entradas */
     font-size: 11px;
 }
 .btn-sm {
