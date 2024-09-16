@@ -12,11 +12,13 @@ urlpatterns = [
     path('adicionar-framework/', views.Framework.as_view(), name='adicionar_framework'),
     path('frameworks/', views.Framework.as_view(), name='listar_frameworks'),  # Para listagem
     path('editar-framework/<int:id>/', views.editar_framework, name='edit_framework'),  # Para edição
-    path('delete-framework/<int:id>/', views.Framework.as_view(), name='delete_framework'),  # Para exclusão
+    path('deletar-framework/<int:id>/', views.Framework.as_view(), name='deletar_framework'),  # Para exclusão
 
     path('download/<str:filename>/', views.download_file, name='download_file'),
     
-    path('assessment/', views.assessment, name='assessment'),
+    # urls para a pagina assessment.html 
+    path('assessment/', views.Assessment.as_view(), name='assessment'),
+
     path('assess_nist/', views.assess_nist, name='assess_nist'),
     path('assess_cis/', views.assess_cis, name='assess_cis'),
 ]

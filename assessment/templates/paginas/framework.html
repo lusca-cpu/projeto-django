@@ -110,17 +110,13 @@
 
                         <div class="mb-2 d-flex align-items-center font-small">
                             <!-- <input type="file" name="excel_file" class="form-control form-control-sm me-2 font-small" id="excelFile" required> -->
-                            <div class="modal-body font-small">
+                            <div class="modal-body font-small modal-footer">
                                 <button type="submit" class="btn btn-primary btn-sm font-small">Upload</button>
                                 <div class="invalid-feedback font-small">
                                     Por favor, selecione um arquivo.
                                 </div>
                             </div>
                         </div>
-
-                        <!-- {% if uploaded_file_url %}
-                            <p class="mt-2 font-small">Arquivo enviado para: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
-                        {% endif %} -->
                     </form>
                 </div>
             </div>
@@ -172,6 +168,7 @@
                                 NÂO começar o preenchimento por uma linha aleatória <br>
                             </div>
                         </span> 
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary btn-sm font-small" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-success btn-sm font-small">Salvar</button>
@@ -181,52 +178,71 @@
             </div>
         </div>
     </div>    
-
 </main>
 
 <script>
-    // Captura o ID do item para exclusão quando o SVG é clicado
     document.addEventListener('DOMContentLoaded', function() {
-    // Script para edição
-        document.querySelectorAll('.editar-framework').forEach(button => {
-        button.addEventListener('click', function () {
-            // Suponha que o botão tenha um atributo data-id com o ID do framework
-            const id = this.getAttribute('data-id');
-            
-            fetch(`/editar-framework/${id}/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Preencher os campos do formulário com os dados do framework
-                    document.querySelector('#editarFrameworkModal #id_nome').value = data.nome;
-                    document.querySelector('#editarFrameworkModal #id_descricao').value = data.descricao;
-                    
-                    // Configurar o formulário para o ID correto
-                    const form = document.querySelector('#editarFrameworkForm');
-                    form.action = `/editar-framework/${id}/`;  // Atualize a ação do formulário com a URL correta
-                });
+        let deleteFrameworkId = null;
+
+        // Captura o ID do framework e armazena para usar no botão "Excluir" dentro da modal
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function() {
+                deleteFrameworkId = this.getAttribute('data-id');
             });
         });
 
-        // Script para deleção
-        document.querySelectorAll('.deletar-framework').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = this.dataset.id;
-                if (confirm('Tem certeza de que deseja excluir este framework?')) {
-                    fetch(`/deletar-framework/${id}/`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            location.reload(); // Recarregue a página após a exclusão
-                        } else {
-                            alert('Erro ao excluir o framework.');
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-                }
+        // Associa a ação de exclusão ao botão "Excluir" dentro da modal
+        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            if (deleteFrameworkId) {
+                fetch(`/deletar-framework/${deleteFrameworkId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload(); // Recarrega a página após a exclusão
+                    } else {
+                        alert('Erro ao excluir o framework.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+
+        // Script para edição
+        document.querySelectorAll('.editar-framework').forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                
+                fetch(`/editar-framework/${id}/`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'  // Marca como requisição AJAX
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao buscar dados');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Valor do is_proprio:', data.is_proprio, 'Tipo:', typeof data.is_proprio);
+                    // Preenche os campos com os dados retornados do backend
+                    document.querySelector('#editarFrameworkModal #id_nome').value = data.nome;
+                    document.querySelector('#editarFrameworkModal #id_descricao').value = data.descricao;
+                    document.querySelector('#editarFrameworkModal #id_criterio').value = data.criterio;
+
+                    // Atualizar o form action para a URL correta
+                    const form = document.querySelector('#editarFrameworkForm');
+                    if (form) {
+                        form.action = `/editar-framework/${id}/`;  // Certifique-se de que o ID correto está sendo inserido na URL
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao processar os dados:', error);
+                });
             });
         });
     });
