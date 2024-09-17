@@ -6,7 +6,8 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.edit import UpdateView
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.template.loader import render_to_string
 from django.contrib import messages
 import os
@@ -28,11 +29,11 @@ class Framework(View):
     def get(self, request):
         frameworks = MeuModelo.objects.all()
         form1 = MeuModeloForm()  # Inicializa o formulário no GET
-        fomr2 = MeuModeloEditForm()
+        form2 = MeuModeloEditForm()
         return render(request, self.template_name, {
             'frameworks': frameworks, 
             'form1': form1, # Passa o formulário de upload para o template
-            'form2': fomr2  # Passa o formulário de edição para o template
+            'form2': form2  # Passa o formulário de edição para o template
         })
 
     # Adicionar Framework
@@ -115,24 +116,14 @@ class Framework(View):
                             upload_id=upload_id  # Adiciona o upload_id único
                         )
 
-                # Renderiza a página com a URL do arquivo enviado
-                uploaded_file_url = framework.excel_file.url
-                return render(request, self.template_name, {
-                    'form1': MeuModeloForm(),  
-                    'uploaded_file_url': uploaded_file_url,
-                    'frameworks': MeuModelo.objects.all()  
-                })
-            else:
-                return render(request, self.template_name, {
-                    'form1': form1,
-                    'error_message': 'Nenhum arquivo foi associado ao framework.',
-                    'frameworks': MeuModelo.objects.all()
-                })
-        else:
-            return render(request, self.template_name, {
-                'form1': form1,
-                'frameworks': MeuModelo.objects.all()  
-            })
+            # Redireciona para evitar o reenvio do formulário ao atualizar a página
+            return HttpResponseRedirect(reverse('framework'))
+
+        # Se o formulário não for válido, renderiza a página novamente com o erro
+        return render(request, self.template_name, {
+            'form1': form1,
+            'frameworks': MeuModelo.objects.all()
+        })
 
 
     # Excluir Framework
@@ -180,10 +171,9 @@ def editar_framework(request, id):
             'descricao': framework.descricao,
             'criterio': framework.criterio,
             'uploaded_file_url': framework.excel_file.url if framework.excel_file else None,
-            'is_proprio': framework.is_proprio
         })
     else:
-        return render(request, 'paginas/framework.html', {'edit_form': form, 'framework': framework})
+        return render(request, 'paginas/framework.html', {'form2': form, 'framework': framework})
 
 # Função para renderizar a página assessment.html
 class Assessment(View):

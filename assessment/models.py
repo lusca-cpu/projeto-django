@@ -15,7 +15,7 @@ class MeuModelo(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField()
     criterio = models.CharField(max_length=20, choices=CRITERIO_CHOICES)
-    excel_file = models.FileField()  # Define para salvar na pasta media
+    excel_file = models.FileField(upload_to='uploads/')# Define para salvar na pasta media
     data_upload = models.DateField(auto_now_add=True)
     is_proprio = models.BooleanField(default=False)  # Campo booleano para checkbox
     upload_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # ID único para cada upload

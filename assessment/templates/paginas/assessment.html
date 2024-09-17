@@ -16,9 +16,13 @@
         </button>
         <ul class="dropdown-menu font-small">
             {% for modelo in modelos %}
-                <li><a class="dropdown-item" href="#">{{ modelo.nome }}</a></li>
-            {% empty %}
-                <li><a class="dropdown-item" href="#">Nenhum framemwork disponível</a></li>
+                <li>
+                    {% if modelo.excel_file %}
+                        <a class="dropdown-item" href="{{ modelo.excel_file.url }}">{{ modelo.nome }}</a>
+                    {% else %}
+                        <a class="dropdown-item" href="#">{{ modelo.nome }} (Sem arquivo)</a>
+                    {% endif %}
+                </li>
             {% endfor %}
         </ul>        
 
@@ -41,7 +45,7 @@
             <thead>
                 <tr>
                     <th scope="col"></th>
-                    <th scope="col">Ultimas Atualizações</th>
+                    <th scope="col">Data de Atualização</th>
                     <th scope="col">Assessment</th>
                     <th scope="col">Status</th>
                     <th scope="col">Concluido por</th>
