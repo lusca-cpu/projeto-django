@@ -15,12 +15,12 @@
             Modelo Planilha
         </button>
         <ul class="dropdown-menu font-small">
-            {% for modelo in modelos %}
+            {% for framework in frameworks %}
                 <li>
-                    {% if modelo.excel_file %}
-                        <a class="dropdown-item" href="{{ modelo.excel_file.url }}">{{ modelo.nome }}</a>
+                    {% if framework.excel_file %}
+                        <a class="dropdown-item" href="{{ framework.excel_file.url }}">{{ framework.nome }}</a>
                     {% else %}
-                        <a class="dropdown-item" href="#">{{ modelo.nome }} (Sem arquivo)</a>
+                        <a class="dropdown-item" href="#">{{ framework.nome }} (Sem arquivo)</a>
                     {% endif %}
                 </li>
             {% endfor %}
@@ -34,171 +34,71 @@
         </button>
         <ul class="dropdown-menu font-small">
             <li><a class="dropdown-item" href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">Importar Planilha</a></li>
-            <li><a class="dropdown-item" href="#">NIST CSF 2.0</a></li>
-            <li><a class="dropdown-item" href="#"> ... </a></li>
         </ul>
         
     </div>
     <!-- Tabela -->
     <div class="table-responsive font-middle px-5">
-        <table class="table">
+        <table class="table-sm">
             <thead>
                 <tr>
                     <th scope="col"></th>
-                    <th scope="col">Data de Atualização</th>
-                    <th scope="col">Assessment</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Concluido por</th>
+                    <th scope="col">Última Atualização</th>
+                    <th scope="col" class="col-lg">Assessment</th>
+                    <th scope="col" class="col-2">Status</th>
+                    <th scope="col">Concluído por</th>
                     <th scope="col">Resultado</th>
                     <th scope="col">Meta</th>
                     <th scope="col">Plano de Ação</th>
                 </tr>
             </thead>
             <tbody>
+                {% for assessment in assessments %}
                 <tr>
                     <td>
                         <div class="icon-container" style="display: flex; gap: 10px;">                                            
-                            <!-- Ícone para abrir o modal editar framework -->
-                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                            <!-- Botão para abrir o modal de exclusão -->
+                            <span class="btn-delete" data-id="{{ assessment.id }}" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
                                 <svg class="bi-gear-fill" viewBox="0 0 16 16">
                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                                     <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                                 </svg>
                             </span>
                             <!-- Botão para abrir o download -->
-                            <span id="downloadIcon">
+                            {% if assessment.excel_file %}
+                            <span id="downloadIcon" onclick="window.location.href='{{ assessment.excel_file.url }}'">
                                 <svg class="bi-gear-fill" viewBox="0 0 16 16">
                                     <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
                                     <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
                                 </svg>
                             </span>
+                            {% else %}
+                                <p>Nenhum arquivo disponível para download</p>
+                            {% endif %}
                             <!-- Botão para ver assessment -->
-                            <span >
-                                <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                                </svg>
-                            </span>
-                        </div> 
+                            <a href="{% url 'redirecionar_framework' assessment.id %}">
+                                <span>
+                                    <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
+                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                    </svg>
+                                </span>
+                            </a>
+                        </div>   
                     </td>
-                    <td>XX.XX.XXXX</td>
-                    <td>NIST CSF 2.0</td>
-                    <td>Concluído</td>
-                    <td>Empresa - Usuário</td>
-                    <td>2,16</td>
-                    <td>2,50</td>
-                    <td>
-                        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="modal" style="background-color: #d3d3d3; border: none;">
-                            Adicionar
-                        </button>
-                    </td>
+                    <td>{{ assessment.data_upload }}</td>
+                    <td>{{ assessment.nome }}</td>
+                    <td>{{ assessment.status }}</td>
+                    <td></td> <!-- Coluna vazia para "Concluído por" -->
+                    <td>{{ assessment.resultado }}</td>
+                    <td>{{ assessment.meta }}</td>
+                    <td></td> <!-- Coluna vazia para "Plano de Ação" -->
                 </tr>
+                {% empty %}
                 <tr>
-                    <td>
-                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
-                            <!-- Ícone para deletar assesment -->
-                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                <svg class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                </svg>
-                            </span>
-                            <!-- Ícone para abrir o download -->
-                            <span id="downloadIcon">
-                                <svg class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
-                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
-                                </svg>
-                            </span>
-                            <!-- Ícone para ver assessment -->
-                            <span>
-                                <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                                </svg>
-                            </span>
-                        </div>
-                    </td>
-                    <td>XX.XX.XXXX</td>
-                    <td>NIST CSF 2.0</td>
-                    <td>Em andamento</td>
-                    <td> - </td>
-                    <td> - </td>
-                    <td> - </td>
-                    <td> - </td>
+                    <td colspan="8">Nenhuma avaliação registrados.</td>
                 </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
-                            <!-- Ícone para deletar assessment -->
-                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                <svg class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                </svg>
-                            </span>
-                            <!-- Ícone para abrir o download -->
-                            <span id="downloadIcon">
-                                <svg class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
-                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
-                                </svg>
-                            </span>
-                            <!-- Ícone para ver assessment -->
-                            <span>
-                                <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                                </svg>
-                            </span>
-                        </div>
-                    </td>
-                    <td>XX.XX.XXXX</td>
-                    <td>Framework Próprio 1</td>
-                    <td>Em andamento</td>
-                    <td> - </td>
-                    <td> - </td>
-                    <td> - </td>
-                    <td> - </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="icon-container" style="display: flex; gap: 10px;">                                            
-                            <!-- Ícone para deletar assessment -->
-                            <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                <svg class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                </svg>
-                            </span>
-                            <!-- Ícone para abrir o download -->
-                            <span id="downloadIcon">
-                                <svg class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
-                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
-                                </svg>
-                            </span>
-                            <!-- Ícone para visualizar assessment -->
-                            <span data-bs-toggle="modal">
-                                <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
-                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                                </svg>
-                            </span>
-                        </div>                                            
-                    </td>
-                    <td>XX.XX.XXXX</td>
-                    <td>Framework Próprio 1</td>
-                    <td>Concluído</td>
-                    <td>Empresa - Usuário</td>
-                    <td>23%</td>
-                    <td>56%</td>
-                    <td>
-                        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="modal" style="background-color: #d3d3d3; border: none;">
-                            Visualizar
-                        </button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -216,18 +116,13 @@
                         {{ form1|crispy }}
     
                         <div class="mb-2 d-flex align-items-center font-small">
-                            <input type="file" name="excel_file" class="form-control form-control-sm me-2 font-small" id="excelFile" required>
-                            <div class="modal-body font-small">
+                            <div class="modal-body font-small modal-footer">
                                 <button type="submit" class="btn btn-primary btn-sm font-small">Upload</button>
                                 <div class="invalid-feedback font-small">
                                     Por favor, selecione um arquivo.
                                 </div>
                             </div>
                         </div>
-    
-                        {% if uploaded_file_url %}
-                            <p class="mt-2 font-small">Arquivo enviado para: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
-                        {% endif %}
                     </form>
                 </div>
             </div>
@@ -248,10 +143,43 @@
                     <!-- Botão Cancelar -->
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                     <!-- Botão Excluir -->
-                    <button type="button" class="btn btn-danger btn-sm">Excluir</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteButton">Excluir</button>
                 </div>
             </div>
         </div>
     </div>
 </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let deleteAssessmentId = null;
+
+        // Captura o ID do framework e armazena para usar no botão "Excluir" dentro da modal
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function() {
+                deleteAssessmentId = this.getAttribute('data-id');
+            });
+        });
+
+        // Associa a ação de exclusão ao botão "Excluir" dentro da modal
+        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            if (deleteAssessmentId) {
+                fetch(`/deletar-assessment/${deleteAssessmentId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload(); // Recarrega a página após a exclusão
+                    } else {
+                        alert('Erro ao excluir o framework.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+</script>
 {% endblock %}

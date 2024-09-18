@@ -18,9 +18,14 @@ urlpatterns = [
     
     # urls para a pagina assessment.html 
     path('assessment/', views.Assessment.as_view(), name='assessment'),
+    path('deletar-assessment/<int:id>/', views.Assessment.as_view(), name='deletar_assess'),  # Para exclusão
+    path('assessment/<int:id>/redirecionar/', views.Assessment().redirecionar_framework, name='redirecionar_framework'),
 
-    path('assess_nist/', views.assess_nist, name='assess_nist'),
-    path('assess_cis/', views.assess_cis, name='assess_cis'),
+    path('assess_nist/', views.AssessNist.as_view(), name='assess_nist'),
+    path('assess_cis/', views.AssessCis.as_view(), name='assess_cis'),
+    path('assess_iso/', views.AssessIso.as_view(), name='assess_iso'),
+    path('assess_prop/', views.AssessProp.as_view(), name='assess_prop'),
+
 ]
 
 if settings.DEBUG:

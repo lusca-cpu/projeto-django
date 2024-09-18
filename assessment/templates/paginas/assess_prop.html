@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Assessment Cis{% endblock%}
+{% block title %}Assessment Proprio{% endblock%}
 
 {% block content %}
 <main>    
@@ -44,7 +44,6 @@
                     <th>Controle</th>
                     <th>Id Subc.</th>
                     <th>Subconjunto</th>
-                    <th>IG</th>
                     <th>Função</th>
                     <th>Ativo</th>
                     <th>Resultado(CSS)</th>
@@ -54,7 +53,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for cis in cis %}
+                {% for prop in props %}
                 <tr>
                     <td>
                         <div class="icon-container" style="display: flex; gap: 10px;">                                            
@@ -66,17 +65,16 @@
                             </span>
                         </div> 
                     </td>
-                    <td>{{ cis.idControle }}</td>
-                    <td>{{ cis.controle }}</td>
-                    <td>{{ cis.idSubConjunto }}</td>
-                    <td>{{ cis.subConjunto }}</td>
-                    <td>{{ cis.nivel }}</td>
-                    <td>{{ cis.funcao }}</td>
-                    <td>{{ cis.ativo }}</td>
-                    <td>{{ cis.resultadoCss }}</td>
-                    <td>{{ cis.resultadoCl }}</td>
-                    <td>{{ cis.comentarios }}</td>
-                    <td>{{ cis.meta }}</td>
+                    <td>{{ prop.idControle }}</td>
+                    <td>{{ prop.controle }}</td>
+                    <td>{{ prop.idSubconjunto }}</td>
+                    <td>{{ prop.subconjunto }}</td>
+                    <td>{{ prop.funcao }}</td>
+                    <td>{{ prop.ativo }}</td>
+                    <td>{{ prop.resultadoCss }}</td>
+                    <td>{{ prop.resultadoCl }}</td>
+                    <td>{{ prop.comentarios }}</td>
+                    <td>{{ prop.meta }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

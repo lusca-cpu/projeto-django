@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import MeuModeloForm, MeuModeloEditForm, NovoAssessmentForm
-from .models import MeuModelo, PlanilhaGenerica, CisControl, Iso, NistCsf
+from .models import TipoModelo, PlanilhaGenerica, CisControl, Iso, NistCsf, AssessmentModel
 
 from django.views import View
 from django.views.generic import TemplateView
@@ -27,7 +27,7 @@ class Framework(View):
 
     # Exibir frameworks e o formulário
     def get(self, request):
-        frameworks = MeuModelo.objects.all()
+        frameworks = TipoModelo.objects.all()
         form1 = MeuModeloForm()  # Inicializa o formulário no GET
         form2 = MeuModeloEditForm()
         return render(request, self.template_name, {
@@ -63,7 +63,8 @@ class Framework(View):
                             controle=row['Controle'],
                             diretrizes=row['Diretrizes para implementação'],
                             prioControle=row['Prioridade do controle'],
-                            nota=row['Nota'],
+                            notaCss=row['Nota (Css)'],
+                            notaCl=row['Nota (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
                             upload_id=upload_id  # Adiciona o upload_id único
@@ -78,7 +79,8 @@ class Framework(View):
                             codigo=row['Código'],
                             subcategoria=row['Subcategoria'],
                             informacao=row['Informações adicionais'],
-                            nota=row['Nota'],
+                            notaCss=row['Nota (Css)'],
+                            notaCl=row['Nota (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
                             upload_id=upload_id  # Adiciona o upload_id único
@@ -95,7 +97,8 @@ class Framework(View):
                             idSubConjunto=row['# Subconjunto'],
                             subConjunto=row['Subconjunto'],
                             nivel=row['Nível'],
-                            resultado=row['Resultado'],
+                            resultadoCss=row['Resultado (Css)'],
+                            resultadoCl=row['Resultado (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
                             upload_id=upload_id  # Adiciona o upload_id único
@@ -113,6 +116,10 @@ class Framework(View):
                             funcaoSeguranca=row['Função de segurança'],
                             tipoAtivo=row['Tipo de Ativo'],
                             informacoesAdicionais=row['Informações Adicionais'],
+                            resultadoCss=row['Resultado (Css)'],
+                            resultadoCl=row['Resultado (Cl.)'],
+                            comentarios=row['Comentários'],
+                            meta=row['Meta'],
                             upload_id=upload_id  # Adiciona o upload_id único
                         )
 
@@ -122,40 +129,52 @@ class Framework(View):
         # Se o formulário não for válido, renderiza a página novamente com o erro
         return render(request, self.template_name, {
             'form1': form1,
-            'frameworks': MeuModelo.objects.all()
+            'frameworks': TipoModelo.objects.all()
         })
 
 
     # Excluir Framework
     def delete(self, request, id):
         try:
-            framework = MeuModelo.objects.get(id=id)
-        
+            framework = TipoModelo.objects.get(id=id)
+            
+            # Exclui a instância correspondente em AssessmentModel
+            assessment = AssessmentModel.objects.filter(nome=framework.nome).first()
+            if assessment:
+                if assessment.excel_file:
+                    file_path = os.path.join(settings.MEDIA_ROOT, assessment.excel_file.name)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                assessment.delete()
+
+            # Exclui o arquivo relacionado ao framework
             if framework.excel_file: 
                 file_path = os.path.join(settings.MEDIA_ROOT, framework.excel_file.name)
                 if os.path.isfile(file_path):
                     os.remove(file_path)
-            
+
+            # Exclui o framework
             framework.delete()
             return JsonResponse({'success': True})
-        except MeuModelo.DoesNotExist:
+        except TipoModelo.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
 # Editar Framework
 def editar_framework(request, id):
-    framework = get_object_or_404(MeuModelo, id=id)
+    framework = get_object_or_404(TipoModelo, id=id)
     
     if request.method == 'POST':
         form = MeuModeloEditForm(request.POST, request.FILES, instance=framework)
         if form.is_valid():
-            # Primeiro, salve a instância para garantir que o novo arquivo é processado
+            # Salvar a instância para garantir que o novo arquivo é processado
+            old_file = framework.excel_file
             form.save()
             
             # Verifique se houve alteração no campo de arquivo
             if 'excel_file' in form.changed_data:
-                old_file = framework.excel_file
                 if old_file and old_file.name:
-                    old_file_path = os.path.join(settings.MEDIA_ROOT, old_file.name)
+                    # Caminho do arquivo antigo
+                    old_file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', old_file.name)
                     if os.path.isfile(old_file_path):
                         os.remove(old_file_path)
             
@@ -180,25 +199,108 @@ class Assessment(View):
     template_name = 'paginas/assessment.html'
 
     def get(self, request):
-        modelos = MeuModelo.objects.all()  # Obtém todos os objetos de MeuModelo
+        frameworks = TipoModelo.objects.all()  # Obtém todos os objetos de TipoModelo
+        assessments = AssessmentModel.objects.all()  # Altera para assessments
         form1 = NovoAssessmentForm()
 
-        return render(request, self.template_name, {'form1': form1, 'modelos': modelos})
+        return render(request, self.template_name, {
+            'form1': form1, 
+            'frameworks': frameworks, 
+            'assessments': assessments  # Altera para assessments
+        })
 
     def post(self, request):
         form1 = NovoAssessmentForm(request.POST, request.FILES)
         if form1.is_valid():
             form1.save()
-            return redirect('success')
+            return redirect('assessment')
 
-        modelos = MeuModelo.objects.all()  # Inclui novamente os modelos no caso de erro no formulário
-        return render(request, self.template_name, {'form1': form1, 'modelos': modelos})
+        assessments = AssessmentModel.objects.all()  # Inclui novamente os modelos no caso de erro no formulário
+        return render(request, self.template_name, {
+            'form1': form1, 
+            'assessments': assessments  # Altera para assessments
+        })
 
-def assess_cis(request):
-    return render(request, 'paginas/assess_cis.html')
+    # Excluir Framework
+    def delete(self, request, id):
+        try:
+            assessment = AssessmentModel.objects.get(id=id)
+        
+            if assessment.excel_file: 
+                file_path = os.path.join(settings.MEDIA_ROOT, assessment.excel_file.name)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            
+            assessment.delete()
+            return JsonResponse({'success': True})
+        except AssessmentModel.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
-def assess_nist(request):
-    return render(request, 'paginas/assess_nist.html')
+    def redirecionar_framework(self, request, id):
+        """Redireciona o usuário com base no tipo de framework e arquivo Excel."""
+        framework = TipoModelo.objects.get(id=id)
+        excel_name = framework.excel_file.name.lower()  # Converte para lowercase
+
+        if 'nist' in excel_name:
+            return redirect('assess_nist')  # Redireciona para a página do NIST
+        elif 'cis' in excel_name:
+            return redirect('assess_cis')  # Redireciona para a página do CIS
+        elif 'iso' in excel_name:
+            return redirect('assess_iso')  # Redireciona para a página do ISO
+        elif framework.is_proprio:
+            return redirect('assess_prop')  # Redireciona para a página de planilha genérica
+        else:
+            return redirect('assessment')  # Volta para a página principal se não for reconhecido
+
+
+class AssessCis(View):
+    template_name = 'paginas/assess_cis.html'
+
+    def get(self, request):
+        frameworks = TipoModelo.objects.all() 
+        cis = CisControl.objects.all() 
+
+        return render(request, self.template_name, {
+            'frameworks': frameworks, 
+            'cis': cis
+        })
+
+class AssessNist(View):
+    template_name = 'paginas/assess_nist.html'
+
+    def get(self, request):
+        frameworks = TipoModelo.objects.all()
+        nists = NistCsf.objects.all() 
+
+        return render(request, self.template_name, {
+            'frameworks': frameworks, 
+            'nists': nists
+        })
+
+
+class AssessIso(View):
+    template_name = 'paginas/assess_iso.html'
+
+    def get(self, request):
+        frameworks = TipoModelo.objects.all()
+        isos = Iso.objects.all() 
+
+        return render(request, self.template_name, {
+            'frameworks': frameworks, 
+            'isos': isos
+        })
+
+class AssessProp(View):
+    template_name = 'paginas/assess_prop.html'
+
+    def get(self, request):
+        frameworks = TipoModelo.objects.all()
+        props = PlanilhaGenerica.objects.all() 
+
+        return render(request, self.template_name, {
+            'frameworks': frameworks, 
+            'props': props
+        })
 
 def download_file(request, filename):
     file_path = os.path.join(settings.MEDIA_ROOT, filename)

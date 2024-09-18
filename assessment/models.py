@@ -1,7 +1,9 @@
 from django.db import models
 import uuid  # Para gerar IDs únicos para cada upload
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-class MeuModelo(models.Model):
+class TipoModelo(models.Model):
     BINARIO = 'Binário'
     CMMI = 'CMMI'
     CONFORMIDADE = 'Conformidade'
@@ -26,7 +28,7 @@ class MeuModelo(models.Model):
 
 # Modelo da Framework_Planilha Generica
 class PlanilhaGenerica(models.Model):
-    framework = models.ForeignKey(MeuModelo, on_delete=models.CASCADE, related_name='planilhas_genericas')  # Relacionamento
+    framework = models.ForeignKey(TipoModelo, on_delete=models.CASCADE, related_name='planilhas_genericas')  # Relacionamento
     idControle = models.IntegerField()
     controle = models.CharField(max_length=255)
     idSubControle = models.IntegerField()
@@ -34,6 +36,10 @@ class PlanilhaGenerica(models.Model):
     funcaoSeguranca = models.CharField(max_length=255)
     tipoAtivo = models.CharField(max_length=255)
     informacoesAdicionais = models.TextField()
+    resultadoCss = models.CharField(max_length=255)
+    resultadoCl = models.CharField(max_length=255)
+    comentarios = models.TextField()
+    meta = models.CharField(max_length=255)
     upload_id = models.UUIDField(default=uuid.uuid4)  # Associa cada linha de dados ao upload específico
 
     def __str__(self):
@@ -42,7 +48,7 @@ class PlanilhaGenerica(models.Model):
 
 # Modelo do Assessment CIS Control V8.1
 class CisControl(models.Model):
-    framework = models.ForeignKey(MeuModelo, on_delete=models.CASCADE, related_name='cis_controls')  # Relacionamento
+    framework = models.ForeignKey(TipoModelo, on_delete=models.CASCADE, related_name='cis_controls')  # Relacionamento
     idControle = models.IntegerField()
     controle = models.CharField(max_length=255)
     tipoAtivo = models.CharField(max_length=255)
@@ -50,7 +56,8 @@ class CisControl(models.Model):
     idSubConjunto = models.IntegerField()
     subConjunto = models.CharField(max_length=255)
     nivel = models.CharField(max_length=255)
-    resultado = models.CharField(max_length=255)
+    resultadoCss = models.CharField(max_length=255)
+    resultadoCl = models.CharField(max_length=255)
     comentarios = models.TextField()
     meta = models.CharField(max_length=255)
     upload_id = models.UUIDField(default=uuid.uuid4)  # Associa cada linha de dados ao upload específico
@@ -61,14 +68,15 @@ class CisControl(models.Model):
 
 # Modelo do Assessment ISO 27000
 class Iso(models.Model):
-    framework = models.ForeignKey(MeuModelo, on_delete=models.CASCADE, related_name='isos')  # Relacionamento
+    framework = models.ForeignKey(TipoModelo, on_delete=models.CASCADE, related_name='isos')  # Relacionamento
     secao = models.CharField(max_length=255)
     codCatecoria = models.CharField(max_length=255)
     categoria = models.CharField(max_length=255)
     controle = models.CharField(max_length=255)
     diretrizes = models.TextField()
     prioControle = models.CharField(max_length=255)
-    nota = models.CharField(max_length=255)
+    notaCss = models.CharField(max_length=255)
+    notaCl = models.CharField(max_length=255)
     comentarios = models.TextField()
     meta = models.CharField(max_length=255)
     upload_id = models.UUIDField(default=uuid.uuid4)  # Associa cada linha de dados ao upload específico
@@ -79,16 +87,48 @@ class Iso(models.Model):
 
 # Modelo do Assessment NIST CSF 2.0
 class NistCsf(models.Model):
-    framework = models.ForeignKey(MeuModelo, on_delete=models.CASCADE, related_name='nist_csfs')  # Relacionamento
+    framework = models.ForeignKey(TipoModelo, on_delete=models.CASCADE, related_name='nist_csfs')  # Relacionamento
     categoria = models.CharField(max_length=255)
     funcao = models.CharField(max_length=255)
     codigo = models.CharField(max_length=255)
     subcategoria = models.CharField(max_length=255)
     informacao = models.TextField()
-    nota = models.CharField(max_length=255)
+    notaCss = models.CharField(max_length=255)
+    notaCl = models.CharField(max_length=255)
     comentarios = models.TextField()
     meta = models.CharField(max_length=255)
     upload_id = models.UUIDField(default=uuid.uuid4)  # Associa cada linha de dados ao upload específico
 
     def __str__(self):
         return f"{self.categoria} - {self.codigo}"
+
+class AssessmentModel(models.Model):
+    CONCLUIDO = 'Concluído'
+    ANDAMENTO = 'Em andamento'
+    
+    CRITERIO_CHOICES = [
+        (CONCLUIDO, 'Concluído'),
+        (ANDAMENTO, 'Em andamento'),
+    ]
+
+    nome = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=CRITERIO_CHOICES)
+    data_upload = models.DateField(auto_now_add=True) 
+    excel_file = models.FileField(upload_to='assessments/')
+    resultado = models.CharField(max_length=255)
+    meta = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.nome
+
+@receiver(post_save, sender=TipoModelo)
+def criar_assessment_model(sender, instance, created, **kwargs):
+    if created:
+        AssessmentModel.objects.create(
+            nome=instance.nome,
+            status=AssessmentModel.ANDAMENTO,
+            data_upload=instance.data_upload,
+            excel_file=instance.excel_file,
+            resultado='',
+            meta=''
+        )

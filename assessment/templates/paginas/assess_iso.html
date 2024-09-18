@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Assessment Cis{% endblock%}
+{% block title %}Assessment Iso{% endblock%}
 
 {% block content %}
 <main>    
@@ -40,21 +40,18 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>ID Cont.</th>
+                    <th>Seção</th>
+                    <th>Cod. Categoria</th>
+                    <th>Categoria</th>
                     <th>Controle</th>
-                    <th>Id Subc.</th>
-                    <th>Subconjunto</th>
-                    <th>IG</th>
-                    <th>Função</th>
-                    <th>Ativo</th>
-                    <th>Resultado(CSS)</th>
-                    <th>Resultado(Cl.)</th>
+                    <th>Nota(CSS)</th>
+                    <th>Nota(Cl.)</th>
                     <th>Comentários</th>
                     <th>Meta</th>
                 </tr>
             </thead>
             <tbody>
-                {% for cis in cis %}
+                {% for iso in isos %}
                 <tr>
                     <td>
                         <div class="icon-container" style="display: flex; gap: 10px;">                                            
@@ -66,17 +63,14 @@
                             </span>
                         </div> 
                     </td>
-                    <td>{{ cis.idControle }}</td>
-                    <td>{{ cis.controle }}</td>
-                    <td>{{ cis.idSubConjunto }}</td>
-                    <td>{{ cis.subConjunto }}</td>
-                    <td>{{ cis.nivel }}</td>
-                    <td>{{ cis.funcao }}</td>
-                    <td>{{ cis.ativo }}</td>
-                    <td>{{ cis.resultadoCss }}</td>
-                    <td>{{ cis.resultadoCl }}</td>
-                    <td>{{ cis.comentarios }}</td>
-                    <td>{{ cis.meta }}</td>
+                    <td>{{ iso.secao }}</td>
+                    <td>{{ iso.codCatecoria }}</td>
+                    <td>{{ iso.categoria }}</td>
+                    <td>{{ iso.controle }}</td>
+                    <td>{{ iso.notaCss }}</td>
+                    <td>{{ iso.notaCl }}</td>
+                    <td>{{ iso.comentarios }}</td>
+                    <td>{{ iso.meta }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
