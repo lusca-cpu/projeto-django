@@ -1,9 +1,20 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Assessment{% endblock%}
+{% block title %}Gerenciador de Assessment{% endblock %}
 
 {% block content %}
+
+<style>
+    .verde {
+    color: rgb(18, 180, 18);
+    }
+
+    .amarelo {
+    color: #FFA500;
+    }
+</style>
+
 <main>    
     <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px">                          
 
@@ -39,7 +50,7 @@
     </div>
     <!-- Tabela -->
     <div class="table-responsive font-middle px-5">
-        <table class="table-sm">
+        <table class="table">
             <thead>
                 <tr>
                     <th scope="col"></th>
@@ -83,12 +94,12 @@
                                         <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                     </svg>
                                 </span>
-                            </a>
+                            </a>                            
                         </div>   
                     </td>
                     <td>{{ assessment.data_upload }}</td>
                     <td>{{ assessment.nome }}</td>
-                    <td>{{ assessment.status }}</td>
+                    <td class="nivel" data-nivel="{{ assessment.status }}">{{ assessment.status }}</td>
                     <td></td> <!-- Coluna vazia para "Concluído por" -->
                     <td>{{ assessment.resultado }}</td>
                     <td>{{ assessment.meta }}</td>
@@ -181,5 +192,25 @@
             }
         });
     });
+
+ 
+    document.addEventListener("DOMContentLoaded", function() {
+        var nivelElements = document.querySelectorAll(".nivel");
+
+        nivelElements.forEach(function(nivelElement) {
+            var valor = nivelElement.getAttribute("data-nivel");
+
+            // Remove todas as classes de cor
+            nivelElement.classList.remove("verde", "amarelo", "azul");
+
+            // Aplica a cor baseada no valor
+            if (valor === "Concluído") {
+            nivelElement.classList.add("verde");
+            } else if (valor === "Em andamento") {
+            nivelElement.classList.add("amarelo");
+            }
+        });
+    });
+
 </script>
 {% endblock %}

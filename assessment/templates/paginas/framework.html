@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Framework{% endblock%}
+{% block title %}Gerenciador de Framework{% endblock %}
 
 {% block content %}
 <main>                
@@ -19,6 +19,10 @@
             </svg>
             Novo Framework
         </button>
+        <!-- Filtro da tabela -->
+        <div class="ms-auto" style="margin-right: 45px">
+            <input style="max-width:200px;" type="text" id="filtro" class="font-small form-control" placeholder="Filtro...">
+        </div>
     </div>
     <div>
         <!-- Desenho da tabela a ser implementado -->
@@ -34,7 +38,7 @@
                         <th scope="col">Adicionado por</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tabelaFrame"> 
                     {% for framework in frameworks %}
                     <tr>
                         <td>
@@ -76,7 +80,7 @@
                         <td colspan="6">Nenhum framework registrados.</td>
                     </tr>
                     {% endfor %}
-                </tbody>
+                </tbody>   
             </table>
         </div>
     </div>
@@ -166,6 +170,28 @@
 </main>
 
 <script>
+    // Script de filtro
+    document.addEventListener('DOMContentLoaded', function() {
+      const input = document.getElementById('filtro');
+      input.addEventListener('keyup', function() {
+          const value = input.value.toLowerCase();
+          const rows = document.querySelectorAll('#tabelaFrame tr');
+    
+          rows.forEach((row, index) => {
+              // Ignora o cabeçalho da tabela (index === 0)
+              //if (index === 0) return;
+    
+              // Obtém o texto de todas as colunas em uma linha
+              const rowText = Array.from(row.querySelectorAll('td'))
+                  .map(td => td.textContent.trim().toLowerCase())
+                  .join(' ');
+    
+              // Exibe a linha se ela contiver o valor do filtro, oculta caso contrário
+              row.style.display = rowText.includes(value) ? '' : 'none';
+          });
+      });
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         let deleteFrameworkId = null;
 

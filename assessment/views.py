@@ -159,9 +159,9 @@ class Framework(View):
         except TipoModelo.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
-# Editar Framework
 def editar_framework(request, id):
     framework = get_object_or_404(TipoModelo, id=id)
+    assessment = get_object_or_404(AssessmentModel, framework=framework)
     
     if request.method == 'POST':
         form = MeuModeloEditForm(request.POST, request.FILES, instance=framework)
@@ -178,6 +178,11 @@ def editar_framework(request, id):
                     if os.path.isfile(old_file_path):
                         os.remove(old_file_path)
             
+            # Atualizar o AssessmentModel
+            assessment.nome = framework.nome
+            assessment.excel_file = framework.excel_file
+            assessment.save()
+
             return redirect('listar_frameworks')
     else:
         form = MeuModeloEditForm(instance=framework)
@@ -193,6 +198,7 @@ def editar_framework(request, id):
         })
     else:
         return render(request, 'paginas/framework.html', {'form2': form, 'framework': framework})
+
 
 # Função para renderizar a página assessment.html
 class Assessment(View):
@@ -236,72 +242,238 @@ class Assessment(View):
         except AssessmentModel.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
-    def redirecionar_framework(self, request, id):
-        """Redireciona o usuário com base no tipo de framework e arquivo Excel."""
-        framework = TipoModelo.objects.get(id=id)
-        excel_name = framework.excel_file.name.lower()  # Converte para lowercase
+# Redirecionar para o Framework
+class RedirecionarFramework(View):
+    def get(self, request, id):
+        framework = get_object_or_404(TipoModelo, id=id)
+        excel_name = framework.excel_file.name.lower()
 
         if 'nist' in excel_name:
-            return redirect('assess_nist')  # Redireciona para a página do NIST
+            return redirect('assess_nist', id=framework.id)  # Passa o id do framework para a view
         elif 'cis' in excel_name:
-            return redirect('assess_cis')  # Redireciona para a página do CIS
+            return redirect('assess_cis', id=framework.id)
         elif 'iso' in excel_name:
-            return redirect('assess_iso')  # Redireciona para a página do ISO
+            return redirect('assess_iso', id=framework.id)
         elif framework.is_proprio:
-            return redirect('assess_prop')  # Redireciona para a página de planilha genérica
+            return redirect('assess_prop', id=framework.id)
         else:
-            return redirect('assessment')  # Volta para a página principal se não for reconhecido
+            return redirect('assessment')
 
 
 class AssessCis(View):
     template_name = 'paginas/assess_cis.html'
 
-    def get(self, request):
-        frameworks = TipoModelo.objects.all() 
-        cis = CisControl.objects.all() 
+    def get(self, request, id):
+        assessment = get_object_or_404(AssessmentModel, id=id)
+        # Filtra os frameworks relacionados ao assessment
+        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
+        # Filtra os dados CisControl relacionados ao framework
+        cis = CisControl.objects.filter(framework__in=frameworks)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks, 
-            'cis': cis
+            'frameworks': frameworks,
+            'assessment': assessment,
+            'cis': cis,
+            'assessment_id': id
         })
+
+    def post(self, request, id):
+        # Obtém o AssessmentModel
+        assessment = get_object_or_404(AssessmentModel, id=id)
+
+        # Atualiza os CisControls com os dados do formulário
+        for key, value in request.POST.items():
+            if key.startswith('resultadoCss_'):
+                cis_id = key.split('_')[1]
+                cis = get_object_or_404(CisControl, id=cis_id)
+                if value in ['Sim', 'Não']:
+                    cis.resultadoCss = value
+                    cis.save()
+            elif key.startswith('resultadoCl_'):
+                cis_id = key.split('_')[1]
+                cis = get_object_or_404(CisControl, id=cis_id)
+                if value in ['Sim', 'Não']:
+                    cis.resultadoCl = value
+                    cis.save()
+            elif key.startswith('comentarios_'):
+                cis_id = key.split('_')[1]
+                cis = get_object_or_404(CisControl, id=cis_id)
+                cis.comentarios = value
+                cis.save()
+            elif key.startswith('meta_'):
+                cis_id = key.split('_')[1]
+                cis = get_object_or_404(CisControl, id=cis_id)
+                if value in ['Sim', 'Não']:
+                    cis.meta = value
+                    cis.save()
+
+        # Redireciona de volta para a página de avaliação
+        return redirect('assess_cis', id=id)
+
+
 
 class AssessNist(View):
     template_name = 'paginas/assess_nist.html'
 
-    def get(self, request):
-        frameworks = TipoModelo.objects.all()
-        nists = NistCsf.objects.all() 
+    def get(self, request, id):
+        assessment = get_object_or_404(AssessmentModel, id=id)
+        # Filtra os frameworks relacionados ao assessment
+        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
+        # Filtra os dados NIST relacionados ao framework
+        nists = NistCsf.objects.filter(framework__in=frameworks)
+        notas = range(0, 6)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks, 
-            'nists': nists
+            'frameworks': frameworks,
+            'assessment': assessment,
+            'nists': nists,
+            'notas': notas,
+            'assessment_id': id
         })
 
+    def post(self, request, id):
+        # Obtém o AssessmentModel
+        assessment = get_object_or_404(AssessmentModel, id=id)
+        
+        # Atualiza os NistCsf com os dados do formulário
+        for key, value in request.POST.items():
+            if key.startswith('notaCss_'):
+                nist_id = key.split('_')[1]
+                nist = get_object_or_404(NistCsf, id=nist_id)
+                nist.notaCss = value
+                nist.save()
+            elif key.startswith('notaCl_'):
+                nist_id = key.split('_')[1]
+                nist = get_object_or_404(NistCsf, id=nist_id)
+                nist.notaCl = value
+                nist.save()
+            elif key.startswith('comentarios_'):
+                nist_id = key.split('_')[1]
+                nist = get_object_or_404(NistCsf, id=nist_id)
+                nist.comentarios = value
+                nist.save()
+            elif key.startswith('meta_'):
+                nist_id = key.split('_')[1]
+                nist = get_object_or_404(NistCsf, id=nist_id)
+                nist.meta = value
+                nist.save()
+
+        # Redireciona de volta para a página de avaliação
+        return redirect('assess_nist', id=id)
 
 class AssessIso(View):
     template_name = 'paginas/assess_iso.html'
 
-    def get(self, request):
-        frameworks = TipoModelo.objects.all()
-        isos = Iso.objects.all() 
+    def get(self, request, id):
+        assessment = get_object_or_404(AssessmentModel, id=id)
+        # Filtra os frameworks relacionados ao assessment
+        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
+        # Filtra os dados NIST relacionados ao framework
+        isos = Iso.objects.filter(framework__in=frameworks)
+        notas = range(0, 6)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks, 
-            'isos': isos
+            'frameworks': frameworks,
+            'assessment': assessment,
+            'isos': isos,
+            'notas': notas,
+            'assessment_id': id
         })
+
+    def post(self, request, id):
+        # Obtém o AssessmentModel
+        assessment = get_object_or_404(AssessmentModel, id=id)
+        
+        # Atualiza os Iso com os dados do formulário
+        for key, value in request.POST.items():
+            if key.startswith('notaCss_'):
+                iso_id = key.split('_')[1]
+                iso = get_object_or_404(Iso, id=iso_id)
+                iso.notaCss = value
+                iso.save()
+            elif key.startswith('notaCl_'):
+                iso_id = key.split('_')[1]
+                iso = get_object_or_404(Iso, id=iso_id)
+                iso.notaCl = value
+                iso.save()
+            elif key.startswith('comentarios_'):
+                iso_id = key.split('_')[1]
+                iso = get_object_or_404(Iso, id=iso_id)
+                iso.comentarios = value
+                iso.save()
+            elif key.startswith('meta_'):
+                iso_id = key.split('_')[1]
+                iso = get_object_or_404(Iso, id=iso_id)
+                iso.meta = value
+                iso.save()
+
+        # Redireciona de volta para a página de avaliação
+        return redirect('assess_iso', id=id)
 
 class AssessProp(View):
     template_name = 'paginas/assess_prop.html'
 
-    def get(self, request):
-        frameworks = TipoModelo.objects.all()
-        props = PlanilhaGenerica.objects.all() 
+    def get(self, request, id):
+        assessment = get_object_or_404(AssessmentModel, id=id)
+        # Filtra os frameworks relacionados ao assessment
+        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
+        # Filtra os dados CisControl relacionados ao framework
+        props = PlanilhaGenerica.objects.filter(framework__in=frameworks)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks, 
-            'props': props
+            'frameworks': frameworks,
+            'assessment': assessment,
+            'props': props,
+            'assessment_id': id
         })
 
+    def post(self, request, id):
+        # Obtém o AssessmentModel
+        assessment = get_object_or_404(AssessmentModel, id=id)
+
+        # Atualiza os CisControls com os dados do formulário
+        for key, value in request.POST.items():
+            if key.startswith('resultadoCss_'):
+                prop_id = key.split('_')[1]
+                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
+                if value in ['Sim', 'Não']:
+                    prop.resultadoCss = value
+                    prop.save()
+            elif key.startswith('resultadoCl_'):
+                prop_id = key.split('_')[1]
+                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
+                if value in ['Sim', 'Não']:
+                    prop.resultadoCl = value
+                    prop.save()
+            elif key.startswith('comentarios_'):
+                prop_id = key.split('_')[1]
+                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
+                prop.comentarios = value
+                prop.save()
+            elif key.startswith('meta_'):
+                prop_id = key.split('_')[1]
+                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
+                if value in ['Sim', 'Não']:
+                    prop.meta = value
+                    prop.save()
+
+        # Redireciona de volta para a página de avaliação
+        return redirect('assess_prop', id=id)
+
+
+class PlanodeAcao(View):
+    template_name = 'paginas/planodeacao.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+class PaineldeResultados(View):
+    template_name = 'paginas/painelderesultados.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+# Função dedicada pra realizar os downloads dos arquivos
 def download_file(request, filename):
     file_path = os.path.join(settings.MEDIA_ROOT, filename)
     if os.path.exists(file_path):

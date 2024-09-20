@@ -19,12 +19,25 @@ urlpatterns = [
     # urls para a pagina assessment.html 
     path('assessment/', views.Assessment.as_view(), name='assessment'),
     path('deletar-assessment/<int:id>/', views.Assessment.as_view(), name='deletar_assess'),  # Para exclusão
-    path('assessment/<int:id>/redirecionar/', views.Assessment().redirecionar_framework, name='redirecionar_framework'),
+    path('assessment/<int:id>/redirecionar/', views.RedirecionarFramework.as_view(), name='redirecionar_framework'),
 
-    path('assess_nist/', views.AssessNist.as_view(), name='assess_nist'),
-    path('assess_cis/', views.AssessCis.as_view(), name='assess_cis'),
-    path('assess_iso/', views.AssessIso.as_view(), name='assess_iso'),
-    path('assess_prop/', views.AssessProp.as_view(), name='assess_prop'),
+    # urls para a pagina assess_nist.html
+    path('assess_nist/<int:id>/', views.AssessNist.as_view(), name='assess_nist'),
+    
+    # urls para a pagina assess_cis.html
+    path('assess_cis/<int:id>/', views.AssessCis.as_view(), name='assess_cis'),
+
+    # urls para a pagina assess_iso.html
+    path('assess_iso/<int:id>/', views.AssessIso.as_view(), name='assess_iso'),
+    
+    # urls para a pagina assess_prop.html
+    path('assess_prop/<int:id>/', views.AssessProp.as_view(), name='assess_prop'),
+
+    # urls para a pagina planodeacao.html
+    path('planodeacao/', views.PlanodeAcao.as_view(), name='planodeacao'),
+
+    # urls para a pagina painelderesultados.html
+    path('painelderesultados', views.PaineldeResultados.as_view(), name='painelderesultados'),
 
 ]
 
