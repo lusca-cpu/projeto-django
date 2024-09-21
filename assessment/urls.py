@@ -36,9 +36,8 @@ urlpatterns = [
     # urls para a pagina planodeacao.html
     path('planodeacao/', views.PlanodeAcao.as_view(), name='planodeacao'),
 
-    # urls para a pagina painelderesultados.html
-    path('painelderesultados', views.PaineldeResultados.as_view(), name='painelderesultados'),
-
+    # urls para a pagina painel_result.html
+    path('painel_result/', views.PaineldeResultados.as_view(), name='painelderesultados')
 ]
 
 if settings.DEBUG:

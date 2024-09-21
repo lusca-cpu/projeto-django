@@ -5,13 +5,11 @@
 
 {% block content %}
 <main> 
-    <form method="post" action="{% url 'assess_iso' id=assessment_id %}" id="nistForm">
+    <form method="post" action="{% url 'assess_iso' id=framework_id %}" id="nistForm">
         {% csrf_token %}
         <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
             <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 10px; padding: 5px; width: 100%; justify-content: flex-start;">
-                {% for framework in frameworks %}
-                    <div>{{ framework.nome }}</div>
-                {% endfor %}
+                <div>{{ framework.nome }}</div>
             </div>            
             <button type="button" onclick="window.location.href='{{ assessment.excel_file.url }}'" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
                 <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">

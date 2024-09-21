@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel de Resultados{% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<script src="{% static 'plotly-latest.min.js' %}"></script> 
+
+<main>          
+    <h6>Gráficos</h6>
+     <!--filtro do Django que marca uma string como segura para ser renderizada como HTML.-->
+     <div>{{ grafico_linha|safe }}</div>
+     <div>{{ grafico_velocimetro|safe }}</div>
+     <div>{{ grafico_pizza|safe }}</div>
+</main>     
+
+{% endblock %}

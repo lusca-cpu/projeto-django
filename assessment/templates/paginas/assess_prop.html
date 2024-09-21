@@ -5,15 +5,13 @@
 
 {% block content %}
 <main> 
-    <form method="post" action="{% url 'assess_prop' id=assessment_id %}" id="nistForm">
+    <form method="post" action="{% url 'assess_prop' id=framework_id %}" id="nistForm">
         {% csrf_token %}
         <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
             <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 10px; padding: 5px; width: 100%; justify-content: flex-start;">
-                {% for framework in frameworks %}
-                    <div>{{ framework.nome }}</div>
-                {% endfor %}
+                <div>{{ framework.nome }}</div>
             </div>            
-            <button type="button" onclick="window.location.href='{{ assessment.excel_file.url }}'" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
+            <button type="button" onclick="window.location.href='{{ framework.excel_file.url }}'" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
                 <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
                     <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
                     <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>

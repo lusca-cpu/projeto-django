@@ -45,8 +45,10 @@
         </button>
         <ul class="dropdown-menu font-small">
             <li><a class="dropdown-item" href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">Importar Planilha</a></li>
+            {% for framework in frameworks %}
+                <li><a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}">{{ framework.nome }}</a></li>
+            {% endfor %}
         </ul>
-        
     </div>
     <!-- Tabela -->
     <div class="table-responsive font-middle px-5">
@@ -87,7 +89,7 @@
                                 <p>Nenhum arquivo disponível para download</p>
                             {% endif %}
                             <!-- Botão para ver assessment -->
-                            <a href="{% url 'redirecionar_framework' assessment.id %}">
+                            <a href="{% url 'redirecionar_framework' assessment.framework.id %}">
                                 <span>
                                     <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
                                         <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
@@ -206,7 +208,7 @@
             // Aplica a cor baseada no valor
             if (valor === "Concluído") {
             nivelElement.classList.add("verde");
-            } else if (valor === "Em andamento") {
+            } else if (valor === "Andamento") {
             nivelElement.classList.add("amarelo");
             }
         });

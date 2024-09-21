@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Plano de Ação{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<script src="{% static 'plotly-latest.min.js' %}"></script> 
+
+<main>          
+    <h6>Plano de ação</h6>
+     <!--filtro do Django que marca uma string como segura para ser renderizada como HTML.-->
+     <div>{{ grafico_linha|safe }}</div>
+</main>   
+{% endblock %}

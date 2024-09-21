@@ -104,34 +104,21 @@ class NistCsf(models.Model):
 
 class AssessmentModel(models.Model):
     CONCLUIDO = 'Concluído'
-    ANDAMENTO = 'Em andamento'
+    ANDAMENTO = 'Andamento'
     
     CRITERIO_CHOICES = [
         (CONCLUIDO, 'Concluído'),
-        (ANDAMENTO, 'Em andamento'),
+        (ANDAMENTO, 'Andamento'),
     ]
 
-    framework = models.ForeignKey(TipoModelo, on_delete=models.CASCADE, related_name='assessments')
+    framework = models.ForeignKey(TipoModelo, on_delete=models.CASCADE)
     nome = models.CharField(max_length=255)
     status = models.CharField(max_length=20, choices=CRITERIO_CHOICES)
     data_upload = models.DateField(auto_now_add=True) 
     excel_file = models.FileField(upload_to='assessments/')
     resultado = models.CharField(max_length=255)
     meta = models.CharField(max_length=255)
-    upload_id = models.UUIDField(default=uuid.uuid4)  # Associa cada linha de dados ao upload específico
 
     def __str__(self):
         return self.nome
 
-@receiver(post_save, sender=TipoModelo)
-def criar_assessment_model(sender, instance, created, **kwargs):
-    if created:
-        AssessmentModel.objects.create(
-            nome=instance.nome,
-            framework=instance,  # Relaciona diretamente com o TipoModelo
-            status=AssessmentModel.ANDAMENTO,
-            data_upload=instance.data_upload,
-            excel_file=instance.excel_file,
-            resultado='',
-            meta=''
-        )

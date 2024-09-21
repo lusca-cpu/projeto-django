@@ -13,6 +13,7 @@ from django.contrib import messages
 import os
 import pandas as pd
 import uuid
+import plotly.graph_objects as go
 
 
 def index(request):
@@ -138,14 +139,14 @@ class Framework(View):
         try:
             framework = TipoModelo.objects.get(id=id)
             
-            # Exclui a instância correspondente em AssessmentModel
-            assessment = AssessmentModel.objects.filter(nome=framework.nome).first()
-            if assessment:
-                if assessment.excel_file:
-                    file_path = os.path.join(settings.MEDIA_ROOT, assessment.excel_file.name)
-                    if os.path.isfile(file_path):
-                        os.remove(file_path)
-                assessment.delete()
+            # # Exclui a instância correspondente em AssessmentModel
+            # assessment = AssessmentModel.objects.filter(nome=framework.nome).first()
+            # if assessment:
+            #     if assessment.excel_file:
+            #         file_path = os.path.join(settings.MEDIA_ROOT, assessment.excel_file.name)
+            #         if os.path.isfile(file_path):
+            #             os.remove(file_path)
+            #     assessment.delete()
 
             # Exclui o arquivo relacionado ao framework
             if framework.excel_file: 
@@ -159,6 +160,7 @@ class Framework(View):
         except TipoModelo.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
+# Editar Framework
 def editar_framework(request, id):
     framework = get_object_or_404(TipoModelo, id=id)
     assessment = get_object_or_404(AssessmentModel, framework=framework)
@@ -245,41 +247,68 @@ class Assessment(View):
 # Redirecionar para o Framework
 class RedirecionarFramework(View):
     def get(self, request, id):
-        framework = get_object_or_404(TipoModelo, id=id)
-        excel_name = framework.excel_file.name.lower()
+        try:
+            print(f"Tentando encontrar TipoModelo com id: {id}")
+            framework = get_object_or_404(TipoModelo, id=id)
+            excel_name = framework.excel_file.name.lower()
 
-        if 'nist' in excel_name:
-            return redirect('assess_nist', id=framework.id)  # Passa o id do framework para a view
-        elif 'cis' in excel_name:
-            return redirect('assess_cis', id=framework.id)
-        elif 'iso' in excel_name:
-            return redirect('assess_iso', id=framework.id)
-        elif framework.is_proprio:
-            return redirect('assess_prop', id=framework.id)
-        else:
+            if 'nist' in excel_name:
+                return redirect('assess_nist', id=framework.id)
+            elif 'cis' in excel_name:
+                return redirect('assess_cis', id=framework.id)
+            elif 'iso' in excel_name:
+                return redirect('assess_iso', id=framework.id)
+            elif framework.is_proprio:
+                return redirect('assess_prop', id=framework.id)
+            else:
+                return redirect('assessment')
+        except Exception as e:
+            print(f"Erro ao redirecionar: {e}")
             return redirect('assessment')
 
-
+# Função para renderizar a página assess_cis.html
 class AssessCis(View):
     template_name = 'paginas/assess_cis.html'
 
     def get(self, request, id):
-        assessment = get_object_or_404(AssessmentModel, id=id)
-        # Filtra os frameworks relacionados ao assessment
-        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
-        # Filtra os dados CisControl relacionados ao framework
-        cis = CisControl.objects.filter(framework__in=frameworks)
+        # Obtém o framework (TipoModelo) específico com base no ID
+        framework = get_object_or_404(TipoModelo, id=id)
+        # Filtra os dados do CisControl que estão relacionados ao framework
+        cis = CisControl.objects.filter(framework=framework)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks,
-            'assessment': assessment,
+            'framework': framework,
             'cis': cis,
-            'assessment_id': id
+            'framework_id': id  # Passa o ID do framework
         })
 
     def post(self, request, id):
-        # Obtém o AssessmentModel
-        assessment = get_object_or_404(AssessmentModel, id=id)
+        # Obtém o framework específico
+        framework = get_object_or_404(TipoModelo, id=id)
+
+        # Verifica se existe um AssessmentModel associado ao framework
+        assessment = AssessmentModel.objects.filter(framework=framework).first()
+        if not assessment:
+            # Crie um novo AssessmentModel se não existir
+            assessment = AssessmentModel.objects.create(
+                framework=framework,
+                nome=framework.nome,
+                status=AssessmentModel.ANDAMENTO,
+                resultado="",
+                meta=""
+            )
+
+        # Atualiza o AssessmentModel com os dados do formulário
+        assessment.nome = framework.nome  # Define o nome do framework
+        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+
+        # Atualiza o excel_file apenas se um novo arquivo for enviado
+        if request.FILES.get('excel_file'):
+            assessment.excel_file = request.FILES.get('excel_file')
+
+        assessment.resultado = ""  # Deixe o campo resultado vazio
+        assessment.meta = ""  # Deixe o campo meta vazio
+        assessment.save()
 
         # Atualiza os CisControls com os dados do formulário
         for key, value in request.POST.items():
@@ -306,36 +335,85 @@ class AssessCis(View):
                 if value in ['Sim', 'Não']:
                     cis.meta = value
                     cis.save()
+        cis_controls = CisControl.objects.filter(framework=framework)  # Filtra os CisControls do framework
+        data = []
+        for cis in cis_controls:
+            data.append({
+                'Id Controle': cis.idControle,
+                'Controle': cis.controle,
+                'Tipo Ativo': cis.tipoAtivo,
+                'Função': cis.funcao,
+                'Id Subconjunto': cis.idSubConjunto,
+                'Subconjunto': cis.subConjunto,
+                'Nível': cis.nivel,
+                'Resultado CSS': cis.resultadoCss,
+                'Resultado CL': cis.resultadoCl,
+                'Comentários': cis.comentarios,
+                'Meta': cis.meta
+            })
+
+        # Cria um DataFrame e salva como Excel
+        df = pd.DataFrame(data)
+        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
+        df.to_excel(excel_file_path, index=False)
+
+        # Atualiza o campo excel_file do AssessmentModel
+        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+
+        # Salva a instância de AssessmentModel
+        assessment.save()
 
         # Redireciona de volta para a página de avaliação
         return redirect('assess_cis', id=id)
 
 
-
+# Função para renderizar a página assess_nist.html
 class AssessNist(View):
     template_name = 'paginas/assess_nist.html'
 
     def get(self, request, id):
-        assessment = get_object_or_404(AssessmentModel, id=id)
-        # Filtra os frameworks relacionados ao assessment
-        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
-        # Filtra os dados NIST relacionados ao framework
-        nists = NistCsf.objects.filter(framework__in=frameworks)
+        # Obtém o framework (TipoModelo) específico com base no ID
+        framework = get_object_or_404(TipoModelo, id=id)
+        # Filtra os dados do CisControl que estão relacionados ao framework
+        nists = NistCsf.objects.filter(framework=framework)
         notas = range(0, 6)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks,
-            'assessment': assessment,
+            'framework': framework,
             'nists': nists,
             'notas': notas,
-            'assessment_id': id
+            'framework_id': id  # Passa o ID do framework
         })
 
     def post(self, request, id):
-        # Obtém o AssessmentModel
-        assessment = get_object_or_404(AssessmentModel, id=id)
-        
-        # Atualiza os NistCsf com os dados do formulário
+        # Obtém o framework específico
+        framework = get_object_or_404(TipoModelo, id=id)
+
+        # Verifica se existe um AssessmentModel associado ao framework
+        assessment = AssessmentModel.objects.filter(framework=framework).first()
+        if not assessment:
+            # Crie um novo AssessmentModel se não existir
+            assessment = AssessmentModel.objects.create(
+                framework=framework,
+                nome=framework.nome,
+                status=AssessmentModel.ANDAMENTO,
+                resultado="",
+                meta=""
+            )
+
+        # Atualiza o AssessmentModel com os dados do formulário
+        assessment.nome = framework.nome  # Define o nome do framework
+        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+
+        # Atualiza o excel_file apenas se um novo arquivo for enviado
+        if request.FILES.get('excel_file'):
+            assessment.excel_file = request.FILES.get('excel_file')
+
+        assessment.resultado = ""  # Deixe o campo resultado vazio
+        assessment.meta = ""  # Deixe o campo meta vazio
+        assessment.save()
+
+        # Atualiza os Nist com os dados do formulário
         for key, value in request.POST.items():
             if key.startswith('notaCss_'):
                 nist_id = key.split('_')[1]
@@ -357,33 +435,81 @@ class AssessNist(View):
                 nist = get_object_or_404(NistCsf, id=nist_id)
                 nist.meta = value
                 nist.save()
+        nist_models = NistCsf.objects.filter(framework=framework)  # Filtra os NistCsf que estão relacionados do framework
+        data = []
+        for nist in nist_models:
+            data.append({
+                'Categoria': nist.categoria,
+                'Função': nist.funcao,
+                'Código': nist.codigo,
+                'Subcategoria': nist.subcategoria,
+                'Informações Adicionais': nist.informacao,
+                'Nota CSS': nist.notaCss,
+                'Nota CL': nist.notaCl,
+                'Comentários': nist.comentarios,
+                'Meta': nist.meta
+            })
+
+        # Cria um DataFrame e salva como Excel
+        df = pd.DataFrame(data)
+        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
+        df.to_excel(excel_file_path, index=False)
+
+        # Atualiza o campo excel_file do AssessmentModel
+        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+
+        # Salva a instância de AssessmentModel
+        assessment.save()
 
         # Redireciona de volta para a página de avaliação
         return redirect('assess_nist', id=id)
 
+# Função para renderizar a página assess_iso.html
 class AssessIso(View):
     template_name = 'paginas/assess_iso.html'
 
     def get(self, request, id):
-        assessment = get_object_or_404(AssessmentModel, id=id)
-        # Filtra os frameworks relacionados ao assessment
-        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
-        # Filtra os dados NIST relacionados ao framework
-        isos = Iso.objects.filter(framework__in=frameworks)
+        # Obtém o framework (TipoModelo) específico com base no ID
+        framework = get_object_or_404(TipoModelo, id=id)
+        # Filtra os dados do CisControl que estão relacionados ao framework
+        isos = Iso.objects.filter(framework=framework)
         notas = range(0, 6)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks,
-            'assessment': assessment,
+            'framework': framework,
             'isos': isos,
             'notas': notas,
-            'assessment_id': id
+            'framework_id': id  # Passa o ID do framework
         })
 
     def post(self, request, id):
-        # Obtém o AssessmentModel
-        assessment = get_object_or_404(AssessmentModel, id=id)
-        
+        # Obtém o framework específico
+        framework = get_object_or_404(TipoModelo, id=id)
+
+        # Verifica se existe um AssessmentModel associado ao framework
+        assessment = AssessmentModel.objects.filter(framework=framework).first()
+        if not assessment:
+            # Crie um novo AssessmentModel se não existir
+            assessment = AssessmentModel.objects.create(
+                framework=framework,
+                nome=framework.nome,
+                status=AssessmentModel.ANDAMENTO,
+                resultado="",
+                meta=""
+            )
+
+        # Atualiza o AssessmentModel com os dados do formulário
+        assessment.nome = framework.nome  # Define o nome do framework
+        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+
+        # Atualiza o excel_file apenas se um novo arquivo for enviado
+        if request.FILES.get('excel_file'):
+            assessment.excel_file = request.FILES.get('excel_file')
+
+        assessment.resultado = ""  # Deixe o campo resultado vazio
+        assessment.meta = ""  # Deixe o campo meta vazio
+        assessment.save()
+
         # Atualiza os Iso com os dados do formulário
         for key, value in request.POST.items():
             if key.startswith('notaCss_'):
@@ -406,30 +532,82 @@ class AssessIso(View):
                 iso = get_object_or_404(Iso, id=iso_id)
                 iso.meta = value
                 iso.save()
+        iso_models = Iso.objects.filter(framework=framework)  # Filtra os Iso que estão relacionados do framework
+        data = []
+        for iso in iso_models:
+            data.append({
+                'Seção': iso.secao,
+                'Cod. Categoria': iso.codCatecoria,
+                'Categoria': iso.categoria,
+                'Controle': iso.controle,
+                'Diretrizes para implementação': iso.diretrizes,
+                'Prioridade do controle': iso.prioControle,
+                'Nota CSS': iso.notaCss,
+                'Nota CL': iso.notaCl,
+                'Comentários': iso.comentarios,
+                'Meta': iso.meta
+            })
+
+        # Cria um DataFrame e salva como Excel
+        df = pd.DataFrame(data)
+        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
+        df.to_excel(excel_file_path, index=False)
+
+        # Atualiza o campo excel_file do AssessmentModel
+        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+
+        # Salva a instância de AssessmentModel
+        assessment.save()
 
         # Redireciona de volta para a página de avaliação
         return redirect('assess_iso', id=id)
 
+# Função para renderizar a página assess_prop.html
 class AssessProp(View):
     template_name = 'paginas/assess_prop.html'
 
     def get(self, request, id):
-        assessment = get_object_or_404(AssessmentModel, id=id)
-        # Filtra os frameworks relacionados ao assessment
-        frameworks = TipoModelo.objects.filter(assessments=assessment)  # Usando relacionamento direto
-        # Filtra os dados CisControl relacionados ao framework
-        props = PlanilhaGenerica.objects.filter(framework__in=frameworks)
+        # Obtém o framework (TipoModelo) específico com base no ID
+        framework = get_object_or_404(TipoModelo, id=id)
+        # Filtra os dados do CisControl que estão relacionados ao framework
+        props = PlanilhaGenerica.objects.filter(framework=framework)
 
         return render(request, self.template_name, {
-            'frameworks': frameworks,
-            'assessment': assessment,
+            'framework': framework,
             'props': props,
-            'assessment_id': id
+            'framework_id': id  # Passa o ID do framework
         })
 
     def post(self, request, id):
-        # Obtém o AssessmentModel
-        assessment = get_object_or_404(AssessmentModel, id=id)
+        # Obtém o framework específico
+        framework = get_object_or_404(TipoModelo, id=id)
+
+        # Verifica se existe um AssessmentModel associado ao framework
+        assessment = AssessmentModel.objects.filter(framework=framework).first()
+        if not assessment:
+            # Crie um novo AssessmentModel se não existir
+            assessment = AssessmentModel.objects.create(
+                framework=framework,
+                nome=framework.nome,
+                status=AssessmentModel.ANDAMENTO,
+                resultado="",
+                meta=""
+            )
+            print(f"Assessment criado: {assessment}")
+        else:
+            print(f"Assessment encontrado: {assessment}")
+
+        # Atualiza o AssessmentModel com os dados do formulário
+        assessment.nome = framework.nome  # Define o nome do framework
+        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+
+        # Atualiza o excel_file apenas se um novo arquivo for enviado
+        if request.FILES.get('excel_file'):
+            assessment.excel_file = request.FILES.get('excel_file')
+
+        assessment.resultado = ""  # Deixe o campo resultado vazio
+        assessment.meta = ""  # Deixe o campo meta vazio
+        assessment.save()
 
         # Atualiza os CisControls com os dados do formulário
         for key, value in request.POST.items():
@@ -456,22 +634,128 @@ class AssessProp(View):
                 if value in ['Sim', 'Não']:
                     prop.meta = value
                     prop.save()
+        prop_generica = PlanilhaGenerica.objects.filter(framework=framework)  # Filtra os PlanilhaGenerica do framework
+        data = []
+        for prop in prop_generica:
+            data.append({
+                'Id Controle': prop.idControle,
+                'Controle': prop.controle,
+                'Id Subconjunto': prop.idSubControle,
+                'Subconjunto': prop.subControle,
+                'Função de Segurança': prop.funcaoSeguranca,
+                'Tipo de Ativo': prop.tipoAtivo,
+                'Informações Adicionais': prop.informacoesAdicionais,
+                'Resultado CSS': prop.resultadoCss,
+                'Resultado CL': prop.resultadoCl,
+                'Comentários': prop.comentarios,
+                'Meta': prop.meta
+            })
+
+        # Cria um DataFrame e salva como Excel
+        df = pd.DataFrame(data)
+        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
+        df.to_excel(excel_file_path, index=False)
+
+        # Atualiza o campo excel_file do AssessmentModel
+        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+
+        # Salva a instância de AssessmentModel
+        assessment.save()
+        print(f"Assessment atualizado e salvo: {assessment}")
 
         # Redireciona de volta para a página de avaliação
         return redirect('assess_prop', id=id)
 
 
+# Função para renderizar a página planodeacao.html
 class PlanodeAcao(View):
-    template_name = 'paginas/planodeacao.html'
+    template_name = 'paginas/plano_acao.html'
 
     def get(self, request):
         return render(request, self.template_name)
 
+
+# Função para renderizar a página painelderesultados.html
 class PaineldeResultados(View):
-    template_name = 'paginas/painelderesultados.html'
-
+    template_name = 'paginas/painel_result.html'
+    # Grafico de linha
     def get(self, request):
-        return render(request, self.template_name)
+        # Dados de exemplo
+        velocidade = [10, 15, 20, 25, 30, 35, 40]
+        tempo = [0, 1, 2, 3, 4, 5, 6]
+
+        # Criar o gráfico de linha eixos x e y
+        fig_linha = go.Figure(data=go.Scatter(x=velocidade, y=tempo, mode='lines+markers'))
+        fig_linha.update_layout(title='Gráfico de linha',
+                            xaxis_title='Velocidade (km/h)',
+                            yaxis_title='Tempo (s)')
+
+        # Converter o gráfico para HTML
+        grafico_linha_html = fig_linha.to_html(full_html=False)
+        
+        # Grafico velocimetro
+        fig_velocimetro = go.Figure(go.Indicator( 
+            mode="gauge+number",
+            value=70,  
+            title={'text': "Velocimetro"},
+            number={'font': {'color': "blue", 'size': 30}},
+            gauge={ 
+                'axis': {'range': [0, 100], 'tickcolor': "blue"},
+                'bar': {'color': "darkblue"},
+                'bordercolor': "white",
+                'steps': [  # partes
+                    {'range': [0, 50], 'color': "LightBlue"},
+                    {'range': [50, 100], 'color': "RoyalBlue"}
+                ],
+                'threshold': {  # limiar
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.80,
+                    'value': 90}
+            }
+        ))
+
+        # Converter o gráfico para HTML
+        grafico_velocimetro_html = fig_velocimetro.to_html(full_html=False)
+
+        # Grafico pizza
+        regioes = ['norte', 'sul', 'leste', 'oeste']
+        populacao = [1000, 20000, 50000, 100000]
+        cormarcador = ["DarkBlue", "RoyalBlue", "blue", "LightBlue"]
+
+        fig_pizza = go.Figure(data=go.Pie(labels=regioes,
+                                      values=populacao,
+                                      marker_colors=cormarcador,
+                                      hole=0.5, # furo do centro do grafico
+                                      pull=[0, 0, 0.15, 0])) # distancia entre fatias
+
+        # Rótulos
+        fig_pizza.update_traces(textposition="outside", textinfo="percent+label")
+
+        # Legenda
+        fig_pizza.update_layout(legend_title_text="Regiões brasileiras",
+                            legend=dict(orientation="h",
+                                        xanchor="center",
+                                        x=0.5))
+
+        # Texto
+        fig_pizza.update_layout(annotations=[dict(text="População",
+                                              x=0.5,
+                                              y=0.5,
+                                              font_size=18,
+                                              showarrow=False)])
+
+        # Converter o gráfico para HTML
+        grafico_pizza_html = fig_pizza.to_html(full_html=False)
+        #fig.show() 
+
+        context = {
+            'grafico_linha': grafico_linha_html,
+            'grafico_velocimetro': grafico_velocimetro_html,
+            'grafico_pizza': grafico_pizza_html,
+        }
+
+        return render(request, self.template_name, context)
+
 
 # Função dedicada pra realizar os downloads dos arquivos
 def download_file(request, filename):
