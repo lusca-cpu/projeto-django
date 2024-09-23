@@ -85,7 +85,7 @@
         </div>
     </div>
     <!-- Modal de Adicionar/Upload--> 
-    <div class="modal fade font-small" id="uploadModal" tabindex="-1" aria-labelledby="uploadModal" aria-hidden="true">
+    <div class="modal fade font-small" id="uploadModal" tabindex="-1" aria-labelledby="uploadModal" aria-hidden="true"> 
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -96,7 +96,7 @@
                     <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadForm">
                         {% csrf_token %}
                         {{ form1|crispy }}
-                        
+                      
                         <!-- <span id="infoicon">
                             <svg class="bi-gear-fill" viewBox="0 0 16 16">
                                 <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
@@ -116,7 +116,7 @@
                             <div class="modal-body font-small modal-footer">
                                 <button type="submit" class="btn btn-primary btn-sm font-small">Upload</button>
                                 <div class="invalid-feedback font-small">
-                                    Por favor, selecione um arquivo.
+                                    Por favor, selecione um arquivo válido.
                                 </div>
                             </div>
                         </div>
@@ -170,6 +170,26 @@
 </main>
 
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadForm = document.getElementById('uploadForm');
+        
+        uploadForm.addEventListener('submit', function (event) {
+            // Impede o comportamento padrão do envio do formulário
+            event.preventDefault();
+
+            // Checa se o formulário está válido
+            if (!uploadForm.checkValidity()) {
+                // Se o formulário não estiver válido, exibe as mensagens de erro
+                event.stopPropagation();
+                uploadForm.classList.add('was-validated');
+            } else {
+                // Se o formulário estiver válido, você pode permitir o envio
+                uploadForm.submit();
+            }
+        });
+    });
+
     // Script de filtro
     document.addEventListener('DOMContentLoaded', function() {
       const input = document.getElementById('filtro');

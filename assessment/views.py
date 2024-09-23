@@ -123,7 +123,6 @@ class Framework(View):
                             meta=row['Meta'],
                             upload_id=upload_id  # Adiciona o upload_id único
                         )
-
             # Redireciona para evitar o reenvio do formulário ao atualizar a página
             return HttpResponseRedirect(reverse('framework'))
 
@@ -138,15 +137,6 @@ class Framework(View):
     def delete(self, request, id):
         try:
             framework = TipoModelo.objects.get(id=id)
-            
-            # # Exclui a instância correspondente em AssessmentModel
-            # assessment = AssessmentModel.objects.filter(nome=framework.nome).first()
-            # if assessment:
-            #     if assessment.excel_file:
-            #         file_path = os.path.join(settings.MEDIA_ROOT, assessment.excel_file.name)
-            #         if os.path.isfile(file_path):
-            #             os.remove(file_path)
-            #     assessment.delete()
 
             # Exclui o arquivo relacionado ao framework
             if framework.excel_file: 
@@ -273,11 +263,13 @@ class AssessCis(View):
     def get(self, request, id):
         # Obtém o framework (TipoModelo) específico com base no ID
         framework = get_object_or_404(TipoModelo, id=id)
+        assessments = AssessmentModel.objects.filter(framework=framework)
         # Filtra os dados do CisControl que estão relacionados ao framework
         cis = CisControl.objects.filter(framework=framework)
 
         return render(request, self.template_name, {
             'framework': framework,
+            'assessments': assessments,
             'cis': cis,
             'framework_id': id  # Passa o ID do framework
         })
@@ -374,12 +366,14 @@ class AssessNist(View):
     def get(self, request, id):
         # Obtém o framework (TipoModelo) específico com base no ID
         framework = get_object_or_404(TipoModelo, id=id)
+        assessments = AssessmentModel.objects.filter(framework=framework)
         # Filtra os dados do CisControl que estão relacionados ao framework
         nists = NistCsf.objects.filter(framework=framework)
         notas = range(0, 6)
 
         return render(request, self.template_name, {
             'framework': framework,
+            'assessments': assessments,
             'nists': nists,
             'notas': notas,
             'framework_id': id  # Passa o ID do framework
@@ -473,10 +467,12 @@ class AssessIso(View):
         framework = get_object_or_404(TipoModelo, id=id)
         # Filtra os dados do CisControl que estão relacionados ao framework
         isos = Iso.objects.filter(framework=framework)
+        assessments = AssessmentModel.objects.filter(framework=framework)
         notas = range(0, 6)
 
         return render(request, self.template_name, {
             'framework': framework,
+            'assessments': assessments,
             'isos': isos,
             'notas': notas,
             'framework_id': id  # Passa o ID do framework
@@ -569,11 +565,13 @@ class AssessProp(View):
     def get(self, request, id):
         # Obtém o framework (TipoModelo) específico com base no ID
         framework = get_object_or_404(TipoModelo, id=id)
+        assessments = AssessmentModel.objects.filter(framework=framework)
         # Filtra os dados do CisControl que estão relacionados ao framework
         props = PlanilhaGenerica.objects.filter(framework=framework)
 
         return render(request, self.template_name, {
             'framework': framework,
+            'assessments': assessments,
             'props': props,
             'framework_id': id  # Passa o ID do framework
         })
