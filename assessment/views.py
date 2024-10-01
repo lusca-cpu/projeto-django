@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import MeuModeloForm, MeuModeloEditForm, NovoAssessmentForm
-from .models import TipoModelo, PlanilhaGenerica, CisControl, Iso, NistCsf, AssessmentModel
+from .models import FrameworkModel, AssessmentModel, PlanilhaGenericaTemplate, PlanilhaGenericaModel, CisModelTemplate, CisModel, IsoModelTemplate, IsoModel, NistModelTemplate, NistModel
 
 from django.views import View
 from django.views.generic import TemplateView
@@ -12,8 +12,8 @@ from django.template.loader import render_to_string
 from django.contrib import messages
 import os
 import pandas as pd
-import uuid
 import plotly.graph_objects as go
+from datetime import date
 
 
 def index(request):
@@ -22,13 +22,13 @@ def index(request):
 def security_assessment(request):
     return render(request, 'paginas/security.html')
 
-# Função para renderizar a página framework.html
+# Class para renderizar a página framework.html
 class Framework(View):
     template_name = 'paginas/framework.html'
 
-    # Exibir frameworks e o formulário
+    # Exibir FrameworksModel e o formulário
     def get(self, request):
-        frameworks = TipoModelo.objects.all()
+        frameworks = FrameworkModel.objects.all()
         form1 = MeuModeloForm()  # Inicializa o formulário no GET
         form2 = MeuModeloEditForm()
         return render(request, self.template_name, {
@@ -50,13 +50,10 @@ class Framework(View):
                 # Carregar o arquivo Excel usando pandas
                 df = pd.read_excel(file_path)
 
-                # Gera um ID único para este upload
-                upload_id = uuid.uuid4()
-
                 # Verifica o nome do arquivo e decide em qual modelo salvar
                 if 'iso' in file_name:
                     for _, row in df.iterrows():
-                        Iso.objects.create(
+                        IsoModelTemplate.objects.create(
                             framework=framework,  
                             secao=row['Seção'],
                             codCatecoria=row['Cod. Categoria'],
@@ -68,12 +65,11 @@ class Framework(View):
                             notaCl=row['Nota (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
-                            upload_id=upload_id  # Adiciona o upload_id único
                         )
 
                 elif 'nist' in file_name:
                     for _, row in df.iterrows():
-                        NistCsf.objects.create(
+                        NistModelTemplate.objects.create(
                             framework=framework,  
                             categoria=row['Categoria'],
                             funcao=row['Função'],
@@ -84,12 +80,11 @@ class Framework(View):
                             notaCl=row['Nota (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
-                            upload_id=upload_id  # Adiciona o upload_id único
                         )
 
                 elif 'cis' in file_name:
                     for _, row in df.iterrows():
-                        CisControl.objects.create(
+                        CisModelTemplate.objects.create(
                             framework=framework,  
                             idControle=row['# Controle'],
                             controle=row['Controle'],
@@ -102,13 +97,12 @@ class Framework(View):
                             resultadoCl=row['Resultado (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
-                            upload_id=upload_id  # Adiciona o upload_id único
                         )
 
                 # Se o campo is_proprio estiver marcado, salvar em PlanilhaGenerica
                 if framework.is_proprio:
                     for _, row in df.iterrows():
-                        PlanilhaGenerica.objects.create(
+                        PlanilhaGenericaTemplate.objects.create(
                             framework=framework,  
                             idControle=row['Id Controle*'],
                             controle=row['Controle*'],
@@ -121,7 +115,6 @@ class Framework(View):
                             resultadoCl=row['Resultado (Cl.)'],
                             comentarios=row['Comentários'],
                             meta=row['Meta'],
-                            upload_id=upload_id  # Adiciona o upload_id único
                         )
             # Redireciona para evitar o reenvio do formulário ao atualizar a página
             return HttpResponseRedirect(reverse('framework'))
@@ -129,14 +122,13 @@ class Framework(View):
         # Se o formulário não for válido, renderiza a página novamente com o erro
         return render(request, self.template_name, {
             'form1': form1,
-            'frameworks': TipoModelo.objects.all()
+            'frameworks': FrameworkModel.objects.all()
         })
-
 
     # Excluir Framework
     def delete(self, request, id):
         try:
-            framework = TipoModelo.objects.get(id=id)
+            framework = FrameworkModel.objects.get(id=id)
 
             # Exclui o arquivo relacionado ao framework
             if framework.excel_file: 
@@ -147,13 +139,17 @@ class Framework(View):
             # Exclui o framework
             framework.delete()
             return JsonResponse({'success': True})
-        except TipoModelo.DoesNotExist:
+        except FrameworkModel.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
-# Editar Framework
 def editar_framework(request, id):
-    framework = get_object_or_404(TipoModelo, id=id)
-    assessment = get_object_or_404(AssessmentModel, framework=framework)
+    framework = get_object_or_404(FrameworkModel, id=id)
+    
+    # Verifica se existe uma instância no AssessmentModel associada a este framework
+    assessments = AssessmentModel.objects.filter(framework=framework)
+    has_assessment = assessments.exists()
+    assessment = assessments.first() if has_assessment else None
+
     
     if request.method == 'POST':
         form = MeuModeloEditForm(request.POST, request.FILES, instance=framework)
@@ -169,57 +165,973 @@ def editar_framework(request, id):
                     old_file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', old_file.name)
                     if os.path.isfile(old_file_path):
                         os.remove(old_file_path)
-            
-            # Atualizar o AssessmentModel
-            assessment.nome = framework.nome
-            assessment.excel_file = framework.excel_file
-            assessment.save()
+
+            # Se a instância de AssessmentModel existir, atualize-a
+            if has_assessment:
+                assessment.nome = framework.nome
+                assessment.excel_file = framework.excel_file
+                assessment.save()
 
             return redirect('listar_frameworks')
-    else:
-        form = MeuModeloEditForm(instance=framework)
     
-    # Renderizar a página com o formulário, ou retornar os dados como JSON para preencher o modal
+    # Retorna dados em formato JSON para requisições AJAX
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Se for uma requisição AJAX, retorna os dados do framework
-        return JsonResponse({
+        response_data = {
             'nome': framework.nome,
             'descricao': framework.descricao,
             'criterio': framework.criterio,
             'uploaded_file_url': framework.excel_file.url if framework.excel_file else None,
-        })
+            'has_assessment': has_assessment
+        }
+        return JsonResponse(response_data)
+    
+    # Renderizar a página normalmente em caso de GET sem ser AJAX
     else:
+        form = MeuModeloEditForm(instance=framework)
         return render(request, 'paginas/framework.html', {'form2': form, 'framework': framework})
 
+# ========================= FUNÇÕES  ========================= #
+# -------- CIS -------- #
+# Função quando a pessoa aperta o botão "Salvar" do Cis
+def process_save_cis(request, assessment):
+    # Filtra os CisModel que estão associados ao assessment atual
+    cis_models = CisModel.objects.filter(assessment=assessment)
 
-# Função para renderizar a página assessment.html
+    # Itera sobre os CisModels filtrados e atualiza os campos
+    for key, value in request.POST.items():
+        if key.startswith('resultadoCss_'):
+            print('entrou')
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis:
+                if value in ['Sim', 'Não']:
+                    cis.resultadoCss = value
+                    cis.save()
+        elif key.startswith('resultadoCl_'):
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis:
+                if value in ['Sim', 'Não']:
+                    cis.resultadoCl = value
+                    cis.save()
+        elif key.startswith('comentarios_'):
+            print('entrou')
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis: 
+                cis.comentarios = value
+                cis.save()
+        elif key.startswith('meta_'):
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis:
+                if value in ['Sim', 'Não']:
+                    cis.meta = value
+                    cis.save()
+    
+    update_assessment_file_cis(assessment)
+# Função quando a pessoa aperta o botão "Enviar" do Cis
+def process_submit_cis(request, assessment):
+    cis_models = CisModel.objects.filter(assessment=assessment)
+
+    total_css_sim = 0
+    total_css_count = 0
+    total_meta_sim = 0
+    total_meta_count = 0
+
+    for key, value in request.POST.items():
+        if key.startswith('resultadoCss_'):
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis:
+                if value in ['Sim', 'Não']:
+                    cis.resultadoCss = value
+                    cis.save()
+                    # Contagem para o resultado CSS
+                    if value == 'Sim':
+                        total_css_sim += 1
+                    total_css_count += 1
+        elif key.startswith('resultadoCl_'):
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis:
+                if value in ['Sim', 'Não']:
+                    cis.resultadoCl = value
+                    cis.save()
+        elif key.startswith('comentarios_'):
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis: 
+                cis.comentarios = value
+                cis.save()
+        elif key.startswith('meta_'):
+            cis_id = key.split('_')[1]
+            cis = CisModel.objects.filter(id=cis_id).first()
+            if cis:
+                if value in ['Sim', 'Não']:
+                    cis.meta = value
+                    cis.save()
+                    # Contagem para a meta
+                    if value == 'Sim':
+                        total_meta_sim += 1
+                    total_meta_count += 1
+
+    if (total_css_sim and total_css_count) > 0:
+        resultado_css_percent = (total_css_sim / total_css_count) * 100
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta_sim and total_meta_count) > 0:
+        meta_percent = (total_meta_sim / total_meta_count) * 100
+    else:
+        meta_percent = 0
+
+    # Atualiza o AssessmentModel com os novos dados
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css_percent:.2f}%" 
+    assessment.meta = f"{meta_percent:.2f}%"
+
+    update_assessment_file_cis(assessment)
+# Função para processar o arquivo Excel Cis
+def andamento_excel_cis(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    # Filtra os CisModel que estão associados ao assessment atual
+    cis_models = CisModel.objects.filter(assessment=assessment)
+
+    for cis, (_, row) in zip(cis_models, df.iterrows()):
+        # Processa resultado CSS
+        if 'ResultadoCss' in row and pd.notna(row['ResultadoCss']):
+            cis.resultadoCss = row['ResultadoCss'] if row['ResultadoCss'] in ['Sim', 'Não'] else cis.resultadoCss
+
+        # Processa resultado CL
+        if 'ResultadoCl' in row and pd.notna(row['ResultadoCl']):
+            cis.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Sim', 'Não'] else cis.resultadoCl
+
+        # Processa comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            cis.comentarios = row['Comentários']
+
+        # Processa meta
+        if 'Meta' in row and pd.notna(row['Meta']):
+            cis.meta = row['Meta'] if row['Meta'] in ['Sim', 'Não'] else cis.meta
+
+        # Salva as alterações no banco de dados
+        cis.save()
+
+    # Atualiza o arquivo do assessment
+    update_assessment_file_cis(assessment)
+# Função para processar o arquivo Excel Cis
+def concluido_excel_cis(excel_file, assessment):
+    # Ler o arquivo Excel usando pandas
+    df = pd.read_excel(excel_file)  
+
+    # Inicializar variáveis para contagem
+    total_css_sim = 0
+    total_css_count = 0
+    total_meta_sim = 0
+    total_meta_count = 0
+
+    # Iterar sobre as linhas do DataFrame para processar as colunas 'ResultadoCSS' e 'Meta'
+    for index, row in df.iterrows():
+        # Processar resultado CSS
+        resultado_css = row['Resultado (Css)'] 
+        if resultado_css in ['Sim', 'Não']:
+            if resultado_css == 'Sim':
+                total_css_sim += 1
+            total_css_count += 1
+        
+        # Processar meta
+        meta = row['Meta'] 
+        if meta in ['Sim', 'Não']:
+            if meta == 'Sim':
+                total_meta_sim += 1
+            total_meta_count += 1
+
+    # Calcular as porcentagens
+    if (total_css_sim and total_css_count) > 0:
+        resultado_css_percent = (total_css_sim / total_css_count) * 100
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta_sim and total_meta_count) > 0:
+        meta_percent = (total_meta_sim / total_meta_count) * 100
+    else:
+        meta_percent = 0
+
+    # Atualizar o modelo de Assessment com os resultados
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css_percent:.2f}%" 
+    assessment.meta = f"{meta_percent:.2f}%"
+    
+    assessment.save()
+
+    # Função personalizada para manipular o arquivo final (caso necessário)
+    update_assessment_file_cis(assessment)
+# Função para criar um arquivo excel do Cis
+def update_assessment_file_cis(assessment):
+    cis_model = CisModel.objects.filter(assessment=assessment)  # Filtra os CisModel do framework
+    data = []
+    for cis in cis_model:
+        data.append({
+            '# Controle': cis.idControle,
+            'Controle': cis.controle,
+            'Tipo de Ativo': cis.tipoAtivo,
+            'Função': cis.funcao,
+            '# Subconjunto': cis.idSubConjunto,
+            'Subconjunto': cis.subConjunto,
+            'Nível': cis.nivel,
+            'Resultado (Css)': cis.resultadoCss,
+            'Resultado (Cl.)': cis.resultadoCl,
+            'Comentários': cis.comentarios,
+            'Meta': cis.meta
+        })
+    df = pd.DataFrame(data)
+    data_atual = date.today()
+    excel_file_path = f'media/assessments/{assessment.nome}_{data_atual}.xlsx'  # Define o caminho do arquivo
+    df.to_excel(excel_file_path, index=False)
+
+    # Atualiza o campo excel_file do AssessmentModel
+    with open(excel_file_path, 'rb') as excel_file:
+        assessment.excel_file.save(f'{assessment.nome}_{data_atual}.xlsx', excel_file)
+    # Remove o arquivo temporário após o upload
+    os.remove(excel_file_path)
+    # Salva a instância de AssessmentModel
+    assessment.save()
+
+
+# -------- NIST -------- #
+# Função quando a pessoa aperta o botão "Salvar" do Nist
+def process_save_nist(request, assessment):
+        # Filtra os NistModel que estão associados ao assessment atual
+        nist_models = NistModel.objects.filter(assessment=assessment)
+
+        for key, value in request.POST.items():
+            if key.startswith('notaCss_'):
+                nist_id = key.split('_')[1]
+                nist = NistModel.objects.filter(id=nist_id).first()
+                if nist:
+                    nist.notaCss = value
+                    nist.save()
+            elif key.startswith('notaCl_'):
+                nist_id = key.split('_')[1]
+                nist = NistModel.objects.filter(id=nist_id).first()
+                if nist:
+                    nist.notaCl = value
+                    nist.save()
+            elif key.startswith('comentarios_'):
+                nist_id = key.split('_')[1]
+                nist = NistModel.objects.filter(id=nist_id).first()
+                if nist:
+                    nist.comentarios = value
+                    nist.save()
+            elif key.startswith('meta_'):
+                nist_id = key.split('_')[1]
+                nist = NistModel.objects.filter(id=nist_id).first()
+                if nist:
+                    nist.meta = value
+                    nist.save()
+
+        update_assessment_file_nist(assessment)
+# Função quando a pessoa aperta o botão "Enviar" do Nist
+def process_submit_nist(request, assessment):
+    nist_models = NistModel.objects.filter(assessment=assessment)
+
+    total_css = 0
+    total_css_count = 0
+    total_meta = 0
+    total_meta_count = 0
+    
+    for key, value in request.POST.items():
+        if key.startswith('notaCss_'):
+            nist_id = key.split('_')[1]
+            nist = NistModel.objects.filter(id=nist_id).first()
+            if nist:
+                nist.notaCss = int(value)
+                nist.save()
+                total_css += nist.notaCss
+                total_css_count += 1
+        elif key.startswith('notaCl_'):
+            nist_id = key.split('_')[1]
+            nist = NistModel.objects.filter(id=nist_id).first()
+            if nist:
+                nist.notaCl = value
+                nist.save()
+        elif key.startswith('comentarios_'):
+            nist_id = key.split('_')[1]
+            nist = NistModel.objects.filter(id=nist_id).first()
+            if nist:
+                nist.comentarios = value
+                nist.save()
+        elif key.startswith('meta_'):
+            nist_id = key.split('_')[1]
+            nist = NistModel.objects.filter(id=nist_id).first()
+            if nist:
+                nist.meta = int(value)
+                nist.save()
+                total_meta += nist.meta
+                total_meta_count += 1
+
+    # Calcula os resultados e atualiza o AssessmentModel
+    if (total_css and total_css_count) > 0:
+        resultado_css = total_css / total_css_count
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta and total_meta_count) > 0:
+        resultado_meta = total_meta / total_meta_count
+    else:
+        resultado_meta = 0
+    
+    # Atualiza o AssessmentModel com os novos dados
+    assessment.status = AssessmentModel.CONCLUIDO
+    assessment.resultado = f"{resultado_css:.2f}"
+    assessment.meta = f"{resultado_meta:.2f}"
+
+    # Atualiza o campo excel_file do AssessmentModel
+    update_assessment_file_nist(assessment)
+
+def andamento_excel_nist(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    nist_queryset = NistModel.objects.all()
+    
+    for nist, (_, row) in zip(nist_queryset, df.iterrows()):
+        # Processar nota CSS
+        if 'NotaCss' in row and pd.notna(row['NotaCss']):
+            nist.notaCss = row['NotaCss']  # Atualizar o campo notaCss no modelo
+        
+        # Processar nota Cl
+        if 'NotaCl' in row and pd.notna(row['NotaCl']):
+            nist.notaCl = row['NotaCl']  # Atualizar o campo notaCl no modelo
+        
+        # Processar comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            nist.comentarios = row['Comentários']  # Atualizar o campo comentarios no modelo
+        
+        # Processar meta
+        if 'Meta' in row and pd.notna(row['Meta']):
+            nist.meta = row['Meta']  # Atualizar o campo meta no modelo
+        
+        # Salvar as mudanças no banco de dados
+        nist.save()
+
+    # Função personalizada para manipular o arquivo final, se necessário
+    update_assessment_file_nist(assessment)
+# Função para criar um arquivo excel do Nist
+def concluido_excel_nist(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    total_css = 0
+    total_css_count = 0
+    total_meta = 0
+    total_meta_count = 0
+
+    for index, row in df.iterrows():
+        # Processar nota CSS
+        nota_css = row['Nota (Css)']  # Nome da coluna no Excel
+        if pd.notna(nota_css):  # Verifica se o valor não é NaN
+            total_css += int(nota_css)
+            total_css_count += 1
+        
+        # Processar meta
+        meta = row['Meta']  # Nome da coluna no Excel
+        if pd.notna(meta):  # Verifica se o valor não é NaN
+            total_meta += int(meta)
+            total_meta_count += 1
+
+    # Calcula os resultados e atualiza o AssessmentModel
+    if (total_css and total_css_count) > 0:
+        resultado_css = total_css / total_css_count
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta and total_meta_count) > 0:
+        resultado_meta = total_meta / total_meta_count
+    else:
+        resultado_meta = 0
+
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css:.2f}"
+    assessment.meta = f"{resultado_meta:.2f}"
+    
+    assessment.save()
+
+    # Função personalizada para manipular o arquivo final (caso necessário)
+    update_assessment_file_nist(assessment)
+# Função para criar um arquivo excel do Nist
+def update_assessment_file_nist(assessment):
+    #Gera e atualiza o arquivo Excel com as informações de NistCsf.
+    nist_models = NistModel.objects.filter(assessment=assessment)
+    data = []
+
+    for nist in nist_models:
+        data.append({
+            'Categoria': nist.categoria,
+            'Função': nist.funcao,
+            'Código': nist.codigo,
+            'Subcategoria': nist.subcategoria,
+            'Informações adicionais': nist.informacao,
+            'Nota (Css)': nist.notaCss,
+            'Nota (Cl.)': nist.notaCl,
+            'Comentários': nist.comentarios,
+            'Meta': nist.meta
+        })
+    df = pd.DataFrame(data)
+    data_atual = date.today()
+    excel_file_path = f'media/assessments/{assessment.nome}_{data_atual}.xlsx'
+    df.to_excel(excel_file_path, index=False)
+
+    # Atualiza o campo excel_file do AssessmentModel
+    with open(excel_file_path, 'rb') as excel_file:
+        assessment.excel_file.save(f'{assessment.nome}_{data_atual}.xlsx', excel_file)
+
+    # Remove o arquivo temporário após o upload
+    os.remove(excel_file_path)
+
+    # Salva a instância de AssessmentModel
+    assessment.save()
+
+
+# -------- ISO -------- #
+# Função quando a pessoa aperta o botão "Salvar" do Iso
+def process_save_iso(request, assessment):
+    # Filtra os CisModel que estão associados ao assessment atual
+    iso_models = IsoModel.objects.filter(assessment=assessment)
+
+    # Itera sobre os IsoModels filtrados e atualiza os campos 
+    for key, value in request.POST.items():
+        if key.startswith('notaCss_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Conforme', 'Parcialmente','Não']:
+                    iso.notaCss = value
+                    iso.save()
+        elif key.startswith('notaCl_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Conforme', 'Parcialmente','Não']:
+                    iso.notaCl = value
+                    iso.save()
+        elif key.startswith('comentarios_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                iso.comentarios = value
+                iso.save()
+        elif key.startswith('meta_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:   
+                if value in ['Conforme', 'Parcialmente','Não']:
+                    iso.meta = value
+                    iso.save()
+
+    # Atualiza o campo excel_file do AssessmentModel com os dados atualizados
+    update_assessment_file_iso(assessment)
+# Função quando a pessoa aperta o botão "Enviar" do Iso
+def process_submit_iso(request, assessment):
+    iso_models = IsoModel.objects.filter(assessment=assessment)
+
+    total_css_conf = 0
+    total_css_count = 0
+    total_meta_conf = 0
+    total_meta_count = 0
+
+    for key, value in request.POST.items():
+        if key.startswith('notaCss_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Conforme', 'Parcialmente', 'Não']:
+                    iso.notaCss = value
+                    iso.save()
+                    # Contagem para o nota CSS
+                    if value == 'Conforme':
+                        total_css_conf += 1
+                    total_css_count += 1
+        elif key.startswith('notaCl_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Conforme', 'Parcialmente', 'Não']:
+                    iso.notaCl = value
+                    iso.save()
+        elif key.startswith('comentarios_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                iso.comentarios = value
+                iso.save()
+        elif key.startswith('meta_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Conforme', 'Parcialmente', 'Não']:
+                    iso.meta = value
+                    iso.save()
+                    # Contagem para o resultado CSS
+                    if value == 'Conforme':
+                        total_meta_conf += 1
+                    total_meta_count += 1
+
+    if (total_css_conf and total_css_count) > 0:
+        resultado_css_percent = (total_css_conf / total_css_count) * 100
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta_conf and total_meta_count) > 0:
+        meta_percent = (total_meta_conf / total_meta_count) * 100
+    else:
+        meta_percent = 0
+
+    # Atualiza o AssessmentModel com os novos dados
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css_percent:.2f}%" 
+    assessment.meta = f"{meta_percent:.2f}%"
+
+    # Atualiza o campo excel_file do AssessmentModel
+    update_assessment_file_iso(assessment)
+# Função para criar um arquivo excel do Iso
+def andamento_excel_iso(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    # Filtra os IsoModel que estão associados ao assessment atual
+    iso_models = IsoModel.objects.filter(assessment=assessment)
+
+    for iso, (_, row) in zip(iso_models, df.iterrows()):
+        # Processa nota CSS
+        if 'NotaCss' in row and pd.notna(row['NotaCss']):
+            iso.notaCss = row['NotaCss'] if row['NotaCss'] in ['Conforme', 'Parcialmente', 'Não'] else iso.notaCss
+
+        # Processa nota CL
+        if 'NotaCl' in row and pd.notna(row['NotaCl']):
+            iso.notaCl = row['NotaCl'] if row['NotaCl'] in ['Conforme', 'Parcialmente', 'Não'] else iso.notaCl
+
+        # Processa comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            iso.comentarios = row['Comentários']
+
+        # Processa meta
+        if 'Meta' in row and pd.notna(row['Meta']):
+            iso.meta = row['Meta'] if row['Meta'] in ['Conforme', 'Parcialmente', 'Não'] else iso.meta
+
+        # Salva as alterações no banco de dados
+        iso.save()
+
+    # Atualiza o arquivo do assessment
+    update_assessment_file_iso(assessment)
+# Função para criar um arquivo excel do Iso
+def concluido_excel_iso(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    total_css_conf = 0
+    total_css_count = 0
+    total_meta_conf = 0
+    total_meta_count = 0
+
+    for index, row in df.iterrows():
+        # Processar nota CSS
+        nota_css = row['Nota (Css)']  
+        if nota_css in ['Conforme', 'Parcialmente', 'Não']:
+            if nota_css == 'Conforme':
+                total_css_conf += 1
+            total_css_count += 1
+        
+        # Processar meta
+        meta = row['Meta']  
+        if meta in ['Conforme', 'Parcialmente', 'Não']:
+            if meta == 'Conforme':
+                total_meta_conf += 1
+            total_meta_count += 1
+
+    if (total_css_conf and total_css_count) > 0:
+        resultado_css_percent = (total_css_conf / total_css_count) * 100
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta_conf and total_meta_count) > 0:
+        meta_percent = (total_meta_conf / total_meta_count) * 100
+    else:
+        meta_percent = 0
+
+    # Atualiza o AssessmentModel com os novos dados
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css_percent:.2f}%" 
+    assessment.meta = f"{meta_percent:.2f}%"
+
+    # Atualiza o campo excel_file do AssessmentModel
+    update_assessment_file_iso(assessment)
+
+# Função para criar um arquivo excel do Iso
+def update_assessment_file_iso(assessment):
+    iso_models = IsoModel.objects.filter(assessment=assessment)  # Filtra os Iso que estão relacionados do framework
+    data = []
+    for iso in iso_models:
+        data.append({
+            'Seção': iso.secao,
+            'Cod. Categoria': iso.codCatecoria,
+            'Categoria': iso.categoria,
+            'Controle': iso.controle,
+            'Diretrizes para implementação': iso.diretrizes,
+            'Prioridade do controle': iso.prioControle,
+            'Nota (Css)': iso.notaCss,
+            'Nota (Cl.)': iso.notaCl,
+            'Comentários': iso.comentarios,
+            'Meta': iso.meta
+        })
+
+    # Cria um DataFrame e salva como Excel
+    df = pd.DataFrame(data)
+    data_atual = date.today()
+    excel_file_path = f'media/assessments/{assessment.nome}_{data_atual}.xlsx'  # Define o caminho do arquivo
+    df.to_excel(excel_file_path, index=False)
+
+    # Atualiza o campo excel_file do AssessmentModel
+    with open(excel_file_path, 'rb') as excel_file:
+        assessment.excel_file.save(f'{assessment.nome}_{data_atual}.xlsx', excel_file)
+
+    # Remove o arquivo temporário após o upload
+    os.remove(excel_file_path)
+
+    # Salva a instância de AssessmentModel
+    assessment.save()
+
+
+# -------- Framework Proprio -------- #
+# Função quando a pessoa aperta o botão "Salvar" do Framework Proprio
+def process_save_prop(request, assessment):
+
+    prop_models = PlanilhaGenericaModel.objects.filter(assessment=assessment)
+
+    for key, value in request.POST.items():
+        if key.startswith('resultadoCss_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                if value in ['Sim', 'Não']:
+                    prop.resultadoCss = value
+                    prop.save()
+        elif key.startswith('resultadoCl_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                if value in ['Sim', 'Não']:
+                    prop.resultadoCl = value
+                    prop.save()
+        elif key.startswith('comentarios_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                prop.comentarios = value
+                prop.save()
+        elif key.startswith('meta_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                if value in ['Sim', 'Não']:
+                    prop.meta = value
+                    prop.save()
+    # Atualiza o campo excel_file do AssessmentModel com os dados atualizados
+    update_assessment_file_prop(assessment)
+# Função quando a pessoa aperta o botão "Enviar" do Framework Proprio
+def process_submit_prop(request, assessment):
+    prop_generica = PlanilhaGenericaModel.objects.filter(assessment=assessment)
+
+    total_css_sim = 0
+    total_css_count = 0
+    total_meta_sim = 0
+    total_meta_count = 0
+
+    for key, value in request.POST.items():
+        if key.startswith('resultadoCss_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                if value in ['Sim', 'Não']:
+                    prop.resultadoCss = value
+                    prop.save()
+                    # Contagem para o resultado CSS
+                    if value == 'Sim':
+                        total_css_sim += 1
+                    total_css_count += 1
+        elif key.startswith('resultadoCl_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                if value in ['Sim', 'Não']:
+                    prop.resultadoCl = value
+                    prop.save()
+        elif key.startswith('comentarios_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:
+                prop.comentarios = value
+                prop.save()
+        elif key.startswith('meta_'):
+            prop_id = key.split('_')[1]
+            prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+            if prop:                
+                if value in ['Sim', 'Não']:
+                    prop.meta = value
+                    prop.save()
+                    # Contagem para a meta
+                    if value == 'Sim':
+                        total_meta_sim += 1
+                    total_meta_count += 1
+
+    if (total_css_sim and total_css_count) > 0:
+        resultado_css_percent = (total_css_sim / total_css_count) * 100
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta_sim and total_meta_count) > 0:
+        meta_percent = (total_meta_sim / total_meta_count) * 100
+    else:
+        meta_percent = 0
+
+    # Atualiza o AssessmentModel com os novos dados
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css_percent:.2f}%" 
+    assessment.meta = f"{meta_percent:.2f}%"  
+
+    update_assessment_file_prop(assessment)
+# Função para criar um arquivo excel do Framework Proprio
+def andamento_excel_prop(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    # Filtra os PlanilhaGenericaModel que estão associados ao assessment atual
+    prop_models = PlanilhaGenericaModel.objects.filter(assessment=assessment)
+
+    for prop, (_, row) in zip(prop_models, df.iterrows()):
+        # Processa resultado CSS
+        if 'ResultadoCss' in row and pd.notna(row['ResultadoCss']):
+            prop.resultadoCss = row['ResultadoCss'] if row['ResultadoCss'] in ['Sim', 'Não'] else prop.resultadoCss
+
+        # Processa resultado CL
+        if 'ResultadoCl' in row and pd.notna(row['ResultadoCl']):
+            prop.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Sim', 'Não'] else prop.resultadoCl
+
+        # Processa comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            prop.comentarios = row['Comentários']
+
+        # Processa meta
+        if 'Meta' in row and pd.notna(row['Meta']):
+            prop.meta = row['Meta'] if row['Meta'] in ['Sim', 'Não'] else prop.meta
+
+        # Salva as alterações no banco de dados
+        prop.save()
+
+    # Atualiza o arquivo do assessment
+    update_assessment_file_prop(assessment)
+# Função para criar um arquivo excel do Framework Proprio
+def concluido_excel_prop(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    # Inicializar variáveis para contagem
+    total_css_sim = 0
+    total_css_count = 0
+    total_meta_sim = 0
+    total_meta_count = 0
+
+    # Iterar sobre as linhas do DataFrame para processar as colunas 'ResultadoCSS' e 'Meta'
+    for index, row in df.iterrows():
+        # Processar resultado CSS
+        resultado_css = row['Resultado (Css)']
+        if resultado_css in ['Sim', 'Não']:
+            if resultado_css == 'Sim':
+                total_css_sim += 1
+            total_css_count += 1
+        
+        # Processar meta
+        meta = row['Meta'] 
+        if meta in ['Sim', 'Não']:
+            if meta == 'Sim':
+                total_meta_sim += 1
+            total_meta_count += 1
+
+    # Calcular as porcentagens
+    if (total_css_sim and total_css_count) > 0:
+        resultado_css_percent = (total_css_sim / total_css_count) * 100
+    else:
+        resultado_css_percent = 0
+
+    if (total_meta_sim and total_meta_count) > 0:
+        meta_percent = (total_meta_sim / total_meta_count) * 100
+    else:
+        meta_percent = 0
+
+    # Atualizar o modelo de Assessment com os resultados
+    assessment.status = AssessmentModel.CONCLUIDO  
+    assessment.resultado = f"{resultado_css_percent:.2f}%" 
+    assessment.meta = f"{meta_percent:.2f}%"
+    
+    assessment.save()
+
+    # Função personalizada para manipular o arquivo final (caso necessário)
+    update_assessment_file_cis(assessment)
+# Função para criar um arquivo excel do Framework Proprio
+def update_assessment_file_prop(assessment):
+    prop_generica = PlanilhaGenericaModel.objects.filter(assessment=assessment)
+    data = []
+    for prop in prop_generica:
+        data.append({
+            'Id Controle*': prop.idControle,
+            'Controle*': prop.controle,
+            'Id Subcontrole': prop.idSubControle,
+            'Subcontrole': prop.subControle,
+            'Função de segurança': prop.funcaoSeguranca,
+            'Tipo de Ativo': prop.tipoAtivo,
+            'Informações Adicionais': prop.informacoesAdicionais,
+            'Resultado (Css)': prop.resultadoCss,
+            'Resultado (Cl.)': prop.resultadoCl,
+            'Comentários': prop.comentarios,
+            'Meta': prop.meta
+        })
+    df = pd.DataFrame(data)
+    data_atual = date.today()
+    excel_file_path = f'media/assessments/{assessment.nome}_{data_atual}.xlsx'  # Define o caminho do arquivo
+    df.to_excel(excel_file_path, index=False)
+
+    # Atualiza o campo excel_file do AssessmentModel
+    with open(excel_file_path, 'rb') as excel_file:
+        assessment.excel_file.save(f'{assessment.nome}_{data_atual}.xlsx', excel_file)
+
+    # Remove o arquivo temporário após o upload
+    os.remove(excel_file_path)
+    
+    # Salva a instância de AssessmentModel
+    assessment.save()
+
+
+# Class para renderizar a página assessment.html
 class Assessment(View):
     template_name = 'paginas/assessment.html'
 
     def get(self, request):
-        frameworks = TipoModelo.objects.all()  # Obtém todos os objetos de TipoModelo
-        assessments = AssessmentModel.objects.all()  # Altera para assessments
+        frameworks = FrameworkModel.objects.all()  # Obtém todos os objetos de FrameworkModel
+        assessments = AssessmentModel.objects.all()  # Obtém todos os objetos de AssessmentModel
         form1 = NovoAssessmentForm()
 
         return render(request, self.template_name, {
-            'form1': form1, 
-            'frameworks': frameworks, 
-            'assessments': assessments  # Altera para assessments
+            'form1': form1,
+            'frameworks': frameworks,
+            'assessments': assessments
         })
 
     def post(self, request):
         form1 = NovoAssessmentForm(request.POST, request.FILES)
         if form1.is_valid():
+            # Salva o formulário e obtém a instância salva
             form1.save()
+            frameworks = FrameworkModel.objects.all()
+            assessment = form1.instance  # Obtém a instância recém-criada ou editada
+            framework = assessment.framework  # Obtém o framework associado ao assessment
+            nome_framework = framework.nome.lower() 
+
+            excel_file = request.FILES.get('excel_file')
+
+            if excel_file:
+                df = pd.read_excel(excel_file)
+
+                # Verifica o nome do framework e o status para chamar a função correta
+                if "nist" in nome_framework:  # Função para salvar os dados do NIST
+                    for _, row in df.iterrows():
+                        NistModel.objects.create(
+                            assessment=assessment, 
+                            categoria=row['Categoria'],
+                            funcao=row['Função'],
+                            codigo=row['Código'],
+                            subcategoria=row['Subcategoria'],
+                            informacao=row['Informações adicionais'],
+                            notaCss=row['Nota (Css)'],
+                            notaCl=row['Nota (Cl.)'],
+                            comentarios=row['Comentários'],
+                            meta=row['Meta'],
+                        )
+                    if assessment.status == 'Andamento':  # Corrigido de 'staus' para 'status'
+                        andamento_excel_nist(excel_file, assessment)
+                    elif assessment.status == 'Concluído':
+                        concluido_excel_nist(excel_file, assessment)
+
+                elif "iso" in nome_framework:  # Função para salvar os dados do Iso
+                    for _, row in df.iterrows():
+                        IsoModel.objects.create(
+                            assessment=assessment,
+                            secao=row['Seção'],
+                            codCatecoria=row['Cod. Categoria'],
+                            categoria=row['Categoria'],
+                            controle=row['Controle'],
+                            diretrizes=row['Diretrizes para implementação'],
+                            prioControle=row['Prioridade do controle'],
+                            notaCss=row['Nota (Css)'],
+                            notaCl=row['Nota (Cl.)'],
+                            comentarios=row['Comentários'],
+                            meta=row['Meta'],
+                        )
+                    if assessment.status == 'Andamento':
+                        andamento_excel_iso(excel_file, assessment)
+                    elif assessment.status == 'Concluído':
+                        concluido_excel_iso(excel_file, assessment)
+
+                elif "cis" in nome_framework:
+                    # Função para salvar os dados do Cis
+                    for _, row in df.iterrows():
+                        CisModel.objects.create(
+                            assessment=assessment,  
+                            idControle=row['# Controle'],
+                            controle=row['Controle'],
+                            tipoAtivo=row['Tipo de Ativo'],
+                            funcao=row['Função'],
+                            idSubConjunto=row['# Subconjunto'],
+                            subConjunto=row['Subconjunto'],
+                            nivel=row['Nível'],
+                            resultadoCss=row['Resultado (Css)'],
+                            resultadoCl=row['Resultado (Cl.)'],
+                            comentarios=row['Comentários'],
+                            meta=row['Meta'],
+                        )
+                    if assessment.status == 'Andamento':
+                        andamento_excel_cis(excel_file, assessment)
+                    elif assessment.status == 'Concluído':
+                        concluido_excel_cis(excel_file, assessment)
+
+                elif framework.is_proprio:  # Função para salvar os dados do Framework Próprio
+                    for _, row in df.iterrows():
+                        PlanilhaGenericaModel.objects.create(
+                            assessment=assessment,  
+                            idControle=row['Id Controle*'],
+                            controle=row['Controle*'],
+                            idSubControle=row['Id Subcontrole'],
+                            subControle=row['Subcontrole'],
+                            funcaoSeguranca=row['Função de segurança'],
+                            tipoAtivo=row['Tipo de Ativo'],
+                            informacoesAdicionais=row['Informações Adicionais'],
+                            resultadoCss=row['Resultado (Css)'],
+                            resultadoCl=row['Resultado (Cl.)'],
+                            comentarios=row['Comentários'],
+                            meta=row['Meta'],
+                        )
+                    if assessment.status == 'Andamento':
+                        andamento_excel_prop(excel_file, assessment)
+                    elif assessment.status == 'Concluído':
+                        concluido_excel_prop(excel_file, assessment)
+
             return redirect('assessment')
+        else:
+            frameworks = FrameworkModel.objects.all()  # Obtém os frameworks novamente no caso de erro
+            assessments = AssessmentModel.objects.all()  # Obtém os assessments novamente no caso de erro
+            return render(request, self.template_name, {
+                'form1': form1,
+                'frameworks': frameworks,
+                'assessments': assessments
+            })
 
-        assessments = AssessmentModel.objects.all()  # Inclui novamente os modelos no caso de erro no formulário
-        return render(request, self.template_name, {
-            'form1': form1, 
-            'assessments': assessments  # Altera para assessments
-        })
 
-    # Excluir Framework
+    # Excluir Assessment
     def delete(self, request, id):
         try:
             assessment = AssessmentModel.objects.get(id=id)
@@ -234,405 +1146,563 @@ class Assessment(View):
         except AssessmentModel.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item não encontrado'})
 
-# Redirecionar para o Framework
+# Redirecionar para o Framework para fazer a primeira avaliação
 class RedirecionarFramework(View):
     def get(self, request, id):
         try:
-            print(f"Tentando encontrar TipoModelo com id: {id}")
-            framework = get_object_or_404(TipoModelo, id=id)
-            excel_name = framework.excel_file.name.lower()
-
-            if 'nist' in excel_name:
-                return redirect('assess_nist', id=framework.id)
-            elif 'cis' in excel_name:
-                return redirect('assess_cis', id=framework.id)
-            elif 'iso' in excel_name:
-                return redirect('assess_iso', id=framework.id)
-            elif framework.is_proprio:
-                return redirect('assess_prop', id=framework.id)
-            else:
-                return redirect('assessment')
-        except Exception as e:
-            print(f"Erro ao redirecionar: {e}")
+            # Obtém o framework específico
+            framework = FrameworkModel.objects.get(id=id)
+        except FrameworkModel.DoesNotExist:
+            # Se o framework não for encontrado, redireciona para a página de assessment
             return redirect('assessment')
 
+        # Verifica o nome do arquivo Excel
+        excel_name = framework.excel_file.name.lower()
+
+        # Redireciona para a página de avaliação correta
+        if 'nist' in excel_name:
+            return redirect('assess_nist_up', id=framework.id)
+        elif 'cis' in excel_name:
+            return redirect('assess_cis_up', id=framework.id)
+        elif 'iso' in excel_name:
+            return redirect('assess_iso_up', id=framework.id)
+        elif framework.is_proprio:
+            return redirect('assess_prop_up', id=framework.id)
+        else:
+            # Se nenhuma condição for atendida, retorna para a página principal de assessment
+            return redirect('assessment')
+# Redirecionar para o Framework para vizualizar 
+class RedirecionarFramework2(View):
+    def get(self, request, id):
+        try:
+            # Obtém o assessment específico
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Se o assessment não for encontrado, redireciona para a página de assessment
+            return redirect('assessment')
+
+        # Verifica o nome do arquivo Excel
+        excel_name = assessment.excel_file.name.lower()
+
+        # Redireciona para a página de avaliação correta
+        if 'nist' in excel_name:
+            return redirect('assess_nist', id=assessment.id)
+        elif 'cis' in excel_name:
+            return redirect('assess_cis', id=assessment.id)
+        elif 'iso' in excel_name:
+            return redirect('assess_iso', id=assessment.id)
+        elif assessment.framework.is_proprio:
+            return redirect('assess_prop', id=assessment.id)
+        else:
+            # Se nenhuma condição for atendida, retorna para a página principal de assessment
+            return redirect('assessment')
+
+
+# Class para renderizar a página assess_cis_up.html
+class AssessCisUpload(View):
+    template_name = 'paginas/assess_cis_up.html'
+
+    def get(self, request, id):
+        # Obtém o framework específico
+        framework = FrameworkModel.objects.get(id=id)
+
+        # Cria um novo AssessmentModel
+        assessment = AssessmentModel.objects.create(
+            framework=framework,
+            nome=framework.nome,
+            status=AssessmentModel.ANDAMENTO,
+            resultado="",
+            meta=""
+        )
+        # Atualiza o AssessmentModel com o arquivo enviado, se houver
+        if request.FILES.get('excel_file'):
+            assessment.excel_file = request.FILES.get('excel_file')
+            assessment.save()
+        
+        cis_models = []
+        # Cria novas instâncias de CisModel com base no template
+        cis_uploads = CisModelTemplate.objects.filter(framework=framework)
+        for upload in cis_uploads:
+            cis = CisModel.objects.create(
+                assessment=assessment,
+                idControle=upload.idControle,
+                controle=upload.controle,
+                tipoAtivo=upload.tipoAtivo,
+                funcao=upload.funcao,
+                idSubConjunto=upload.idSubConjunto,
+                subConjunto=upload.subConjunto,
+                nivel=upload.nivel,
+                resultadoCss=upload.resultadoCss,
+                resultadoCl=upload.resultadoCl,
+                comentarios=upload.comentarios,
+                meta=upload.meta
+            )
+            cis_models.append(cis)
+
+        # Envia os novos CisModel criados para o template
+        return render(request, self.template_name, {
+            'assessment': assessment,
+            'cis_models': cis_models,
+            'assessment_id': assessment.id,  # Passando as novas instâncias
+        })
+
+    def post(self, request, id):
+        try:
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
+
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
+
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_cis(request, assessment) 
+
+        elif action == 'submit':
+            process_submit_cis(request, assessment) 
+
+        return redirect('assessment')
 # Função para renderizar a página assess_cis.html
 class AssessCis(View):
     template_name = 'paginas/assess_cis.html'
 
     def get(self, request, id):
-        # Obtém o framework (TipoModelo) específico com base no ID
-        framework = get_object_or_404(TipoModelo, id=id)
-        assessments = AssessmentModel.objects.filter(framework=framework)
-        # Filtra os dados do CisControl que estão relacionados ao framework
-        cis = CisControl.objects.filter(framework=framework)
+
+        assessment = AssessmentModel.objects.get(id=id)
+        cis_models = CisModel.objects.filter(assessment=assessment)
 
         return render(request, self.template_name, {
-            'framework': framework,
-            'assessments': assessments,
-            'cis': cis,
-            'framework_id': id  # Passa o ID do framework
+            'assessment': assessment,
+            'cis_models': cis_models,
+            'assessment_id': id
         })
 
     def post(self, request, id):
-        # Obtém o framework específico
-        framework = get_object_or_404(TipoModelo, id=id)
+        try:
+            assessment = AssessmentModel.objects.get(id=id)   
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
 
-        # Verifica se existe um AssessmentModel associado ao framework
-        assessment = AssessmentModel.objects.filter(framework=framework).first()
-        if not assessment:
-            # Crie um novo AssessmentModel se não existir
-            assessment = AssessmentModel.objects.create(
-                framework=framework,
-                nome=framework.nome,
-                status=AssessmentModel.ANDAMENTO,
-                resultado="",
-                meta=""
-            )
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
 
-        # Atualiza o AssessmentModel com os dados do formulário
-        assessment.nome = framework.nome  # Define o nome do framework
-        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_cis(request, assessment) 
 
-        # Atualiza o excel_file apenas se um novo arquivo for enviado
+        elif action == 'submit':
+            process_submit_cis(request, assessment) 
+
+        return redirect('assessment')
+
+
+# Função para renderizar a página assess_nist_up.html
+class AssessNistUpload(View):
+    template_name = 'paginas/assess_nist_up.html'
+
+    def get(self, request, id):
+        # Obtém o framework (FrameworkModel) específico com base no ID
+        framework = FrameworkModel.objects.get(id=id)
+
+        # Cria um novo AssessmentModel
+        assessment = AssessmentModel.objects.create(
+            framework=framework,
+            nome=framework.nome,
+            status=AssessmentModel.ANDAMENTO,
+            resultado="",
+            meta=""
+        )
+        # Atualiza o AssessmentModel com o arquivo enviado, se houver
         if request.FILES.get('excel_file'):
             assessment.excel_file = request.FILES.get('excel_file')
+            assessment.save()
+        
+        nist_models = []
+        # Cria novas instâncias de NistModel com base no template
+        nist_uploads = NistModelTemplate.objects.filter(framework=framework)
+        for upload in nist_uploads:
+            nist = NistModel.objects.create(
+                assessment=assessment,
+                categoria=upload.categoria,
+                funcao=upload.funcao,
+                codigo=upload.codigo,
+                subcategoria=upload.subcategoria,
+                informacao=upload.informacao,
+                notaCss=upload.notaCss,
+                notaCl=upload.notaCl,
+                comentarios=upload.comentarios,
+                meta=upload.meta,
+            )
+            nist_models.append(nist)
+        # Notas disponíveis para selecionar
+        notas = range(0, 6)
 
-        assessment.resultado = ""  # Deixe o campo resultado vazio
-        assessment.meta = ""  # Deixe o campo meta vazio
-        assessment.save()
+        return render(request, self.template_name, {
+            'assessment': assessment,
+            'nist_models': nist_models,
+            'notas': notas,
+            'assessment_id': assessment.id
+        })
 
-        # Atualiza os CisControls com os dados do formulário
-        for key, value in request.POST.items():
-            if key.startswith('resultadoCss_'):
-                cis_id = key.split('_')[1]
-                cis = get_object_or_404(CisControl, id=cis_id)
-                if value in ['Sim', 'Não']:
-                    cis.resultadoCss = value
-                    cis.save()
-            elif key.startswith('resultadoCl_'):
-                cis_id = key.split('_')[1]
-                cis = get_object_or_404(CisControl, id=cis_id)
-                if value in ['Sim', 'Não']:
-                    cis.resultadoCl = value
-                    cis.save()
-            elif key.startswith('comentarios_'):
-                cis_id = key.split('_')[1]
-                cis = get_object_or_404(CisControl, id=cis_id)
-                cis.comentarios = value
-                cis.save()
-            elif key.startswith('meta_'):
-                cis_id = key.split('_')[1]
-                cis = get_object_or_404(CisControl, id=cis_id)
-                if value in ['Sim', 'Não']:
-                    cis.meta = value
-                    cis.save()
-        cis_controls = CisControl.objects.filter(framework=framework)  # Filtra os CisControls do framework
-        data = []
-        for cis in cis_controls:
-            data.append({
-                'Id Controle': cis.idControle,
-                'Controle': cis.controle,
-                'Tipo Ativo': cis.tipoAtivo,
-                'Função': cis.funcao,
-                'Id Subconjunto': cis.idSubConjunto,
-                'Subconjunto': cis.subConjunto,
-                'Nível': cis.nivel,
-                'Resultado CSS': cis.resultadoCss,
-                'Resultado CL': cis.resultadoCl,
-                'Comentários': cis.comentarios,
-                'Meta': cis.meta
-            })
+    def post(self, request, id):
+        try:
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
 
-        # Cria um DataFrame e salva como Excel
-        df = pd.DataFrame(data)
-        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
-        df.to_excel(excel_file_path, index=False)
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
 
-        # Atualiza o campo excel_file do AssessmentModel
-        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_nist(request, assessment) 
 
-        # Salva a instância de AssessmentModel
-        assessment.save()
+        elif action == 'submit':
+            process_submit_nist(request, assessment) 
 
-        # Redireciona de volta para a página de avaliação
-        return redirect('assess_cis', id=id)
-
-
+        return redirect('assessment')
 # Função para renderizar a página assess_nist.html
 class AssessNist(View):
     template_name = 'paginas/assess_nist.html'
 
     def get(self, request, id):
-        # Obtém o framework (TipoModelo) específico com base no ID
-        framework = get_object_or_404(TipoModelo, id=id)
-        assessments = AssessmentModel.objects.filter(framework=framework)
-        # Filtra os dados do CisControl que estão relacionados ao framework
-        nists = NistCsf.objects.filter(framework=framework)
+        assessment = AssessmentModel.objects.get(id=id)
+        nist_models = NistModel.objects.filter(assessment=assessment)
         notas = range(0, 6)
 
         return render(request, self.template_name, {
-            'framework': framework,
-            'assessments': assessments,
-            'nists': nists,
+            'assessment': assessment,
+            'nist_models': nist_models,
             'notas': notas,
-            'framework_id': id  # Passa o ID do framework
+            'assessment_id': assessment.id
         })
 
     def post(self, request, id):
+        try:
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
+
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
+
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_nist(request, assessment) 
+
+        elif action == 'submit':
+            process_submit_nist(request, assessment) 
+
+        return redirect('assessment')
+
+
+# Função para renderizar a página assess_iso_up.html
+class AssessIsoUpload(View):
+    template_name = 'paginas/assess_iso_up.html'
+
+    def get(self, request, id):
         # Obtém o framework específico
-        framework = get_object_or_404(TipoModelo, id=id)
+        framework = FrameworkModel.objects.get(id=id)
 
-        # Verifica se existe um AssessmentModel associado ao framework
-        assessment = AssessmentModel.objects.filter(framework=framework).first()
-        if not assessment:
-            # Crie um novo AssessmentModel se não existir
-            assessment = AssessmentModel.objects.create(
-                framework=framework,
-                nome=framework.nome,
-                status=AssessmentModel.ANDAMENTO,
-                resultado="",
-                meta=""
-            )
-
-        # Atualiza o AssessmentModel com os dados do formulário
-        assessment.nome = framework.nome  # Define o nome do framework
-        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
-
-        # Atualiza o excel_file apenas se um novo arquivo for enviado
+        # Cria um novo AssessmentModel
+        assessment = AssessmentModel.objects.create(
+            framework=framework,
+            nome=framework.nome,
+            status=AssessmentModel.ANDAMENTO,
+            resultado="",
+            meta=""
+        )
+        # Atualiza o AssessmentModel com o arquivo enviado, se houver
         if request.FILES.get('excel_file'):
             assessment.excel_file = request.FILES.get('excel_file')
+            assessment.save()
 
-        assessment.resultado = ""  # Deixe o campo resultado vazio
-        assessment.meta = ""  # Deixe o campo meta vazio
-        assessment.save()
+        iso_models = []
+        # Cria novas instâncias de IsoModel com base no template
+        iso_uploads = IsoModelTemplate.objects.filter(framework=framework)
+        for upload in iso_uploads:
+            iso = IsoModel.objects.create(
+                assessment=assessment, 
+                secao=upload.secao,
+                codCatecoria=upload.codCatecoria,
+                categoria=upload.categoria,
+                controle=upload.controle,
+                diretrizes=upload.diretrizes,
+                prioControle=upload.prioControle,
+                notaCss=upload.notaCss,
+                notaCl=upload.notaCl,
+                comentarios=upload.comentarios,
+                meta=upload.meta,
+            )
+            iso_models.append(iso)
 
-        # Atualiza os Nist com os dados do formulário
-        for key, value in request.POST.items():
-            if key.startswith('notaCss_'):
-                nist_id = key.split('_')[1]
-                nist = get_object_or_404(NistCsf, id=nist_id)
-                nist.notaCss = value
-                nist.save()
-            elif key.startswith('notaCl_'):
-                nist_id = key.split('_')[1]
-                nist = get_object_or_404(NistCsf, id=nist_id)
-                nist.notaCl = value
-                nist.save()
-            elif key.startswith('comentarios_'):
-                nist_id = key.split('_')[1]
-                nist = get_object_or_404(NistCsf, id=nist_id)
-                nist.comentarios = value
-                nist.save()
-            elif key.startswith('meta_'):
-                nist_id = key.split('_')[1]
-                nist = get_object_or_404(NistCsf, id=nist_id)
-                nist.meta = value
-                nist.save()
-        nist_models = NistCsf.objects.filter(framework=framework)  # Filtra os NistCsf que estão relacionados do framework
-        data = []
-        for nist in nist_models:
-            data.append({
-                'Categoria': nist.categoria,
-                'Função': nist.funcao,
-                'Código': nist.codigo,
-                'Subcategoria': nist.subcategoria,
-                'Informações Adicionais': nist.informacao,
-                'Nota CSS': nist.notaCss,
-                'Nota CL': nist.notaCl,
-                'Comentários': nist.comentarios,
-                'Meta': nist.meta
-            })
+        return render(request, self.template_name, {
+            'assessment': assessment,
+            'iso_models': iso_models,
+            'assessment_id': assessment.id  # Passa o ID do assessment
+        })
 
-        # Cria um DataFrame e salva como Excel
-        df = pd.DataFrame(data)
-        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
-        df.to_excel(excel_file_path, index=False)
+    def post(self, request, id):
+        try:
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            print(f"AssessmentModel com ID {id} não existe")
+            return redirect('assessment_not_found')
 
-        # Atualiza o campo excel_file do AssessmentModel
-        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
 
-        # Salva a instância de AssessmentModel
-        assessment.save()
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_iso(request, assessment) 
+        # Se a ação for "Enviar"
+        elif action == 'submit':
+            process_submit_iso(request, assessment) 
 
-        # Redireciona de volta para a página de avaliação
-        return redirect('assess_nist', id=id)
-
+        return redirect('assessment')
 # Função para renderizar a página assess_iso.html
 class AssessIso(View):
     template_name = 'paginas/assess_iso.html'
 
     def get(self, request, id):
-        # Obtém o framework (TipoModelo) específico com base no ID
-        framework = get_object_or_404(TipoModelo, id=id)
-        # Filtra os dados do CisControl que estão relacionados ao framework
-        isos = Iso.objects.filter(framework=framework)
-        assessments = AssessmentModel.objects.filter(framework=framework)
-        notas = range(0, 6)
+        # Obtém o framework específico 
+        assessment = AssessmentModel.objects.get(id=id)
+        # Cria novas instâncias de IsoModel com base no template
+        iso_models = IsoModel.objects.filter(assessment=assessment)
+        # Cria uma lista de notas para preencher os campos de notas CSS e CL
 
         return render(request, self.template_name, {
-            'framework': framework,
-            'assessments': assessments,
-            'isos': isos,
-            'notas': notas,
-            'framework_id': id  # Passa o ID do framework
+            'assessment': assessment,
+            'iso_models': iso_models,
+            'assessment_id': id  # Passa o ID do framework
         })
 
     def post(self, request, id):
-        # Obtém o framework específico
-        framework = get_object_or_404(TipoModelo, id=id)
+        try:
+            # Tenta buscar a instância de AssessmentModel com base no id fornecido
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
 
-        # Verifica se existe um AssessmentModel associado ao framework
-        assessment = AssessmentModel.objects.filter(framework=framework).first()
-        if not assessment:
-            # Crie um novo AssessmentModel se não existir
-            assessment = AssessmentModel.objects.create(
-                framework=framework,
-                nome=framework.nome,
-                status=AssessmentModel.ANDAMENTO,
-                resultado="",
-                meta=""
-            )
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
 
-        # Atualiza o AssessmentModel com os dados do formulário
-        assessment.nome = framework.nome  # Define o nome do framework
-        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_iso(request, assessment) 
 
-        # Atualiza o excel_file apenas se um novo arquivo for enviado
-        if request.FILES.get('excel_file'):
-            assessment.excel_file = request.FILES.get('excel_file')
+        elif action == 'submit':
+            process_submit_iso(request, assessment) 
 
-        assessment.resultado = ""  # Deixe o campo resultado vazio
-        assessment.meta = ""  # Deixe o campo meta vazio
-        assessment.save()
+        return redirect('assessment')
+   
 
-        # Atualiza os Iso com os dados do formulário
-        for key, value in request.POST.items():
-            if key.startswith('notaCss_'):
-                iso_id = key.split('_')[1]
-                iso = get_object_or_404(Iso, id=iso_id)
-                iso.notaCss = value
-                iso.save()
-            elif key.startswith('notaCl_'):
-                iso_id = key.split('_')[1]
-                iso = get_object_or_404(Iso, id=iso_id)
-                iso.notaCl = value
-                iso.save()
-            elif key.startswith('comentarios_'):
-                iso_id = key.split('_')[1]
-                iso = get_object_or_404(Iso, id=iso_id)
-                iso.comentarios = value
-                iso.save()
-            elif key.startswith('meta_'):
-                iso_id = key.split('_')[1]
-                iso = get_object_or_404(Iso, id=iso_id)
-                iso.meta = value
-                iso.save()
-        iso_models = Iso.objects.filter(framework=framework)  # Filtra os Iso que estão relacionados do framework
-        data = []
-        for iso in iso_models:
-            data.append({
-                'Seção': iso.secao,
-                'Cod. Categoria': iso.codCatecoria,
-                'Categoria': iso.categoria,
-                'Controle': iso.controle,
-                'Diretrizes para implementação': iso.diretrizes,
-                'Prioridade do controle': iso.prioControle,
-                'Nota CSS': iso.notaCss,
-                'Nota CL': iso.notaCl,
-                'Comentários': iso.comentarios,
-                'Meta': iso.meta
-            })
-
-        # Cria um DataFrame e salva como Excel
-        df = pd.DataFrame(data)
-        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
-        df.to_excel(excel_file_path, index=False)
-
-        # Atualiza o campo excel_file do AssessmentModel
-        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
-
-        # Salva a instância de AssessmentModel
-        assessment.save()
-
-        # Redireciona de volta para a página de avaliação
-        return redirect('assess_iso', id=id)
-
-# Função para renderizar a página assess_prop.html
-class AssessProp(View):
-    template_name = 'paginas/assess_prop.html'
+# Função para renderizar a página assess_prop_up.html
+class AssessPropUpload(View):
+    template_name = 'paginas/assess_prop_up.html'
 
     def get(self, request, id):
-        # Obtém o framework (TipoModelo) específico com base no ID
-        framework = get_object_or_404(TipoModelo, id=id)
-        assessments = AssessmentModel.objects.filter(framework=framework)
-        # Filtra os dados do CisControl que estão relacionados ao framework
-        props = PlanilhaGenerica.objects.filter(framework=framework)
+        # # Obtém o framework específico
+        framework = FrameworkModel.objects.get(id=id)
+
+        # Cria um novo AssessmentModel
+        assessment = AssessmentModel.objects.create(
+            framework=framework,
+            nome=framework.nome,
+            status=AssessmentModel.ANDAMENTO,
+            resultado="",
+            meta=""
+        )
+        # Atualiza o AssessmentModel com o arquivo enviado, se houver
+        if request.FILES.get('excel_file'):
+            assessment.excel_file = request.FILES.get('excel_file')
+            assessment.save()
+
+        prop_models = []
+        prop_uploads = PlanilhaGenericaTemplate.objects.filter(framework=framework)
+        for upload in prop_uploads:
+            prop = PlanilhaGenericaModel.objects.create(
+                assessment=assessment,
+                idControle=upload.idControle,
+                controle=upload.controle,
+                idSubControle=upload.idSubControle,
+                subControle=upload.subControle,
+                funcaoSeguranca=upload.funcaoSeguranca,
+                tipoAtivo=upload.tipoAtivo,
+                informacoesAdicionais=upload.informacoesAdicionais,
+                resultadoCss=upload.resultadoCss,
+                resultadoCl=upload.resultadoCl,
+                comentarios=upload.comentarios,
+                meta=upload.meta,
+            )
+            prop_models.append(prop)
 
         return render(request, self.template_name, {
-            'framework': framework,
-            'assessments': assessments,
-            'props': props,
-            'framework_id': id  # Passa o ID do framework
+            'assessment': assessment,
+            'prop_models': prop_models,
+            'assessment_id': assessment.id
         })
 
     def post(self, request, id):
+        try:
+            # Tenta buscar a instância de AssessmentModel com base no id fornecido
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
+
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
+
+        # Se a ação for "Salvar"
+        if action == 'save':
+            process_save_prop(request, assessment) 
+
+        elif action == 'submit':
+            process_submit_prop(request, assessment) 
+
+        return redirect('assessment')
+# Função para renderizar a página assess_prop.html
+class AssessProp(View):
+    template_name = 'paginas/assess_prop_up.html'
+
+    def get(self, request, id):
         # Obtém o framework específico
-        framework = get_object_or_404(TipoModelo, id=id)
+        assessment = AssessmentModel.objects.get(id=id)
+        prop_models = PlanilhaGenericaModel.objects.filter(assessment=assessment)
 
-        # Verifica se existe um AssessmentModel associado ao framework
-        assessment = AssessmentModel.objects.filter(framework=framework).first()
-        if not assessment:
-            # Crie um novo AssessmentModel se não existir
-            assessment = AssessmentModel.objects.create(
-                framework=framework,
-                nome=framework.nome,
-                status=AssessmentModel.ANDAMENTO,
-                resultado="",
-                meta=""
-            )
-            print(f"Assessment criado: {assessment}")
-        else:
-            print(f"Assessment encontrado: {assessment}")
+        return render(request, self.template_name, {
+            'assessment': assessment,
+            'prop_models': prop_models,
+            'assessment_id': id
+        })
 
-        # Atualiza o AssessmentModel com os dados do formulário
-        assessment.nome = framework.nome  # Define o nome do framework
-        assessment.status = AssessmentModel.ANDAMENTO  # Define o status como 'Em andamento'
+    def post(self, request, id):
+        try:
+            # Tenta buscar a instância de AssessmentModel com base no id fornecido
+            assessment = AssessmentModel.objects.get(id=id)
+        except AssessmentModel.DoesNotExist:
+            # Caso não exista, você pode retornar uma mensagem de erro ou redirecionar para outra página
+            return redirect('assessment_not_found')  # Crie uma view para tratar esse caso, se desejar
 
-        # Atualiza o excel_file apenas se um novo arquivo for enviado
-        if request.FILES.get('excel_file'):
-            assessment.excel_file = request.FILES.get('excel_file')
+        # Processar as ações com base no botão clicado
+        action = request.POST.get('action')
 
-        assessment.resultado = ""  # Deixe o campo resultado vazio
-        assessment.meta = ""  # Deixe o campo meta vazio
-        assessment.save()
+        # Se a ação for "Salvar"
+        if action == 'save':
+            self.process_save(request, assessment) 
 
-        # Atualiza os CisControls com os dados do formulário
+        elif action == 'submit':
+            self.process_submit(request, assessment) 
+
+        return redirect('assessment')
+
+
+    def process_save(self, request, assessment):
+
+        prop_models = PlanilhaGenericaModel.objects.filter(assessment=assessment)
+
         for key, value in request.POST.items():
             if key.startswith('resultadoCss_'):
                 prop_id = key.split('_')[1]
-                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
-                if value in ['Sim', 'Não']:
-                    prop.resultadoCss = value
-                    prop.save()
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    if value in ['Sim', 'Não']:
+                        prop.resultadoCss = value
+                        prop.save()
             elif key.startswith('resultadoCl_'):
                 prop_id = key.split('_')[1]
-                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
-                if value in ['Sim', 'Não']:
-                    prop.resultadoCl = value
-                    prop.save()
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    if value in ['Sim', 'Não']:
+                        prop.resultadoCl = value
+                        prop.save()
             elif key.startswith('comentarios_'):
                 prop_id = key.split('_')[1]
-                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
-                prop.comentarios = value
-                prop.save()
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    prop.comentarios = value
+                    prop.save()
             elif key.startswith('meta_'):
                 prop_id = key.split('_')[1]
-                prop = get_object_or_404(PlanilhaGenerica, id=prop_id)
-                if value in ['Sim', 'Não']:
-                    prop.meta = value
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    if value in ['Sim', 'Não']:
+                        prop.meta = value
+                        prop.save()
+        # Atualiza o campo excel_file do AssessmentModel com os dados atualizados
+        self.update_assessment_file(assessment)
+
+    def process_submit(self, request, assessment):
+        prop_generica = PlanilhaGenericaModel.objects.filter(assessment=assessment)
+
+        total_css_sim = 0
+        total_css_count = 0
+        total_meta_sim = 0
+        total_meta_count = 0
+
+        for key, value in request.POST.items():
+            if key.startswith('resultadoCss_'):
+                prop_id = key.split('_')[1]
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    if value in ['Sim', 'Não']:
+                        prop.resultadoCss = value
+                        prop.save()
+                        # Contagem para o resultado CSS
+                        if value == 'Sim':
+                            total_css_sim += 1
+                        total_css_count += 1
+            elif key.startswith('resultadoCl_'):
+                prop_id = key.split('_')[1]
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    if value in ['Sim', 'Não']:
+                        prop.resultadoCl = value
+                        prop.save()
+            elif key.startswith('comentarios_'):
+                prop_id = key.split('_')[1]
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:
+                    prop.comentarios = value
                     prop.save()
-        prop_generica = PlanilhaGenerica.objects.filter(framework=framework)  # Filtra os PlanilhaGenerica do framework
+            elif key.startswith('meta_'):
+                prop_id = key.split('_')[1]
+                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
+                if prop:                
+                    if value in ['Sim', 'Não']:
+                        prop.meta = value
+                        prop.save()
+                        # Contagem para a meta
+                        if value == 'Sim':
+                            total_meta_sim += 1
+                        total_meta_count += 1
+    
+        if (total_css_sim and total_css_count) > 0:
+            resultado_css_percent = (total_css_sim / total_css_count) * 100
+        else:
+            resultado_css_percent = 0
+
+        if (total_meta_sim and total_meta_count) > 0:
+            meta_percent = (total_meta_sim / total_meta_count) * 100
+        else:
+            meta_percent = 0
+
+        # Atualiza o AssessmentModel com os novos dados
+        assessment.status = AssessmentModel.CONCLUIDO  
+        assessment.resultado = f"{resultado_css_percent:.2f}%" 
+        assessment.meta = f"{meta_percent:.2f}%"  
+
+        self.update_assessment_file(assessment)
+
+    def update_assessment_file(self, assessment):
+        prop_generica = PlanilhaGenericaModel.objects.filter(assessment=assessment)
         data = []
         for prop in prop_generica:
             data.append({
@@ -648,21 +1718,20 @@ class AssessProp(View):
                 'Comentários': prop.comentarios,
                 'Meta': prop.meta
             })
-
-        # Cria um DataFrame e salva como Excel
         df = pd.DataFrame(data)
-        excel_file_path = f'media/assessments/{framework.nome}_{framework.data_upload}.xlsx'  # Define o caminho do arquivo
+        data_atual = date.today()
+        excel_file_path = f'media/assessments/{assessment.nome}_{data_atual}.xlsx'  # Define o caminho do arquivo
         df.to_excel(excel_file_path, index=False)
 
         # Atualiza o campo excel_file do AssessmentModel
-        assessment.excel_file.save(f'{framework.nome}_{framework.data_upload}.xlsx', open(excel_file_path, 'rb'))
+        with open(excel_file_path, 'rb') as excel_file:
+            assessment.excel_file.save(f'{assessment.nome}_{data_atual}.xlsx', excel_file)
 
+        # Remove o arquivo temporário após o upload
+        os.remove(excel_file_path)
+        
         # Salva a instância de AssessmentModel
         assessment.save()
-        print(f"Assessment atualizado e salvo: {assessment}")
-
-        # Redireciona de volta para a página de avaliação
-        return redirect('assess_prop', id=id)
 
 
 # Função para renderizar a página planodeacao.html

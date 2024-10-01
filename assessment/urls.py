@@ -20,16 +20,28 @@ urlpatterns = [
     path('assessment/', views.Assessment.as_view(), name='assessment'),
     path('deletar-assessment/<int:id>/', views.Assessment.as_view(), name='deletar_assess'),  # Para exclusão
     path('assessment/<int:id>/redirecionar/', views.RedirecionarFramework.as_view(), name='redirecionar_framework'),
+    path('assessment/<int:id>/redirecionar2/', views.RedirecionarFramework2.as_view(), name='redirecionar_framework2'), 
 
+    # urls para a pagina assess_nist_up.html
+    path('assess_nist_up/<int:id>/', views.AssessNistUpload.as_view(), name='assess_nist_up'),
     # urls para a pagina assess_nist.html
     path('assess_nist/<int:id>/', views.AssessNist.as_view(), name='assess_nist'),
+
     
+    # urls para a pagina assess_cis_up.html
+    path('assess_cis_up/<int:id>/', views.AssessCisUpload.as_view(), name='assess_cis_up'),
     # urls para a pagina assess_cis.html
     path('assess_cis/<int:id>/', views.AssessCis.as_view(), name='assess_cis'),
+    
 
+    # urls para a pagina assess_iso_up.html
+    path('assess_iso_up/<int:id>/', views.AssessIsoUpload.as_view(), name='assess_iso_up'),
     # urls para a pagina assess_iso.html
     path('assess_iso/<int:id>/', views.AssessIso.as_view(), name='assess_iso'),
+
     
+    # urls para a pagina assess_prop_up.html
+    path('assess_prop_up/<int:id>/', views.AssessPropUpload.as_view(), name='assess_prop_up'),
     # urls para a pagina assess_prop.html
     path('assess_prop/<int:id>/', views.AssessProp.as_view(), name='assess_prop'),
 

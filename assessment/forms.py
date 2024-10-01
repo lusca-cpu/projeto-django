@@ -1,12 +1,12 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.bootstrap import FormActions
-from .models import TipoModelo, AssessmentModel
+from .models import FrameworkModel, AssessmentModel
 import datetime
 
 class MeuModeloForm(forms.ModelForm):
     class Meta:
-        model = TipoModelo
+        model = FrameworkModel
         fields = ['nome', 'descricao', 'criterio', 'is_proprio', 'excel_file']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control font-small'}),
@@ -33,7 +33,7 @@ class MeuModeloForm(forms.ModelForm):
 
 class MeuModeloEditForm(forms.ModelForm):
     class Meta:
-        model = TipoModelo
+        model = FrameworkModel
         fields = ['nome', 'descricao', 'criterio', 'excel_file']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control font-small', 'style': 'font-size: 11px;'}),
@@ -60,20 +60,29 @@ class MeuModeloEditForm(forms.ModelForm):
 class NovoAssessmentForm(forms.ModelForm):
     class Meta:
         model = AssessmentModel
-        fields = ['nome', 'status', 'excel_file']
+        fields = ['framework', 'status', 'excel_file']  # 'nome' será atribuído manualmente
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'framework': forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 9px;'}),
             'status': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 9px;'}),
             'excel_file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm font-small'}),
         }
         labels = {
-            'nome': 'Tipo de Assessment',
+            'framework': 'Tipo de Framework',
             'status': 'Status',
             'excel_file': 'Arquivo Excel',
         }
 
     def __init__(self, *args, **kwargs):
         super(NovoAssessmentForm, self).__init__(*args, **kwargs)
+
+        # Carregar frameworks no campo 'framework'
+        self.fields['framework'] = forms.ModelChoiceField(
+            queryset=FrameworkModel.objects.all(),
+            widget=forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            label='Tipo de Framework'
+        )
+        
+        # Campo para exibir a data atual
         self.fields['data_upload_display'] = forms.DateField(
             initial=datetime.date.today,  # Preenche com a data atual
             widget=forms.DateInput(attrs={
@@ -83,8 +92,24 @@ class NovoAssessmentForm(forms.ModelForm):
                 'readonly': True  # Desabilita a edição
             })
         )
+
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-md-3 mb-0'
         self.helper.field_class = 'col-md-9'
+
+    def save(self, commit=True):
+        # Sobrescreve o método de salvamento
+        assessment = super(NovoAssessmentForm, self).save(commit=False)
+        
+        # Atribuir o nome do framework ao campo nome
+        framework_selecionado = self.cleaned_data['framework']
+        assessment.nome = framework_selecionado.nome  # Assume que 'nome' é o campo do FrameworkModel
+        
+        # Salvar a instância do assessment
+        if commit:
+            assessment.save()
+        
+        return assessment
+
         

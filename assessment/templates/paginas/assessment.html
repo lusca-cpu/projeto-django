@@ -89,14 +89,14 @@
                                 <p>Nenhum arquivo disponível para download</p>
                             {% endif %}
                             <!-- Botão para ver assessment -->
-                            <a href="{% url 'redirecionar_framework' assessment.framework.id %}">
+                            <a href="{% url 'redirecionar_framework2' assessment.id %}">
                                 <span>
                                     <svg width="16" height="16" fill="currentColor" class="bi-gear-fill" viewBox="0 0 16 16">
                                         <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                                         <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                                     </svg>
                                 </span>
-                            </a>                            
+                            </a>                    
                         </div>   
                     </td>
                     <td>{{ assessment.data_upload }}</td>
@@ -105,7 +105,13 @@
                     <td></td> <!-- Coluna vazia para "Concluído por" -->
                     <td>{{ assessment.resultado }}</td>
                     <td>{{ assessment.meta }}</td>
-                    <td></td> <!-- Coluna vazia para "Plano de Ação" -->
+                    <td>
+                        {% if assessment.status == 'Concluído' %}
+                            <a href="#">
+                                <button class="btn btn-secondary btn-lg btn-sm" style="background-color: darkgrey; border: none;">Vizualizar</button>
+                            </a>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -120,7 +126,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <header class="modal-title" id="uploadModal">Adicionar novo Assessment</header>
+                    <header class="modal-title" id="uploadModal">Importar novo Assessment</header>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
                 </div>
                 <div class="modal-body font-small mb-2">
@@ -130,7 +136,7 @@
     
                         <div class="mb-2 d-flex align-items-center font-small">
                             <div class="modal-body font-small modal-footer">
-                                <button type="submit" class="btn btn-primary btn-sm font-small">Upload</button>
+                                <button type="submit" class="btn btn-primary btn-sm font-small">Salvar</button>
                                 <div class="invalid-feedback font-small">
                                     Por favor, selecione um arquivo.
                                 </div>
@@ -164,6 +170,26 @@
 </main>
 
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadForm = document.getElementById('uploadForm');
+        
+        uploadForm.addEventListener('submit', function (event) {
+            // Impede o comportamento padrão do envio do formulário
+            event.preventDefault();
+
+            // Checa se o formulário está válido
+            if (!uploadForm.checkValidity()) {
+                // Se o formulário não estiver válido, exibe as mensagens de erro
+                event.stopPropagation();
+                uploadForm.classList.add('was-validated');
+            } else {
+                // Se o formulário estiver válido, você pode permitir o envio
+                uploadForm.submit();
+            }
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         let deleteAssessmentId = null;
 
@@ -194,7 +220,6 @@
             }
         });
     });
-
  
     document.addEventListener("DOMContentLoaded", function() {
         var nivelElements = document.querySelectorAll(".nivel");
@@ -213,6 +238,5 @@
             }
         });
     });
-
 </script>
 {% endblock %}
