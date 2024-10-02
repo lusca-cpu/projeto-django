@@ -57,7 +57,7 @@ class PlanilhaGenericaTemplate(models.Model):
     informacoesAdicionais = models.TextField()
     resultadoCss = models.CharField(max_length=255)
     resultadoCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):
@@ -74,7 +74,7 @@ class PlanilhaGenericaModel(models.Model):
     informacoesAdicionais = models.TextField()
     resultadoCss = models.CharField(max_length=255)
     resultadoCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):
@@ -93,7 +93,7 @@ class CisModelTemplate(models.Model):
     nivel = models.CharField(max_length=255, blank=True)
     resultadoCss = models.CharField(max_length=255, blank=True)
     resultadoCl = models.CharField(max_length=255, blank=True)
-    comentarios = models.TextField(blank=True)
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
@@ -110,7 +110,7 @@ class CisModel(models.Model):
     nivel = models.CharField(max_length=255)
     resultadoCss = models.CharField(max_length=255)
     resultadoCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):
@@ -128,7 +128,7 @@ class IsoModelTemplate(models.Model):
     prioControle = models.CharField(max_length=255)
     notaCss = models.CharField(max_length=255)
     notaCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):
@@ -144,7 +144,7 @@ class IsoModel(models.Model):
     prioControle = models.CharField(max_length=255)
     notaCss = models.CharField(max_length=255)
     notaCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):
@@ -161,7 +161,7 @@ class NistModelTemplate(models.Model):
     informacao = models.TextField()
     notaCss = models.CharField(max_length=255)
     notaCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):
@@ -176,7 +176,7 @@ class NistModel(models.Model):
     informacao = models.TextField()
     notaCss = models.CharField(max_length=255)
     notaCl = models.CharField(max_length=255)
-    comentarios = models.TextField()
+    comentarios = models.TextField(null=True, blank=True)
     meta = models.CharField(max_length=255)
 
     def __str__(self):

@@ -18,6 +18,13 @@
     .azul {
     color: #25A9F0;
     }
+
+    textarea {
+        padding: 2px;
+        line-height: 1.5;
+        box-sizing: border-box;
+    }
+
 </style>
 
 <main>
@@ -113,7 +120,7 @@
                             </select>
                         </td>                      
                         <td>
-                            <textarea name="comentarios_{{ cis.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; ">
+                            <textarea name="comentarios_{{ cis.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
                                 {% if cis.comentarios and cis.comentarios != 'nan' %}
                                     {{ cis.comentarios }}
                                 {% endif %}
@@ -135,6 +142,14 @@
 </main>
 
 <script>
+
+    document.querySelector('form').addEventListener('submit', function() {
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(function(textarea) {
+            textarea.value = textarea.value.trim();
+        });
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
         var nivelElements = document.querySelectorAll(".nivel");
 

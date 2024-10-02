@@ -200,7 +200,6 @@ def process_save_cis(request, assessment):
     # Itera sobre os CisModels filtrados e atualiza os campos
     for key, value in request.POST.items():
         if key.startswith('resultadoCss_'):
-            print('entrou')
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
@@ -215,11 +214,13 @@ def process_save_cis(request, assessment):
                     cis.resultadoCl = value
                     cis.save()
         elif key.startswith('comentarios_'):
-            print('entrou')
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
-            if cis: 
-                cis.comentarios = value
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
                 cis.save()
         elif key.startswith('meta_'):
             cis_id = key.split('_')[1]
@@ -261,8 +262,11 @@ def process_submit_cis(request, assessment):
         elif key.startswith('comentarios_'):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
-            if cis: 
-                cis.comentarios = value
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
                 cis.save()
         elif key.startswith('meta_'):
             cis_id = key.split('_')[1]
@@ -422,9 +426,12 @@ def process_save_nist(request, assessment):
             elif key.startswith('comentarios_'):
                 nist_id = key.split('_')[1]
                 nist = NistModel.objects.filter(id=nist_id).first()
-                if nist:
-                    nist.comentarios = value
-                    nist.save()
+                if cis:
+                    comentario = value.strip()
+
+                    # Se o comentário for vazio, salve uma string vazia
+                    cis.comentarios = comentario if comentario else ''
+                    cis.save()
             elif key.startswith('meta_'):
                 nist_id = key.split('_')[1]
                 nist = NistModel.objects.filter(id=nist_id).first()
@@ -454,9 +461,12 @@ def process_submit_nist(request, assessment):
         elif key.startswith('notaCl_'):
             nist_id = key.split('_')[1]
             nist = NistModel.objects.filter(id=nist_id).first()
-            if nist:
-                nist.notaCl = value
-                nist.save()
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
+                cis.save()
         elif key.startswith('comentarios_'):
             nist_id = key.split('_')[1]
             nist = NistModel.objects.filter(id=nist_id).first()
@@ -618,9 +628,12 @@ def process_save_iso(request, assessment):
         elif key.startswith('comentarios_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
-            if iso:
-                iso.comentarios = value
-                iso.save()
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
+                cis.save()
         elif key.startswith('meta_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
@@ -662,9 +675,12 @@ def process_submit_iso(request, assessment):
         elif key.startswith('comentarios_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
-            if iso:
-                iso.comentarios = value
-                iso.save()
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
+                cis.save()
         elif key.startswith('meta_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
@@ -824,9 +840,12 @@ def process_save_prop(request, assessment):
         elif key.startswith('comentarios_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-            if prop:
-                prop.comentarios = value
-                prop.save()
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
+                cis.save()
         elif key.startswith('meta_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
@@ -867,9 +886,12 @@ def process_submit_prop(request, assessment):
         elif key.startswith('comentarios_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-            if prop:
-                prop.comentarios = value
-                prop.save()
+            if cis:
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                cis.comentarios = comentario if comentario else ''
+                cis.save()
         elif key.startswith('meta_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
@@ -1451,7 +1473,6 @@ class AssessIsoUpload(View):
         try:
             assessment = AssessmentModel.objects.get(id=id)
         except AssessmentModel.DoesNotExist:
-            print(f"AssessmentModel com ID {id} não existe")
             return redirect('assessment_not_found')
 
         # Processar as ações com base no botão clicado
