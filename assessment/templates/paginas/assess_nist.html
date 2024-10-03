@@ -17,7 +17,7 @@
     <form method="post" action="{% url 'assess_nist' id=assessment_id %}" id="nistForm">
         {% csrf_token %}
         <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
-            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
+            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
                 <div>{{ assessment.nome }}</div>
             </div>
             {% if assessment.excel_file %}
@@ -85,33 +85,49 @@
                         <td>{{ nist.codigo }}</td>
                         <td>{{ nist.categoria }}</td>
                         <td>{{ nist.subcategoria }}</td>
-                        <td>
-                            <select name="notaCss_{{ nist.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
-                                {% for i in notas %}
-                                    <option value="{{ i }}" {% if nist.notaCss|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
-                                {% endfor %}
-                            </select>
+                        <td style="text-align: center;">
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="notaCss_{{ nist.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    {% for i in notas %}
+                                        <option value="{{ i }}" {% if nist.notaCss|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                {{ nist.notaCss }}
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="notaCl_{{ nist.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    {% for i in notas %}
+                                        <option value="{{ i }}" {% if nist.notaCl|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                {{ nist.notaCl }}
+                            {% endif %}
                         </td>
                         <td>
-                            <select name="notaCl_{{ nist.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
-                                {% for i in notas %}
-                                    <option value="{{ i }}" {% if nist.notaCl|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
-                                {% endfor %}
-                            </select>
+                            {% if assessment.status == 'Andamento' %}
+                                <textarea name="comentarios_{{ nist.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
+                                    {% if nist.comentarios and nist.comentarios != 'nan' %}
+                                        {{ nist.comentarios }}
+                                    {% endif %}
+                                </textarea>                           
+                            {% else %}
+                                {{ nist.comentarios }}
+                            {% endif %}
                         </td>
-                        <td>
-                            <textarea name="comentarios_{{ nist.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
-                                {% if nist.comentarios and nist.comentarios != 'nan' %}
-                                    {{ nist.comentarios }}
-                                {% endif %}
-                            </textarea>                           
-                        </td>
-                        <td>
-                            <select name="meta_{{ nist.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
-                                {% for i in notas %}
-                                    <option value="{{ i }}" {% if nist.meta|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
-                                {% endfor %}
-                            </select>
+                        <td style="text-align: center;">
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="meta_{{ nist.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    {% for i in notas %}
+                                        <option value="{{ i }}" {% if nist.meta|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                {{ nist.meta }}
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

@@ -17,7 +17,7 @@
     <form method="post" action="{% url 'assess_prop_up' id=assessment_id %}" id="propForm">
         {% csrf_token %}
         <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
-            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
+            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
                 <div>{{ assessment.nome }}</div>
             </div>            
             <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" style="white-space: nowrap;">
@@ -74,9 +74,9 @@
                                 </span>
                             </div> 
                         </td>
-                        <td>{{ prop.idControle }}</td>
+                        <td style="text-align: center;">{{ prop.idControle }}</td>
                         <td>{{ prop.controle }}</td>
-                        <td>{{ prop.idSubControle }}</td>
+                        <td style="text-align: center;">{{ prop.idSubControle }}</td>
                         <td>{{ prop.subControle }}</td>
                         <td>{{ prop.funcaoSeguranca }}</td>
                         <td>{{ prop.tipoAtivo }}</td>

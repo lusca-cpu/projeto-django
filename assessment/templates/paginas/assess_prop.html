@@ -17,7 +17,7 @@
     <form method="post" action="{% url 'assess_prop' id=assessment_id %}" id="propForm">
         {% csrf_token %}
         <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
-            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
+            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
                 <div>{{ assessment.nome }}</div>
             </div>            
             {% if assessment.excel_file %}
@@ -83,39 +83,55 @@
                                 </span>
                             </div> 
                         </td>
-                        <td>{{ prop.idControle }}</td>
+                        <td style="text-align: center;">{{ prop.idControle }}</td>
                         <td>{{ prop.controle }}</td>
-                        <td>{{ prop.idSubControle }}</td>
+                        <td style="text-align: center;">{{ prop.idSubControle }}</td>
                         <td>{{ prop.subControle }}</td>
                         <td>{{ prop.funcaoSeguranca }}</td>
                         <td>{{ prop.tipoAtivo }}</td>
-                        <td>
-                            <select name="resultadoCss_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
-                                <option value="" disabled selected>...</option>
-                                <option value="Sim" {% if prop.resultadoCss == "Sim" %}selected{% endif %}>Sim</option>
-                                <option value="Não" {% if prop.resultadoCss == "Não" %}selected{% endif %}>Não</option>
-                            </select>
+                        <td style="text-align: center;">
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="resultadoCss_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    <option value="" disabled selected>...</option>
+                                    <option value="Sim" {% if prop.resultadoCss == "Sim" %}selected{% endif %}>Sim</option>
+                                    <option value="Não" {% if prop.resultadoCss == "Não" %}selected{% endif %}>Não</option>
+                                </select>
+                            {% else %}
+                                {{ prop.resultadoCss }}
+                            {% endif %}
                         </td>
-                        <td>
-                            <select name="resultadoCl_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
-                                <option value="" disabled selected>...</option>
-                                <option value="Sim" {% if prop.resultadoCl == "Sim" %}selected{% endif %}>Sim</option>
-                                <option value="Não" {% if prop.resultadoCl == "Não" %}selected{% endif %}>Não</option>
-                            </select>
+                        <td style="text-align: center;">
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="resultadoCl_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    <option value="" disabled selected>...</option>
+                                    <option value="Sim" {% if prop.resultadoCl == "Sim" %}selected{% endif %}>Sim</option>
+                                    <option value="Não" {% if prop.resultadoCl == "Não" %}selected{% endif %}>Não</option>
+                                </select>
+                            {% else %}
+                                {{ prop.resultadoCl }}
+                            {% endif %}
                         </td>                      
                         <td>
-                            <textarea name="comentarios_{{ prop.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
-                                {% if prop.comentarios and prop.comentarios != 'nan' %}
-                                    {{ prop.comentarios }}
-                                {% endif %}
-                            </textarea>
+                            {% if assessment.status == 'Andamento' %}
+                                <textarea name="comentarios_{{ prop.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
+                                    {% if prop.comentarios and prop.comentarios != 'nan' %}
+                                        {{ prop.comentarios }}
+                                    {% endif %}
+                                </textarea>
+                            {% else %}
+                                {{ prop.comentarios }}
+                            {% endif %}
                         </td>
-                        <td>
-                            <select name="meta_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
-                                <option value="" disabled selected>...</option>
-                                <option value="Sim" {% if prop.meta == "Sim" %}selected{% endif %}>Sim</option>
-                                <option value="Não" {% if prop.meta == "Não" %}selected{% endif %}>Não</option>
-                            </select>
+                        <td style="text-align: center;">
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="meta_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    <option value="" disabled selected>...</option>
+                                    <option value="Sim" {% if prop.meta == "Sim" %}selected{% endif %}>Sim</option>
+                                    <option value="Não" {% if prop.meta == "Não" %}selected{% endif %}>Não</option>
+                                </select>
+                            {% else %}
+                                {{ prop.meta }}
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

@@ -344,6 +344,14 @@ def concluido_excel_cis(excel_file, assessment):
             if resultado_css == 'Sim':
                 total_css_sim += 1
             total_css_count += 1
+
+        # Processa resultado CL
+        if 'ResultadoCl' in row and pd.notna(row['ResultadoCl']):
+            cis.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Sim', 'Não'] else cis.resultadoCl
+
+        # Processa comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            cis.comentarios = row['Comentários']    
         
         # Processar meta
         meta = row['Meta'] 
@@ -426,12 +434,12 @@ def process_save_nist(request, assessment):
             elif key.startswith('comentarios_'):
                 nist_id = key.split('_')[1]
                 nist = NistModel.objects.filter(id=nist_id).first()
-                if cis:
+                if nist:
                     comentario = value.strip()
 
                     # Se o comentário for vazio, salve uma string vazia
-                    cis.comentarios = comentario if comentario else ''
-                    cis.save()
+                    nist.comentarios = comentario if comentario else ''
+                    nist.save()
             elif key.startswith('meta_'):
                 nist_id = key.split('_')[1]
                 nist = NistModel.objects.filter(id=nist_id).first()
@@ -461,17 +469,17 @@ def process_submit_nist(request, assessment):
         elif key.startswith('notaCl_'):
             nist_id = key.split('_')[1]
             nist = NistModel.objects.filter(id=nist_id).first()
-            if cis:
-                comentario = value.strip()
-
-                # Se o comentário for vazio, salve uma string vazia
-                cis.comentarios = comentario if comentario else ''
-                cis.save()
+            if nist:
+                nist.notaCl = int(value)
+                nist.save()
         elif key.startswith('comentarios_'):
             nist_id = key.split('_')[1]
             nist = NistModel.objects.filter(id=nist_id).first()
             if nist:
-                nist.comentarios = value
+                comentario = value.strip()
+
+                # Se o comentário for vazio, salve uma string vazia
+                nist.comentarios = comentario if comentario else ''
                 nist.save()
         elif key.startswith('meta_'):
             nist_id = key.split('_')[1]
@@ -543,6 +551,14 @@ def concluido_excel_nist(excel_file, assessment):
         if pd.notna(nota_css):  # Verifica se o valor não é NaN
             total_css += int(nota_css)
             total_css_count += 1
+
+        # Processar nota Cl
+        if 'NotaCl' in row and pd.notna(row['NotaCl']):
+            nist.notaCl = row['NotaCl']  # Atualizar o campo notaCl no modelo
+        
+        # Processar comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            nist.comentarios = row['Comentários']  # Atualizar o campo comentarios no modelo
         
         # Processar meta
         meta = row['Meta']  # Nome da coluna no Excel
@@ -628,12 +644,12 @@ def process_save_iso(request, assessment):
         elif key.startswith('comentarios_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
-            if cis:
+            if iso:
                 comentario = value.strip()
 
                 # Se o comentário for vazio, salve uma string vazia
-                cis.comentarios = comentario if comentario else ''
-                cis.save()
+                iso.comentarios = comentario if comentario else ''
+                iso.save()
         elif key.startswith('meta_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
@@ -675,12 +691,12 @@ def process_submit_iso(request, assessment):
         elif key.startswith('comentarios_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
-            if cis:
+            if iso:
                 comentario = value.strip()
 
                 # Se o comentário for vazio, salve uma string vazia
-                cis.comentarios = comentario if comentario else ''
-                cis.save()
+                iso.comentarios = comentario if comentario else ''
+                iso.save()
         elif key.startswith('meta_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
@@ -755,6 +771,14 @@ def concluido_excel_iso(excel_file, assessment):
             if nota_css == 'Conforme':
                 total_css_conf += 1
             total_css_count += 1
+
+        # Processa nota CL
+        if 'NotaCl' in row and pd.notna(row['NotaCl']):
+            iso.notaCl = row['NotaCl'] if row['NotaCl'] in ['Conforme', 'Parcialmente', 'Não'] else iso.notaCl
+
+        # Processa comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            iso.comentarios = row['Comentários']
         
         # Processar meta
         meta = row['Meta']  
@@ -840,12 +864,12 @@ def process_save_prop(request, assessment):
         elif key.startswith('comentarios_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-            if cis:
+            if prop:
                 comentario = value.strip()
 
                 # Se o comentário for vazio, salve uma string vazia
-                cis.comentarios = comentario if comentario else ''
-                cis.save()
+                prop.comentarios = comentario if comentario else ''
+                prop.save()
         elif key.startswith('meta_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
@@ -886,12 +910,12 @@ def process_submit_prop(request, assessment):
         elif key.startswith('comentarios_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-            if cis:
+            if prop:
                 comentario = value.strip()
 
                 # Se o comentário for vazio, salve uma string vazia
-                cis.comentarios = comentario if comentario else ''
-                cis.save()
+                prop.comentarios = comentario if comentario else ''
+                prop.save()
         elif key.startswith('meta_'):
             prop_id = key.split('_')[1]
             prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
@@ -967,6 +991,14 @@ def concluido_excel_prop(excel_file, assessment):
             if resultado_css == 'Sim':
                 total_css_sim += 1
             total_css_count += 1
+
+        # Processa resultado CL
+        if 'ResultadoCl' in row and pd.notna(row['ResultadoCl']):
+            prop.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Sim', 'Não'] else prop.resultadoCl
+
+        # Processa comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            prop.comentarios = row['Comentários']
         
         # Processar meta
         meta = row['Meta'] 
@@ -1152,7 +1184,6 @@ class Assessment(View):
                 'assessments': assessments
             })
 
-
     # Excluir Assessment
     def delete(self, request, id):
         try:
@@ -1281,7 +1312,7 @@ class AssessCisUpload(View):
         # Se a ação for "Salvar"
         if action == 'save':
             process_save_cis(request, assessment) 
-
+        # Se a ação for "Enviar"
         elif action == 'submit':
             process_submit_cis(request, assessment) 
 
@@ -1314,7 +1345,7 @@ class AssessCis(View):
         # Se a ação for "Salvar"
         if action == 'save':
             process_save_cis(request, assessment) 
-
+        # Se a ação for "Enviar"
         elif action == 'submit':
             process_submit_cis(request, assessment) 
 
@@ -1382,7 +1413,7 @@ class AssessNistUpload(View):
         # Se a ação for "Salvar"
         if action == 'save':
             process_save_nist(request, assessment) 
-
+        # Se a ação for "Enviar"
         elif action == 'submit':
             process_submit_nist(request, assessment) 
 
@@ -1416,7 +1447,7 @@ class AssessNist(View):
         # Se a ação for "Salvar"
         if action == 'save':
             process_save_nist(request, assessment) 
-
+        # Se a ação for "Enviar"
         elif action == 'submit':
             process_submit_nist(request, assessment) 
 
@@ -1517,7 +1548,7 @@ class AssessIso(View):
         # Se a ação for "Salvar"
         if action == 'save':
             process_save_iso(request, assessment) 
-
+        # Se a ação for "Enviar"
         elif action == 'submit':
             process_submit_iso(request, assessment) 
 
@@ -1584,14 +1615,14 @@ class AssessPropUpload(View):
         # Se a ação for "Salvar"
         if action == 'save':
             process_save_prop(request, assessment) 
-
+        # Se a ação for "Enviar"
         elif action == 'submit':
             process_submit_prop(request, assessment) 
 
         return redirect('assessment')
 # Função para renderizar a página assess_prop.html
 class AssessProp(View):
-    template_name = 'paginas/assess_prop_up.html'
+    template_name = 'paginas/assess_prop.html'
 
     def get(self, request, id):
         # Obtém o framework específico
@@ -1617,142 +1648,12 @@ class AssessProp(View):
 
         # Se a ação for "Salvar"
         if action == 'save':
-            self.process_save(request, assessment) 
-
+            process_save_prop(request, assessment) 
+        # Se a ação for "Enviar"
         elif action == 'submit':
-            self.process_submit(request, assessment) 
+            process_submit_prop(request, assessment) 
 
         return redirect('assessment')
-
-
-    def process_save(self, request, assessment):
-
-        prop_models = PlanilhaGenericaModel.objects.filter(assessment=assessment)
-
-        for key, value in request.POST.items():
-            if key.startswith('resultadoCss_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    if value in ['Sim', 'Não']:
-                        prop.resultadoCss = value
-                        prop.save()
-            elif key.startswith('resultadoCl_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    if value in ['Sim', 'Não']:
-                        prop.resultadoCl = value
-                        prop.save()
-            elif key.startswith('comentarios_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    prop.comentarios = value
-                    prop.save()
-            elif key.startswith('meta_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    if value in ['Sim', 'Não']:
-                        prop.meta = value
-                        prop.save()
-        # Atualiza o campo excel_file do AssessmentModel com os dados atualizados
-        self.update_assessment_file(assessment)
-
-    def process_submit(self, request, assessment):
-        prop_generica = PlanilhaGenericaModel.objects.filter(assessment=assessment)
-
-        total_css_sim = 0
-        total_css_count = 0
-        total_meta_sim = 0
-        total_meta_count = 0
-
-        for key, value in request.POST.items():
-            if key.startswith('resultadoCss_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    if value in ['Sim', 'Não']:
-                        prop.resultadoCss = value
-                        prop.save()
-                        # Contagem para o resultado CSS
-                        if value == 'Sim':
-                            total_css_sim += 1
-                        total_css_count += 1
-            elif key.startswith('resultadoCl_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    if value in ['Sim', 'Não']:
-                        prop.resultadoCl = value
-                        prop.save()
-            elif key.startswith('comentarios_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:
-                    prop.comentarios = value
-                    prop.save()
-            elif key.startswith('meta_'):
-                prop_id = key.split('_')[1]
-                prop = PlanilhaGenericaModel.objects.filter(id=prop_id).first()
-                if prop:                
-                    if value in ['Sim', 'Não']:
-                        prop.meta = value
-                        prop.save()
-                        # Contagem para a meta
-                        if value == 'Sim':
-                            total_meta_sim += 1
-                        total_meta_count += 1
-    
-        if (total_css_sim and total_css_count) > 0:
-            resultado_css_percent = (total_css_sim / total_css_count) * 100
-        else:
-            resultado_css_percent = 0
-
-        if (total_meta_sim and total_meta_count) > 0:
-            meta_percent = (total_meta_sim / total_meta_count) * 100
-        else:
-            meta_percent = 0
-
-        # Atualiza o AssessmentModel com os novos dados
-        assessment.status = AssessmentModel.CONCLUIDO  
-        assessment.resultado = f"{resultado_css_percent:.2f}%" 
-        assessment.meta = f"{meta_percent:.2f}%"  
-
-        self.update_assessment_file(assessment)
-
-    def update_assessment_file(self, assessment):
-        prop_generica = PlanilhaGenericaModel.objects.filter(assessment=assessment)
-        data = []
-        for prop in prop_generica:
-            data.append({
-                'Id Controle': prop.idControle,
-                'Controle': prop.controle,
-                'Id Subconjunto': prop.idSubControle,
-                'Subconjunto': prop.subControle,
-                'Função de Segurança': prop.funcaoSeguranca,
-                'Tipo de Ativo': prop.tipoAtivo,
-                'Informações Adicionais': prop.informacoesAdicionais,
-                'Resultado CSS': prop.resultadoCss,
-                'Resultado CL': prop.resultadoCl,
-                'Comentários': prop.comentarios,
-                'Meta': prop.meta
-            })
-        df = pd.DataFrame(data)
-        data_atual = date.today()
-        excel_file_path = f'media/assessments/{assessment.nome}_{data_atual}.xlsx'  # Define o caminho do arquivo
-        df.to_excel(excel_file_path, index=False)
-
-        # Atualiza o campo excel_file do AssessmentModel
-        with open(excel_file_path, 'rb') as excel_file:
-            assessment.excel_file.save(f'{assessment.nome}_{data_atual}.xlsx', excel_file)
-
-        # Remove o arquivo temporário após o upload
-        os.remove(excel_file_path)
-        
-        # Salva a instância de AssessmentModel
-        assessment.save()
 
 
 # Função para renderizar a página planodeacao.html

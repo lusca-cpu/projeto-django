@@ -30,7 +30,7 @@
     <form method="post" action="{% url 'assess_cis_up' id=assessment_id %}" id="cisForm">
         {% csrf_token %}
         <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
-            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #0691c0; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">          
+            <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">          
                 <div>{{ assessment.nome }}</div>
             </div>
             <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" style="white-space: nowrap;">
@@ -88,9 +88,9 @@
                                 </span>
                             </div> 
                         </td>
-                        <td>{{ cis.idControle }}</td>
+                        <td style="text-align: center;">{{ cis.idControle }}</td>
                         <td>{{ cis.controle }}</td>
-                        <td>{{ cis.idSubConjunto }}</td>
+                        <td style="text-align: center;">{{ cis.idSubConjunto }}</td>
                         <td>{{ cis.subConjunto }}</td>
                         <td class="nivel" data-nivel="{{ cis.nivel }}">{{ cis.nivel }}</td>
                         <td>{{ cis.funcao }}</td>

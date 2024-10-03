@@ -11,7 +11,7 @@ class MeuModeloForm(forms.ModelForm):
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control font-small'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
-            'criterio': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 9px;'}),
+            'criterio': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 10px;'}),
             'is_proprio': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'excel_file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm font-small'}),
         }
@@ -38,7 +38,7 @@ class MeuModeloEditForm(forms.ModelForm):
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control font-small', 'style': 'font-size: 11px;'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
-            'criterio': forms.Select(attrs={'class': 'form-select', 'style': 'font-size: 9px;'}),
+            'criterio': forms.Select(attrs={'class': 'form-select', 'style': 'font-size: 10px;'}),
             'excel_file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm me-2 font-small'}),
         }
         labels = {
@@ -62,8 +62,8 @@ class NovoAssessmentForm(forms.ModelForm):
         model = AssessmentModel
         fields = ['framework', 'status', 'excel_file']  # 'nome' será atribuído manualmente
         widgets = {
-            'framework': forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 9px;'}),
-            'status': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 9px;'}),
+            'framework': forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'status': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 10px;'}),
             'excel_file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm font-small'}),
         }
         labels = {
@@ -78,7 +78,7 @@ class NovoAssessmentForm(forms.ModelForm):
         # Carregar frameworks no campo 'framework'
         self.fields['framework'] = forms.ModelChoiceField(
             queryset=FrameworkModel.objects.all(),
-            widget=forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            widget=forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
             label='Tipo de Framework'
         )
         
