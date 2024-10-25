@@ -75,3 +75,33 @@ function abrirJanela(pagina, largura, altura) {
     var topo = (screen.height - altura) / 2;
     minhaJanela = window.open(pagina, '', 'height=' + altura + ', width=' + largura + ', top=' + topo + ', left=' + esquerda);
 }
+
+
+function downloadPDF() {
+    const item = document.querySelector(".content");
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.textContent = "Generating PDF...";
+    document.body.appendChild(loadingIndicator);
+
+    var opt = {
+        margin: [0.15, 0.15, 0, 0.15], // [top, left, bottom, right] }, //Altere o valor de bottom conforme necessário
+        filename: "myfile.pdf",
+        html2canvas: {
+            scale: 3, 
+            useCORS: true 
+        },
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    };
+
+    html2pdf()
+        .set(opt)
+        .from(item)
+        .save()
+        .then(() => {
+            loadingIndicator.remove(); // Remove loading indicator after saving
+        })
+        .catch((error) => {
+            console.error("PDF generation failed:", error);
+            loadingIndicator.textContent = "Failed to generate PDF.";
+        });
+}

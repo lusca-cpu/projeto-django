@@ -3,6 +3,12 @@
 
 {% block title %}Assessment Nist{% endblock %}
 
+{% block nav %}
+    <div class="sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
+        Security Assessment - Assessment
+    </div>
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -31,12 +37,6 @@
                     </button> 
                 {% endif %}
             {% endfor %}
-            <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" style="white-space: nowrap;">
-                <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
-                </svg>
-                Plano de ação
-            </button>
             <input type="hidden" name="action" value="save"> <!-- valor padrão para o botão "Salvar" -->
             <button type="submit" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" 
                     onclick="this.form.action.value='save'">
@@ -76,7 +76,7 @@
                         <td>
                             <div class="icon-container" style="display: flex; gap: 10px;">                                            
                                 <!-- Ícone para informação -->
-                                <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <span data-bs-toggle="modal" data-bs-target="#iconeInfo">
                                     <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
                                         <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
                                     </svg>
@@ -90,14 +90,14 @@
                         <td>
                             <select name="notaCss_{{ nist.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 {% for i in notas %}
-                                    <option value="{{ i }}" {% if nist.notaCss|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
+                                    <option value="{{ i }}" {% if nist.notaCss|stringformat:"s" == i|stringformat:"s" %}selected{% endif %} style="font-size: 0.875rem;">{{ i }}</option>
                                 {% endfor %}
                             </select>
                         </td>
                         <td>
                             <select name="notaCl_{{ nist.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 {% for i in notas %}
-                                    <option value="{{ i }}" {% if nist.notaCl|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
+                                    <option value="{{ i }}" {% if nist.notaCl|stringformat:"s" == i|stringformat:"s" %}selected{% endif %} style="font-size: 0.875rem;">{{ i }}</option>
                                 {% endfor %}
                             </select>
                         </td>
@@ -111,7 +111,7 @@
                         <td>
                             <select name="meta_{{ nist.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 {% for i in notas %}
-                                    <option value="{{ i }}" {% if nist.meta|stringformat:"s" == i|stringformat:"s" %}selected{% endif %}>{{ i }}</option>
+                                    <option value="{{ i }}" {% if nist.meta|stringformat:"s" == i|stringformat:"s" %}selected{% endif %} style="font-size: 0.875rem;">{{ i }}</option>
                                 {% endfor %}
                             </select>
                         </td>

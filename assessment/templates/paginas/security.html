@@ -2,12 +2,18 @@
 
 {% block title %}Security{% endblock %}
 
+{% block nav %}
+    <div class="sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
+        Security Assessment 
+    </div>
+{% endblock %}
+
 {% block content %}
 <main>
     <div class="container mt-5">
         <div class="row">
             <!-- Framework -->
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-4">
                 <div class="card-footer">
                     <a href="{% url 'framework' %}" class="btn">
                         <svg width="16" height="16" fill="currentColor" class="bi bi-diagram-3 icon-size" viewBox="0 0 16 16">
@@ -18,7 +24,7 @@
                 </div>
             </div>
             <!-- Assessment -->
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-4">
                 <div class="card-footer">
                     <a href="{% url 'assessment' %}" class="btn">
                         <svg width="16" height="16" fill="currentColor" class="bi bi-pencil-square icon-size" viewBox="0 0 16 16">
@@ -30,7 +36,7 @@
                 </div>
             </div>
             <!-- Plano de Ações -->
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-4">
                 <div class="card-footer">
                     <a href="{% url 'planodeacao' %}" class="btn">
                         <svg fill="currentColor" class="bi bi-layout-text-window-reverse icon-size" viewBox="0 0 16 16">
@@ -42,7 +48,7 @@
                 </div>
             </div>
             <!-- Painel de Resultado -->
-            <div class="col-xl-3 col-md-6">
+            <div class="col-xl-3 col-md-4">
                 <div class="card-footer">
                     <a href="{% url 'painelderesultados' %}" class="btn">
                         <svg width="16" height="16" fill="currentColor" class="bi bi-clipboard-data-fill icon-size" viewBox="0 0 16 16">

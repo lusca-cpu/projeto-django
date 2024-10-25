@@ -1,7 +1,8 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.bootstrap import FormActions
-from .models import FrameworkModel, AssessmentModel
+from crispy_forms.layout import Layout, Submit, Div, Field, Row, Column
+from .models import FrameworkModel, AssessmentModel, CadPlanodeAcaoModel
 import datetime
 
 class MeuModeloForm(forms.ModelForm):
@@ -112,4 +113,115 @@ class NovoAssessmentForm(forms.ModelForm):
         
         return assessment
 
-        
+class MeuModeloAcaoForm(forms.ModelForm):
+    class Meta:
+        model = CadPlanodeAcaoModel
+        fields = ['projeto', 'subcontrole', 'acao', 'onde', 'responsavel', 'inicio_pla', 'fim_pla', 'inicio_real', 'fim_real', 'quanto', 'observacao']
+        widgets = {
+            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
+            'subcontrole': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
+            'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
+            'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;', 'required': True}),
+            'inicio_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
+        }
+        labels = {
+            'projeto': 'Projeto',
+            'subcontrole': 'Subcontrole',
+            'acao': 'Ação',
+            'onde': 'Onde (escopo)',
+            'responsavel': 'Responsável',
+            'inicio_pla': 'Início Planejado',
+            'fim_pla': 'Fim Planejado',
+            'inicio_real': 'Início Real',
+            'fim_real': 'Fim Real',
+            'quanto': 'Quanto',
+            'observacao': 'Observações',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MeuModeloAcaoForm, self).__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('projeto', css_class='col-12'),
+            ),
+            Row(
+                Column('subcontrole', css_class='col-12'),
+            ),
+            Row(
+                Column('acao', css_class='col-12'),
+            ),
+            Row(
+                Column('onde', css_class='col-6'),
+                Column('responsavel', css_class='col-6'),
+            ),
+            Row(
+                Column('inicio_pla', css_class='col-6'),
+                Column('fim_pla', css_class='col-6'),
+            ),
+            Row(
+                Column('inicio_real'),
+                Column('fim_real'),
+            ),
+            Row(
+                Column('quanto', css_class='col-12'),
+            ),
+            Row(
+                Column('observacao', css_class='col-12'),
+            ),
+        )
+
+
+class MeuModeloAcaoEditForm(forms.ModelForm):
+    class Meta:
+        model = CadPlanodeAcaoModel
+        fields = ['projeto', 'subcontrole', 'acao', 'onde', 'responsavel', 'inicio_pla', 'fim_pla', 'inicio_real', 'fim_real', 'quanto', 'observacao']
+        widgets = {
+            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
+            'subcontrole': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
+            'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
+            'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;', 'required': True}),
+            'inicio_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
+            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
+        }
+        labels = {
+            'projeto': 'Projeto',
+            'subcontrole': 'Subcontrole',
+            'acao': 'Ação',
+            'onde': 'Onde (escopo)',
+            'responsavel': 'Responsável',
+            'inicio_pla': 'Início Planejado',
+            'fim_pla': 'Fim Planejado',
+            'inicio_real': 'Início Real',
+            'fim_real': 'Fim Real',
+            'quanto': 'Quanto',
+            'observacao': 'Observações',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MeuModeloAcaoEditForm, self).__init__(*args, **kwargs)
+
+        # Atualizações dos placeholders e classes dos inputs
+        self.fields['projeto'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Projeto'})
+        self.fields['subcontrole'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Subcontrole'})
+        self.fields['acao'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Ação'})
+        self.fields['onde'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Onde (escopo)'})
+        self.fields['responsavel'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Responsável'})
+        self.fields['inicio_pla'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Início Planejado'})
+        self.fields['fim_pla'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Fim Planejado'})
+        self.fields['inicio_real'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Início Real'})
+        self.fields['fim_real'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Fim Real'})
+        self.fields['quanto'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Quanto'})
+        self.fields['observacao'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Observações'})

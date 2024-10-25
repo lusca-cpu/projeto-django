@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-# Modelo para o Assessment
+# Modelo para o Framework
 class FrameworkModel(models.Model):
     BINARIO = 'Binário'
     CMMI = 'CMMI'
@@ -181,3 +181,46 @@ class NistModel(models.Model):
 
     def __str__(self):
         return f"{self.categoria} - {self.codigo}"
+
+#Modelo para o Plano de Ação
+class PlanoAcaoModel(models.Model):
+    CONCLUIDO = 'Concluído'
+    ANDAMENTO = 'Andamento'
+    INICIAR = 'Iniciar'
+    
+    CRITERIO_CHOICES = [
+        (CONCLUIDO, 'Concluído'),
+        (ANDAMENTO, 'Andamento'),
+        (INICIAR, 'Iniciar'),
+    ]
+
+    assessment = models.ForeignKey(AssessmentModel, on_delete=models.CASCADE, related_name='plano_acao_model')
+    data_upload = models.DateField(auto_now_add=True)
+    nome = models.CharField(max_length=255)
+    data_assess = models.DateField()
+    acoes_cad = models.IntegerField()
+    custo_estimado = models.FloatField()
+    conclusao = models.FloatField()
+    status = models.CharField(max_length=20, choices=CRITERIO_CHOICES)
+
+    def __str__(self):
+        return self.nome
+
+# Modelo para cadastar os planos de ação
+class CadPlanodeAcaoModel(models.Model):
+    planoacao = models.ForeignKey(PlanoAcaoModel, on_delete=models.CASCADE, related_name='cad_planode_acao_model')
+    projeto = models.CharField(max_length=255, null=False, blank=False)
+    subcontrole = models.CharField(max_length=255, null=False, blank=False)
+    acao = models.CharField(max_length=255, null=False, blank=False)
+    onde = models.CharField(max_length=255, blank=True)
+    responsavel = models.CharField(max_length=255, null=False, blank=False)    
+    quanto = models.CharField(max_length=255, blank=True)
+    inicio_pla = models.DateField(blank=True, null=True)
+    fim_pla = models.DateField(blank=True, null=True)
+    inicio_real = models.DateField(blank=True, null=True)
+    fim_real = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=20, blank=True)
+    observacao = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.acao

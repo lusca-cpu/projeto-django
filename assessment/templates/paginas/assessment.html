@@ -3,6 +3,12 @@
 
 {% block title %}Gerenciador de Assessment{% endblock %}
 
+{% block nav %}
+    <div class="sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
+        Security Assessment - Assessment
+    </div>
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -15,9 +21,8 @@
     }
 </style>
 
-<main>    
-    <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px">                          
-
+<main>     
+    <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px">                         
         <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" data-bs-toggle="dropdown" aria-expanded="false">
             <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
@@ -60,9 +65,9 @@
                     <th scope="col" class="col-lg">Assessment</th>
                     <th scope="col" class="col-2">Status</th>
                     <th scope="col">Concluído por</th>
-                    <th scope="col">Resultado</th>
-                    <th scope="col">Meta</th>
-                    <th scope="col">Plano de Ação</th>
+                    <th scope="col" style="text-align: center;">Resultado</th>
+                    <th scope="col" style="text-align: center;">Meta</th>
+                    <th scope="col" style="text-align: center;">Plano de Ação</th>
                 </tr>
             </thead>
             <tbody>
@@ -103,11 +108,11 @@
                     <td>{{ assessment.nome }}</td>
                     <td class="nivel" data-nivel="{{ assessment.status }}">{{ assessment.status }}</td>
                     <td></td> <!-- Coluna vazia para "Concluído por" -->
-                    <td>{{ assessment.resultado }}</td>
-                    <td>{{ assessment.meta }}</td>
-                    <td>
+                    <td style="text-align: center;">{{ assessment.resultado }}</td>
+                    <td style="text-align: center;">{{ assessment.meta }}</td>
+                    <td style="text-align: center;">
                         {% if assessment.status == 'Concluído' %}
-                            <a href="#">
+                            <a href="{% url 'planodeacao' %}">
                                 <button class="btn btn-secondary btn-lg btn-sm" style="background-color: darkgrey; border: none;">Vizualizar</button>
                             </a>
                         {% endif %}
@@ -115,7 +120,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8">Nenhuma avaliação registrados.</td>
+                    <td colspan="8">Nenhuma avaliação registradas.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -193,7 +198,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         let deleteAssessmentId = null;
 
-        // Captura o ID do framework e armazena para usar no botão "Excluir" dentro da modal
+        // Captura o ID do assessment e armazena para usar no botão "Excluir" dentro da modal
         document.querySelectorAll('.btn-delete').forEach(button => {
             button.addEventListener('click', function() {
                 deleteAssessmentId = this.getAttribute('data-id');
@@ -213,7 +218,7 @@
                     if (response.ok) {
                         location.reload(); // Recarrega a página após a exclusão
                     } else {
-                        alert('Erro ao excluir o framework.');
+                        alert('Erro ao excluir o assessment.');
                     }
                 })
                 .catch(error => console.error('Error:', error));

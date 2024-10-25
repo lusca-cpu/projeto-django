@@ -3,6 +3,12 @@
 
 {% block title %}Assessment Proprio{% endblock %}
 
+{% block nav %}
+    <div class="sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
+        Security Assessment - Assessment
+    </div>
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -20,12 +26,6 @@
             <div class="d-none d-md-inline-block btn-primary d-flex me-2 " style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
                 <div>{{ assessment.nome }}</div>
             </div>            
-            <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" style="white-space: nowrap;">
-                <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
-                </svg>
-                Plano de ação
-            </button>
             <input type="hidden" name="action" value="save"> <!-- valor padrão para o botão "Salvar" -->
             <button type="submit" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" 
                     onclick="this.form.action.value='save'">
@@ -66,8 +66,8 @@
                     <tr>
                         <td>
                             <div class="icon-container" style="display: flex; gap: 10px;">                                            
-                                <!-- Ícone para abrir o modal editar framework -->
-                                <span data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <!-- Ícone para informação -->
+                                <span data-bs-toggle="modal" data-bs-target="#iconeInfo">
                                     <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
                                         <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
                                     </svg>
@@ -83,15 +83,15 @@
                         <td>
                             <select name="resultadoCss_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 <option value="" disabled selected>...</option>
-                                <option value="Sim" {% if prop.resultadoCss == "Sim" %}selected{% endif %}>Sim</option>
-                                <option value="Não" {% if prop.resultadoCss == "Não" %}selected{% endif %}>Não</option>
+                                <option value="Sim" {% if prop.resultadoCss == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
+                                <option value="Não" {% if prop.resultadoCss == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
                             </select>
                         </td>
                         <td>
                             <select name="resultadoCl_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 <option value="" disabled selected>...</option>
-                                <option value="Sim" {% if prop.resultadoCl == "Sim" %}selected{% endif %}>Sim</option>
-                                <option value="Não" {% if prop.resultadoCl == "Não" %}selected{% endif %}>Não</option>
+                                <option value="Sim" {% if prop.resultadoCl == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
+                                <option value="Não" {% if prop.resultadoCl == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
                             </select>
                         </td>                      
                         <td>
@@ -104,8 +104,8 @@
                         <td>
                             <select name="meta_{{ prop.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 <option value="" disabled selected>...</option>
-                                <option value="Sim" {% if prop.meta == "Sim" %}selected{% endif %}>Sim</option>
-                                <option value="Não" {% if prop.meta == "Não" %}selected{% endif %}>Não</option>
+                                <option value="Sim" {% if prop.meta == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
+                                <option value="Não" {% if prop.meta == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
                             </select>
                         </td>
                     </tr>
