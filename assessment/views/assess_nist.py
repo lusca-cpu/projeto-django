@@ -44,6 +44,10 @@ def process_save_nist(request, assessment):
                     nist.meta = value
                     nist.save()
 
+        # Atualizar a data de upload para a data atual
+        assessment.data_upload = timezone.now().date()
+        assessment.save()
+
         update_assessment_file_nist(assessment)
 # Função quando a pessoa aperta o botão "Enviar" do Nist
 def process_submit_nist(request, assessment):
@@ -88,11 +92,13 @@ def process_submit_nist(request, assessment):
                 total_meta_count += 1
 
     # Calcula os resultados e atualiza o AssessmentModel
+    resultado_css = 0
     if (total_css and total_css_count) > 0:
         resultado_css = total_css / total_css_count
     else:
         resultado_css_percent = 0
 
+    resultado_meta = 0
     if (total_meta and total_meta_count) > 0:
         resultado_meta = total_meta / total_meta_count
     else:

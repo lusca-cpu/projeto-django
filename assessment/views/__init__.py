@@ -8,4 +8,4 @@ from .assess_iso import AssessIsoUpload, AssessIso, download_file
 from .assess_prop import AssessPropUpload, AssessProp, download_file
 from .plano_acao import PlanodeAcao
 from .painel_result import PaineldeResultados
-from .cad_plano_acao import CadPlanodeAcao, editar_cad_plano_acao, download_file
+from .cad_plano_acao import CadPlanodeAcao, editar_cad_plano_acao, exportar_para_excel, download_file

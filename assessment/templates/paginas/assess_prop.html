@@ -4,7 +4,7 @@
 {% block title %}Assessment Proprio{% endblock %}
 
 {% block nav %}
-    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
+    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: #0691c0;">
         Security Assessment - Assessment
     </div>
 {% endblock %}
@@ -35,7 +35,7 @@
                     Download
                 </button> 
             {% endif %}
-            {% if assessment.status == 'andamento' %}
+            {% if assessment.status == 'Andamento' %}
                 <input type="hidden" name="action" value="save"> <!-- valor padrão para o botão "Salvar" -->
                 <button type="submit" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2" 
                         onclick="this.form.action.value='save'">

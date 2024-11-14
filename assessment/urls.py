@@ -49,7 +49,9 @@ urlpatterns = [
     path('planodeacao/', views.PlanodeAcao.as_view(), name='planodeacao'),
     path('deletar-planodeacao/<int:id>/', views.PlanodeAcao.as_view(), name='deletar_planodeacao'),  # Para exclusão
     path('planodeacao/<int:id>/redirecionarplano/', views.RedirecionarPlanoAcao.as_view(), name='redirecionar_planodeacao'),
+    path('exportar/excel/<int:id>/', views.exportar_para_excel, name='exportar_excel'), # Para exportação
 
+    # urls para a pagina cad_planodeacao.html
     path('cad_planodeacao/<int:id>/', views.CadPlanodeAcao.as_view(), name='cad_planodeacao'),
     path('deletar-cad-planodeacao/<int:id>/', views.CadPlanodeAcao.as_view(), name='deletar_cad_planodeacao'),  # Para exclusão
     path('editar-cad-planodeacao/<int:id>/', views.editar_cad_plano_acao, name='editar_cad_plano_acao'), # Para edição

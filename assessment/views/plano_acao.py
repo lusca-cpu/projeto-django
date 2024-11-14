@@ -15,15 +15,3 @@ class PlanodeAcao(View):
         acoes = PlanoAcaoModel.objects.all()
 
         return render(request, self.template_name, { 'acoes': acoes })
-
-    # Excluir Plano de Ação
-    def delete(self, request, id):
-        try:
-            acao = PlanoAcaoModel.objects.get(id=id)
-
-            # Exclui o palno de ação
-            acao.delete()
-            return JsonResponse({'success': True})
-        except PlanoAcaoModel.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item não encontrado'})
-

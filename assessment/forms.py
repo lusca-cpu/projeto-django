@@ -114,28 +114,29 @@ class NovoAssessmentForm(forms.ModelForm):
         return assessment
 
 class MeuModeloAcaoForm(forms.ModelForm):
+    subcontrole = forms.ChoiceField(choices=[], label="Subcontrole*", widget=forms.Select(attrs={'class': 'form-select', 'style': 'font-size: 10px;'}))
+    
     class Meta:
         model = CadPlanodeAcaoModel
         fields = ['projeto', 'subcontrole', 'acao', 'onde', 'responsavel', 'inicio_pla', 'fim_pla', 'inicio_real', 'fim_real', 'quanto', 'observacao']
         widgets = {
-            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
-            'subcontrole': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
-            'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
-            'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;', 'required': True}),
-            'inicio_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
-            'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
+            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'required': True}),
+            'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'required': True}),
+            'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'required': True}),
+            'inicio_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
         }
         labels = {
-            'projeto': 'Projeto',
-            'subcontrole': 'Subcontrole',
-            'acao': 'Ação',
+            'projeto': 'Projeto*',
+            'subcontrole': 'Controle de FMK*',
+            'acao': 'Ação*',
             'onde': 'Onde (escopo)',
-            'responsavel': 'Responsável',
+            'responsavel': 'Responsável*',
             'inicio_pla': 'Início Planejado',
             'fim_pla': 'Fim Planejado',
             'inicio_real': 'Início Real',
@@ -148,57 +149,30 @@ class MeuModeloAcaoForm(forms.ModelForm):
         super(MeuModeloAcaoForm, self).__init__(*args, **kwargs)
 
         self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Row(
-                Column('projeto', css_class='col-12'),
-            ),
-            Row(
-                Column('subcontrole', css_class='col-12'),
-            ),
-            Row(
-                Column('acao', css_class='col-12'),
-            ),
-            Row(
-                Column('onde', css_class='col-6'),
-                Column('responsavel', css_class='col-6'),
-            ),
-            Row(
-                Column('inicio_pla', css_class='col-6'),
-                Column('fim_pla', css_class='col-6'),
-            ),
-            Row(
-                Column('inicio_real'),
-                Column('fim_real'),
-            ),
-            Row(
-                Column('quanto', css_class='col-12'),
-            ),
-            Row(
-                Column('observacao', css_class='col-12'),
-            ),
-        )
-
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-md-3 mb-0'
+        self.helper.field_class = 'col-md-9'
 
 class MeuModeloAcaoEditForm(forms.ModelForm):
+
     class Meta:
         model = CadPlanodeAcaoModel
         fields = ['projeto', 'subcontrole', 'acao', 'onde', 'responsavel', 'inicio_pla', 'fim_pla', 'inicio_real', 'fim_real', 'quanto', 'observacao']
         widgets = {
-            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
-            'subcontrole': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
-            'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;', 'required': True}),
-            'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 10px; width: 40%;', 'required': True}),
-            'inicio_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 10px; width: 40%;'}),
-            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
-            'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
+            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'inicio_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
         }
         labels = {
             'projeto': 'Projeto',
-            'subcontrole': 'Subcontrole',
+            'subcontrole': 'Controle de FMK',
             'acao': 'Ação',
             'onde': 'Onde (escopo)',
             'responsavel': 'Responsável',
@@ -215,7 +189,7 @@ class MeuModeloAcaoEditForm(forms.ModelForm):
 
         # Atualizações dos placeholders e classes dos inputs
         self.fields['projeto'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Projeto'})
-        self.fields['subcontrole'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Subcontrole'})
+        self.fields['subcontrole'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Subcontrole', 'style': 'font-size: 11px;', 'readonly': 'readonly'})
         self.fields['acao'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Ação'})
         self.fields['onde'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Onde (escopo)'})
         self.fields['responsavel'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Responsável'})
@@ -224,4 +198,4 @@ class MeuModeloAcaoEditForm(forms.ModelForm):
         self.fields['inicio_real'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Início Real'})
         self.fields['fim_real'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Fim Real'})
         self.fields['quanto'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Quanto'})
-        self.fields['observacao'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Observações'})
+        self.fields['observacao'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Observações', 'rows': 3})

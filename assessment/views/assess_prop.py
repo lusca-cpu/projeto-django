@@ -46,6 +46,11 @@ def process_save_prop(request, assessment):
                 if value in ['Sim', 'Não']:
                     prop.meta = value
                     prop.save()
+
+    # Atualizar a data de upload para a data atual
+    assessment.data_upload = timezone.now().date()
+    assessment.save()
+
     # Atualiza o campo excel_file do AssessmentModel com os dados atualizados
     update_assessment_file_prop(assessment)
 # Função quando a pessoa aperta o botão "Enviar" do Framework Proprio

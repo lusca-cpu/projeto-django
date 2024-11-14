@@ -1,9 +1,10 @@
 .card {
-    border-radius: 0px;
+    border-radius: 2px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra mais sutil */
     
 
     .card-header {
+      border-radius: 2px;
       padding-left: 0;
       font-size: 8px;
       color: white;
@@ -27,6 +28,8 @@
     display: flex;
     width: 125px;  
     height: 50px;
+    
+    
 }
 
   .card-body {
@@ -53,54 +56,7 @@
       padding-bottom: 0;
       color: #7d7c80;
   }
-    /*
 
-      .barra1 {
-    background-color: #025f7d;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 25px;
-    padding: 2px;
-    width: 100%; 
-    margin-left: 45px; 
-    margin-right: 40px;
-    color:white;
-}
-.barra2 {
-  background-color: #6a7072;
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  margin-left: 45px; 
-  margin-right: 40px; 
-  width: 100%; 
-  
-}
-    .card-footer {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 20px;  Ajusta o padding conforme necessário 
-        border-radius: 20px;  Bordas arredondadas, menos acentuadas 
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);  Sombra mais sutil 
-        background-color: #fff;  Cor de fundo das divs 
-        width: 250px; /* Largura ajustada para tornar o card menos quadrado 
-        height: 150px; /* Altura ajustada para tornar o card menos quadrado 
-    }
-
-    &.card-plain {
-      background-color: $card-plain-bg-color;  
-      box-shadow: $card-plain-box-shadow;
-      background-color: transparent;
-    } 
-    */
-    
   
   
   

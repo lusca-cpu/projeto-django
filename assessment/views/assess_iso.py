@@ -48,6 +48,10 @@ def process_save_iso(request, assessment):
                     iso.meta = value
                     iso.save()
 
+    # Atualizar a data de upload para a data atual
+    assessment.data_upload = timezone.now().date()
+    assessment.save()
+
     # Atualiza o campo excel_file do AssessmentModel com os dados atualizados
     update_assessment_file_iso(assessment)
 # Função quando a pessoa aperta o botão "Enviar" do Iso

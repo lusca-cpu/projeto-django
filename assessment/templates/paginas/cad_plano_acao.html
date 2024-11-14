@@ -6,7 +6,7 @@
 {% load static %}
 
 {% block nav %}
-    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
+    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: #0691c0;">
         Security Assessment - Plano de Ação
     </div>
 {% endblock %}
@@ -18,7 +18,7 @@
         <div class="d-none d-md-inline-block btn-primary d-flex me-2" style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
             <div>{{acao.nome}} / {{acao.data_assess}}</div>
         </div>
-        <button type="button" onclick="window.location.href='{{ assessment.excel_file.url }}'" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
+        <button type="button" onclick="window.location.href='{% url 'exportar_excel' acao_id %}'" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
             <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
                 <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
@@ -34,12 +34,12 @@
     </div>
     <!-- Tabela -->
     <div class="table-responsive font-middle px-5">
-        <table class="table">
+        <table class="table-sm">
             <thead>
                 <tr>
                     <th scope="col"></th>
                     <th scope="col">Projeto</th>
-                    <th scope="col">Subcontrole</th>
+                    <th scope="col">Controle de FMK</th>
                     <th scope="col">Ação</th>
                     <th scope="col">Onde</th>
                     <th scope="col">Rresp.</th>
@@ -83,15 +83,15 @@
                             R${{ cad_acao.quanto|floatformat:2 }}
                         {% endif %}
                     </td>
-                    <td>{{ cad_acao.inicio_pla|default_if_none:"" }}</td>
-                    <td>{{ cad_acao.fim_pla|default_if_none:"" }}</td>
-                    <td>{{ cad_acao.inicio_real|default_if_none:"" }}</td>
-                    <td>{{ cad_acao.fim_real|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.inicio_pla|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.fim_pla|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.inicio_real|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.fim_real|default_if_none:"" }}</td>
                     <td>{{ cad_acao.status }}</td>
                     <td style="text-align: center;">
-                        <div class="icon-container">                                            
+                        <div class="icon-container">
                             <!-- Ícone para informação -->
-                            <span data-bs-toggle="modal" data-bs-target="#iconeInfo">
+                            <span data-bs-toggle="modal" data-bs-target="#observacaoModal" data-observacao="{{ cad_acao.observacao }}">
                                 <svg class="bi-gear-fill" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
                                     <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
                                 </svg>
@@ -117,7 +117,62 @@
                 <div class="modal-body font-small mb-2">
                     <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadForm">
                         {% csrf_token %}
-                        {{ form1|crispy }}
+
+                        <div class="form-group row mb-2">
+                            <div class="col-8">
+                                {{ form1.projeto.label_tag }} {{ form1.projeto }}
+                            </div>
+                            <div class="col d-flex justify-content-end align-items-end">
+                                <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
+                                    <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
+                                    </svg>
+                                    Novo Projeto
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group mb-2">
+                            {{ form1.subcontrole.label_tag }} {{ form1.subcontrole }}
+                        </div>
+                        <div class="form-group mb-2">
+                            {{ form1.acao.label_tag }} {{ form1.acao }}
+                        </div>
+                        <div class="form-group row mb-2">
+                            <div class="col">
+                                {{ form1.onde.label_tag }}
+                                {{ form1.onde }}
+                            </div>
+                            <div class="col">
+                                {{ form1.responsavel.label_tag }}
+                                {{ form1.responsavel }}
+                            </div>
+                        </div>                       
+                        <div class="form-group row mb-2">
+                            <div class="col">
+                                {{ form1.inicio_pla.label_tag }}
+                                {{ form1.inicio_pla }}
+                            </div>
+                            <div class="col">
+                                {{ form1.fim_pla.label_tag }}
+                                {{ form1.fim_pla }}
+                            </div>
+                        </div>                       
+                        <div class="form-group row mb-2">
+                            <div class="col">
+                                {{ form1.inicio_real.label_tag }}
+                                {{ form1.inicio_real }}
+                            </div>
+                            <div class="col">
+                                {{ form1.fim_real.label_tag }}
+                                {{ form1.fim_real }}
+                            </div>
+                        </div>                       
+                        <div class="form-group mb-2">
+                            {{ form1.quanto.label_tag }} {{ form1.quanto }}
+                        </div>
+                        <div class="form-group mb-2">
+                            {{ form1.observacao.label_tag }} {{ form1.observacao }}
+                        </div>
 
                         <div class="mb-2 d-flex align-items-center font-small">
                             <div class="modal-body font-small modal-footer">
@@ -160,13 +215,75 @@
                 <div class="modal-body font-small mb-2">
                     <form id="editarCadPlanoModalForm" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {{ form2|crispy }}
+                        
+                        <div class="form-group mb-2">
+                            {{ form2.projeto.label_tag }} {{ form2.projeto }}
+                        </div>
+                        <div class="form-group mb-2">
+                            {{ form2.subcontrole.label_tag }} {{ form2.subcontrole }}
+                        </div>
+                        <div class="form-group mb-2">
+                            {{ form2.acao.label_tag }} {{ form2.acao }}
+                        </div>
+                        <div class="form-group row mb-2">
+                            <div class="col">
+                                {{ form2.onde.label_tag }}
+                                {{ form2.onde }}
+                            </div>
+                            <div class="col">
+                                {{ form2.responsavel.label_tag }}
+                                {{ form2.responsavel }}
+                            </div>
+                        </div>
+                        <div class="form-group row mb-2">
+                            <div class="col">
+                                {{ form2.inicio_pla.label_tag }}
+                                {{ form2.inicio_pla }}
+                            </div>
+                            <div class="col">
+                                {{ form2.fim_pla.label_tag }}
+                                {{ form2.fim_pla }}
+                            </div>
+                        </div>                        
+                        <div class="form-group row mb-2">
+                            <div class="col">
+                                {{ form2.inicio_real.label_tag }}
+                                {{ form2.inicio_real }}
+                            </div>
+                            <div class="col">
+                                {{ form2.fim_real.label_tag }}
+                                {{ form2.fim_real }}
+                            </div>
+                        </div>                        
+                        <div class="form-group mb-2">
+                            {{ form2.quanto.label_tag }} {{ form2.quanto }}
+                        </div>
+                        <div class="form-group mb-2">
+                            {{ form2.observacao.label_tag }} {{ form2.observacao }}
+                        </div>
                         
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary btn-sm font-small" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-success btn-sm font-small">Salvar</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para exibir a observação -->
+    <div class="modal fade" id="observacaoModal" tabindex="-1" aria-labelledby="observacaoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <header class="modal-title" id="observacaoModalLabel">Observação</header>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="observacaoContent">
+                    <!-- O conteúdo da observação será inserido aqui -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -178,17 +295,15 @@
         const uploadForm = document.getElementById('uploadForm');
         
         uploadForm.addEventListener('submit', function (event) {
-            // Impede o comportamento padrão do envio do formulário
-            event.preventDefault();
-
             // Checa se o formulário está válido
             if (!uploadForm.checkValidity()) {
-                // Se o formulário não estiver válido, exibe as mensagens de erro
+                // Se o formulário não estiver válido, exibe as mensagens de erro e impede o envio
+                event.preventDefault();
                 event.stopPropagation();
                 uploadForm.classList.add('was-validated');
             } else {
-                // Se o formulário estiver válido, você pode permitir o envio
-                uploadForm.submit();
+                // Se o formulário estiver válido, remove qualquer estilo de validação e permite o envio
+                uploadForm.classList.remove('was-validated');
             }
         });
     });
@@ -239,22 +354,22 @@
                     }
                     return response.json();
                 })
-                .then(data => {                    
-                    // Preenche os campos com os dados retornados do backend
-                    document.querySelector('#editarCadPlanoModal #id_projeto').value = data.projeto;
-                    document.querySelector('#editarCadPlanoModal #id_subcontrole').value = data.subcontrole;
-                    document.querySelector('#editarCadPlanoModal #id_acao').value = data.acao;
-                    document.querySelector('#editarCadPlanoModal #id_onde').value = data.onde;
-                    document.querySelector('#editarCadPlanoModal #id_responsavel').value = data.responsavel;
-                    document.querySelector('#editarCadPlanoModal #id_inicio_pla').value = data.inicio_pla;
-                    document.querySelector('#editarCadPlanoModal #id_fim_pla').value = data.fim_pla;
-                    document.querySelector('#editarCadPlanoModal #id_inicio_real').value = data.inicio_real;
-                    document.querySelector('#editarCadPlanoModal #id_fim_real').value = data.fim_real;
-                    document.querySelector('#editarCadPlanoModal #id_quanto').value = data.quanto;
-                    document.querySelector('#editarCadPlanoModal #id_observacao').value = data.observacao;
+                .then(data => {
+                    // Certifique-se de que os IDs dos campos estão corretos
+                    document.querySelector('#editarCadPlanoModalForm #id_projeto').value = data.projeto || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_subcontrole').value = data.subcontrole || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_acao').value = data.acao || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_onde').value = data.onde || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_responsavel').value = data.responsavel || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_inicio_pla').value = data.inicio_pla || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_fim_pla').value = data.fim_pla || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_inicio_real').value = data.inicio_real || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_fim_real').value = data.fim_real || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_quanto').value = data.quanto || '';
+                    document.querySelector('#editarCadPlanoModalForm #id_observacao').value = data.observacao || '';
 
-                    // Atualiza o action do formulário para a URL correta
-                    const form = document.querySelector('#editarCadPlanoModalForm');  // Certifique-se de selecionar o formulário correto
+                    // Atualize o action do formulário para o URL correto
+                    const form = document.querySelector('#editarCadPlanoModalForm');
                     form.action = url;
                 })
                 .catch(error => {
@@ -262,7 +377,18 @@
                 });
             });
         });
+    });
 
+    document.addEventListener("DOMContentLoaded", function() {
+        // Seleciona todos os ícones de informação
+        document.querySelectorAll('[data-bs-target="#observacaoModal"]').forEach(function(icon) {
+            icon.addEventListener("click", function() {
+                // Obtém o texto da observação a partir do atributo data-observacao
+                const observacao = this.getAttribute("data-observacao");
+                // Atualiza o conteúdo do modal com a observação
+                document.getElementById("observacaoContent").textContent = observacao ? observacao : "Sem observação registrada.";
+            });
+        });
     });
 </script>
 {% endblock %}

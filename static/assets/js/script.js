@@ -77,31 +77,105 @@ function abrirJanela(pagina, largura, altura) {
 }
 
 
-function downloadPDF() {
-    const item = document.querySelector(".content");
+//!---------Graficos---------------------->
+
+function downloadPDF(itemToExport) {
+    const item0 = document.querySelector("#content0");
+    const item1 = document.querySelector("#content1");
+    const item2 = document.querySelector("#content2");
+    const item3 = document.querySelector("#content3");
+
     const loadingIndicator = document.createElement('div');
     loadingIndicator.textContent = "Generating PDF...";
     document.body.appendChild(loadingIndicator);
 
-    var opt = {
-        margin: [0.15, 0.15, 0, 0.15], // [top, left, bottom, right] }, //Altere o valor de bottom conforme necessário
-        filename: "myfile.pdf",
-        html2canvas: {
-            scale: 3, 
-            useCORS: true 
-        },
-        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    // Criar um elemento temporário para concatenar os conteúdos
+    const tempDiv = document.createElement('div');
+    
+    tempDiv.style.width = '100%';
+    tempDiv.style.height = 'auto';
+    tempDiv.style.overflow = 'visible';
+
+    // Adicionar os conteúdos de acordo com o parâmetro
+    if (itemToExport === 0) {
+        tempDiv.appendChild(item0.cloneNode(true)); // Adiciona item0
+    } else if (itemToExport === 1) {
+        tempDiv.appendChild(item0.cloneNode(true)); // Adiciona item0
+        tempDiv.appendChild(item1.cloneNode(true)); // Adiciona item1
+    } else if (itemToExport === 2) {
+        tempDiv.appendChild(item0.cloneNode(true)); // Adiciona item0
+        tempDiv.appendChild(item2.cloneNode(true)); // Adiciona item2
+    } else if (itemToExport === 3) {
+        tempDiv.appendChild(item0.cloneNode(true)); // Adiciona item0
+        tempDiv.appendChild(item3.cloneNode(true)); // Adiciona item3
+    }
+
+    // Verifica se existem imagens e aguarda o carregamento
+    const images = tempDiv.querySelectorAll('img');
+    let loadedImages = 0;
+
+    images.forEach((img) => {
+        img.onload = () => {
+            loadedImages++;
+            if (loadedImages === images.length) {
+                generatePDF();
+            }
+        };
+    });
+
+    // Se não houver imagens, gera o PDF imediatamente
+    if (images.length === 0) {
+        generatePDF();
+    }
+
+    // Função para debouncing do redimensionamento do gráfico
+    let timeout;
+    const handleResize = () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            // Adicione aqui o código para redesenhar o gráfico, se necessário
+            // Por exemplo: Plotly.redraw('meuGrafico'); // Altere para o ID do seu gráfico
+        }, 200);
     };
 
-    html2pdf()
-        .set(opt)
-        .from(item)
-        .save()
-        .then(() => {
-            loadingIndicator.remove(); // Remove loading indicator after saving
-        })
-        .catch((error) => {
-            console.error("PDF generation failed:", error);
-            loadingIndicator.textContent = "Failed to generate PDF.";
-        });
+    window.addEventListener('resize', handleResize);
+
+    function generatePDF() {
+        var opt = {
+            margin: [0, 0, 0, 0], // [top, left, bottom, right]
+            filename: "myfile.pdf",
+            html2canvas: {
+                scale: 2, 
+                useCORS: true,
+                image: { type: 'png', quality: 0.98 }
+            },
+            jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+        };
+        
+        html2pdf()
+            .set(opt)
+            .from(tempDiv)
+            .save()
+            .then(() => {
+                loadingIndicator.remove(); // Remove loading indicator after saving
+            })
+            .catch((error) => {
+                console.error("PDF generation failed:", error);
+                loadingIndicator.textContent = "Failed to generate PDF.";
+            })
+            .finally(() => {
+                window.removeEventListener('resize', handleResize); // Remove o listener após gerar o PDF
+            });
+    }
 }
+
+        // Obtém a data atual
+        const dataAtual = new Date();
+        
+        // Formata a data no formato DD/MM/AAAA
+        const dia = String(dataAtual.getDate()).padStart(2, '0');
+        const mes = String(dataAtual.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
+        const ano = dataAtual.getFullYear();
+
+        // Define a data formatada no elemento com id "data"
+        document.getElementById('data').textContent = `${dia}/${mes}/${ano}`;

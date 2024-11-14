@@ -36,6 +36,10 @@ def andamento_excel_cis(excel_file, assessment):
         if 'Meta' in row and pd.notna(row['Meta']):
             cis.meta = row['Meta'] if row['Meta'] in ['Sim', 'Não'] else cis.meta
 
+        # Atualizar a data de upload para a data atual
+        assessment.data_upload = timezone.now().date()
+        assessment.save()
+
         # Salva as alterações no banco de dados
         cis.save()
 
@@ -141,7 +145,41 @@ def update_assessment_file_cis(assessment):
 
 
 # -------- NIST -------- #
-# Função para criar um arquivo excel do Nist
+# Função para processar o arquivo excel do Nist
+def andamento_excel_nist(excel_file, assessment):
+    df = pd.read_excel(excel_file)
+
+    # Filtra os CisModel que estão associados ao assessment atual
+    nist_models = NistModel.objects.filter(assessment=assessment)
+
+    for nist, (_, row) in zip(nist_models, df.iterrows()):
+        # Processar nota Css
+        if 'NotaCss' in row and pd.notna(row['NotaCss']):
+            nist.notaCss = row['NotaCss']  # Atualizar o campo notaCss no modelo
+
+        # Processar nota Cl
+        if 'NotaCl' in row and pd.notna(row['NotaCl']):
+            nist.notaCl = row['NotaCl']  # Atualizar o campo notaCl no modelo
+
+        # Processar comentários
+        if 'Comentários' in row and pd.notna(row['Comentários']):
+            nist.comentarios = row['Comentários']  # Atualizar o campo comentarios no modelo
+
+        # Processar nota Meta
+        if 'Meta' in row and pd.notna(row['Meta']):
+            nist.meta = row['Meta']  # Atualizar o campo meta no modelo
+
+        # Atualizar a data de upload para a data atual
+        assessment.data_upload = timezone.now().date()
+        assessment.save()
+
+        # Salva as alterações no banco de dados
+        assessment.data_upload = timezone.now().date()
+        nist.save()
+
+    # Atualiza o arquivo do assessment
+    update_assessment_file_nist(assessment)
+# Função para processar o arquivo excel do Nist
 def concluido_excel_nist(excel_file, assessment):
     df = pd.read_excel(excel_file)
 
@@ -260,6 +298,10 @@ def andamento_excel_iso(excel_file, assessment):
         # Processa meta
         if 'Meta' in row and pd.notna(row['Meta']):
             iso.meta = row['Meta'] if row['Meta'] in ['Conforme', 'Parcialmente', 'Não'] else iso.meta
+
+        # Atualizar a data de upload para a data atual
+        assessment.data_upload = timezone.now().date()
+        assessment.save()
 
         # Salva as alterações no banco de dados
         iso.save()
@@ -389,6 +431,10 @@ def andamento_excel_prop(excel_file, assessment):
         # Processa meta
         if 'Meta' in row and pd.notna(row['Meta']):
             prop.meta = row['Meta'] if row['Meta'] in ['Sim', 'Não'] else prop.meta
+
+        # Atualizar a data de upload para a data atual
+        assessment.data_upload = timezone.now().date()
+        assessment.save()
 
         # Salva as alterações no banco de dados
         prop.save()

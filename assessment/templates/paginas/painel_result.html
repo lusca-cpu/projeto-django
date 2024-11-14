@@ -1,488 +1,516 @@
-{% extends 'base.html' %}
-
-{% block title %}Painel de Resultados{% endblock %}
-
-{% load static %}
-
-{% block nav %}
-    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: white; background-color: #a0cad8; border-radius: 4px; padding: 5px;">
-        Security Assessment - Painel de Resultados
-    </div>
-{% endblock %}
-
+<!-- Página testada em Firefox, Chrome, Edge, celular vertical/horizontal galaxi note, 
+ iphone pro, compatível com a função de exportação em visualização de 100%
+-->
+{% extends 'base.html' %} 
+{% block title %}Painel de Resultados{% endblock %} 
+{% load static %} 
 {% block content %}
 
+<!--avaliar alteração para bloco editavel dentro da página do painel_result-->
 <link href="{% static 'assets/css/graficos.css' %}" rel="stylesheet" />
 <script src="{% static 'assets/js/html2pdf.bundle.min.js' %}" defer></script>
 
-<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ps ps--active-y">
-    <div class="container-fluid py-2">
-      <!--div de cabeçalho -->
-      <div class="d-flex mb-2" style="margin-top: 30px; margin-left: 30px; margin-right: 20px">
-        <div class="d-none d-md-inline-block btn-primary d-flex me-2" style=" background-color: #a0cad8; color: white; font-size: 11px; font-weight: bold;
-            padding: 5px; width: 100%; justify-content: flex-start;">
-          <div>{{ framework.nome }}Dashboards</div>
-        </div>
-        <!--botao framework-->
-        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2"
-          data-bs-toggle="dropdown" aria-expanded="false" >
-          <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16" >
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
-          </svg>
-          Framework
-        </button>
-        <ul class="dropdown-menu font-small">
-          <li>
-            <a class="dropdown-item"  href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">Lista de framewors</a>
-          </li>
-          {% for framework in frameworks %}
-          <li> <a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}"
-              >{{ framework.nome }}</a>
-          </li>
-          {% endfor %}
-        </ul>
-        <!--botao selecionar data -->
-        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2"
-          data-bs-toggle="dropdown" aria-expanded="false" >
-          <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1"
-            viewBox="0 0 16 16" >
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
-          </svg>
-          Data...........
-        </button>
-        <ul class="dropdown-menu font-small"> 
-          <li><a class="dropdown-item" href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
-            Lista de datas</a>
-            Lista de datas</a> 
-          </li>
-          {% for framework in frameworks %}
-          <li>
-            <a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}">
-              {{ framework.nome }}
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
-        <!--botao exportar-->
-        <button id="generate-pdf" type="button" onclick="downloadPDF()"
-          class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
-          <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
-            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
-            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
-          </svg>
-          Exportar
-        </button>
+<!-- para alterar o percentual da tela caso necessário 1.0=100%
+<style>
+.content {
+    transform: scale(1);
+    transform-origin: 0 0;
+  }
+</style>
+-->
+
+<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ps ps--active-y" style="background-color: #F6F7F8;">
+  <div class="container-fluid py-2">
+  <div class="content0" id="content0">
+    <!--div de cabeçalho -->
+    <div class="d-flex mb-2" style="margin-top: 30px; margin-left: 30px; margin-right: 20px">
+      <div class="d-none d-md-inline-block btn-primary d-flex me-2" style=" background-color: #a0cad8; color: white; font-size: 12px; font-weight: bold;
+          padding: 5px; width: 100%; justify-content: flex-start;">
+        <div>{{ framework.nome }}Dashboards </div>
       </div>
+      <!--botao framework-->
+      <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2"
+        data-bs-toggle="dropdown" aria-expanded="false" >
+        <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16" >
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
+        </svg>
+        Framework
+      </button>
+      <ul class="dropdown-menu font-small">
+        <li>
+          <a class="dropdown-item"  href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">Lista de framewors</a>
+        </li>
+        {% for framework in frameworks %}
+        <li> <a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}"
+            >{{ framework.nome }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      <!--botao selecionar data -->
+      <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2"
+        data-bs-toggle="dropdown" aria-expanded="false" >
+        <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1"
+          viewBox="0 0 16 16" >
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
+        </svg>
+        Data...........
+      </button>
+      <ul class="dropdown-menu font-small"> 
+        <li><a class="dropdown-item" href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
+          Lista de datas</a>
+          Lista de datas</a> 
+        </li>
+        {% for framework in frameworks %}
+        <li>
+          <a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}">
+            {{ framework.nome }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      <!--botao exportar
+      <button id="generate-pdf" type="button" onclick="downloadPDF()"
+        class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
+        <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+        </svg>
+        Exportar
+      </button>-->
     </div>
-  <!--Necessario content para exportação do conteúdo-->
-    <div class="content" id="content">
-  <!--Seção 1.................................................................... -->    
+   </div>
+</div> <!--end content0-->
+<div style="background-color: #F6F7F8">
+<!--Seção 1.................................................................... -->    
+  <div class="content1" id="content1"> <!--Necessario content para exportação do conteúdo-->
     <div class="container-fluid py-2">
-        <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
-          <div class="nome_secao">Resultado do Assessment</div>
-          <div class="nome_secao">16/10/2024</div>
+
+      <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
+           <div class="nome_secao">Resultado do Assessment <span id="data" style="color: #7d7c80; margin-left:530px;font-size:11px;"></span> </div>
+           <div class="nome_secao" style="align:left"></div>
+           <span id="downloadIcon" onclick="downloadPDF(1)">
+              <svg class="bi-gear-fill" viewBox="0 0 16 16">
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
+              </svg>
+           </span>
+      
         </div>
         <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
       </div>
       <!-- Container para melhor controle da responsividade-->
       <div class="container-fluid py-2">
         <!--linha 1 dividida em 2 colunas -->
-        <div class="row g-0 mb-3"> <!--espaçamento entre linhas de 3-->
-          <!-------------------------------------- Gráfico de velocimetro-->
-          <div class="col-xl-6 col-sm-6 mb-xl-0"> <!-- 6 colunas em telas  (como desktops) e 6 colunas em telas pequenas -->
-            <div class="card p-1" style=" box-sizing: border-box; margin: 0; padding: 0;">
-              <div class="font-titulo">Aderência ao CIS controls</div>
-              <p class="subtitulo">Nota total de aderência e meta</p>
-              <div class="card-body z-index-2" style="box-sizing: border-box;margin: 0; padding: 0;">  
-                <div class="container-fluid">
-                <div class="row p-0">
-                  <!-- zera espaço entre card tb coluna e margem esquerda-->
-                  <div class="col-xl-6 col-sm-6 mb-xl-0 p-0" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-                    {{ grafico_velocimetro|safe }}
-                  </div>
-  
-                  <div class="col-auto mt-0" style="box-sizing: border-box; margin: 0; padding: 0;  ">
-                    <!--IG1-->
-                    <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
-                      <div class="row">
-                        <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #27bb60" >
-                          <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
-                            IG1
-                          </h6>
-                        </div>
-                        <div class="col-auto p-0 text-left">
-                          <h6 style="line-height: 1; margin: 0;">
-                            <span style="font-weight: bold;">40%</span>
-                          </h6>
-                          <p style="font-size: 9px; line-height: 1; margin: 0;">
-                            <span> x </span> de y subconjuntos
-                          </p>
-                          <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
-                            Meta:<span>50%</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <!--end IG1-->
-                    <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
-                      <div class="row">
-                        <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: orange" >
-                          <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
-                            IG2
-                          </h6>
-                        </div>
-                        <div class="col-auto p-0 text-left">
-                          <h6 style="line-height: 1; margin: 0;">
-                            <span style="font-weight: bold;">40%</span></h6>
-                          <p style="font-size: 9px; line-height: 1; margin: 0;">
-                            <span> x </span> de y subconjuntos
-                          </p>
-                          <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
-                            Meta:<span>50%</span>
-                          </p>
-                        </div>
-                      </div>
-                      </div>
-                    <!--end IG2-->
-                    <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
-                      <div class="row">
-                        <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #a0cad8" >
-                          <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
-                            IG3
-                          </h6>
-                        </div>
-                        <div class="col-auto p-0 text-left">
-                          <h6 style="line-height: 1; margin: 0;">
-                            <span style="font-weight: bold;">40%</span></h6>
-                          <p style="font-size: 9px; line-height: 1; margin: 0;">
-                            <span> x </span> de y subconjuntos
-                          </p>
-                          <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
-                            Meta:<span>50%</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>  
-                </div> <!--row-->
-              </div><!--end card body-->
-            </div> <!--end card-->
-          </div> <!--col-->
-        
-          <!-------------------------------------- Gráfico de radar-->
-          <div class="col-xl-5 col-sm-5 mb-xl-0">
-            <div class="card p-1">
-              <span class="font-titulo"> Aderência ao CIS por função de segurança</span>
-              <p class="subtitulo"> Quantidade de itens aderentes por tipo de ativo </p>
-              <div class="card-body" style="box-sizing: border-box; margin: 0; padding: 0;border: 1px solid blue;">
-                <div class="row p-0 w-100">
-                  <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid red;">
-                    {{ grafico_radar|safe }}
+        <div class="row g-0 mb-2"> <!--espaçamento entre linhas de 3-->
+        <!-------------------------------------- Gráfico de velocimetro-->
+        <div class="col-xl-6 col-sm-6 mb-xl-0"> <!-- 6 colunas em telas  (como desktops) e 6 colunas em telas pequenas -->
+          <div class="card p-1" style=" box-sizing: border-box; margin: 0; padding: 0;">
+            <div class="font-titulo">Aderência ao CIS controls</div>
+            <p class="subtitulo">Nota total de aderência e meta</p>
+            <div class="card-body z-index-2" style="box-sizing: border-box;margin: 0; padding: 0;">  
+              <div class="container-fluid">
+              <div class="row p-0">
+                <!-- zera espaço entre card tb coluna e margem esquerda-->
+                <div class="col-xl-6 col-sm-6 mb-xl-0 p-0">
+                  {{ grafico_velocimetro|safe }}
                 </div>
-              </div>
-            </div>
-          </div>
-        </div> <!--end row-->
-  
-        <!--linha 2 dividida em 1 coluna -->
-        <div class="row g-0 mb-3"> 
-          <!-----------------------------------Gráfico de Aderencia/Serie-->
-          <div class="col-xl-9 col-sm-9 mb-xl-0">
-            <div class="card p-1 d-flex justify-content-center">
-              <span class="font-titulo"> Aderência do CIS Controls por Categoria vs Meta</span>
-              <p class="subtitulo">
-                Quantidade de itens aderentes por tipo de ativo
-              </p>
-              <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                <div class="row p-0 w-100">
-                  <div class="col-xl-9 col-sm-9 mb-xl-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid red;">
-                     {{ grafico_serie|safe }}
+
+                <div class="col-auto mt-0" style="box-sizing: border-box; margin: 0; padding: 0;  ">
+                  <!--IG1-->
+                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
+                    <div class="row">
+                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #27bb60" >
+                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
+                          IG1
+                        </h6>
+                      </div>
+                      <div class="col-auto p-0 text-left">
+                        <h6 style="line-height: 1; margin: 0;">
+                          <span style="font-weight: bold;">40%</span>
+                        </h6>
+                        <p style="font-size: 9px; line-height: 1; margin: 0;">
+                          <span> x </span> de y subconjuntos
+                        </p>
+                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
+                          Meta:<span>50%</span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div> 
-              </div>
-            
-            </div>
-          </div> 
-        </div> <!--end row-->
-  
-        <!--linha 3 dividida em 1 coluna -->
-        <div class="row g-0 mb-3"> 
-          <!-----------------------------------Gráfico de linha/nota-->
-          <div class="col-xl-9 col-sm-9 mb-xl-0">
-            <div class="card p-1 pb-0 d-flex justify-content-center"  style=" box-sizing: border-box; margin: 0; padding: 0;">
-              <span class="font-titulo">
-                Aderência ao CIS por função de segurança</span>
-              <p class="subtitulo">
-                Quantidade de itens aderentes por tipo de ativo
-              </p>
-              <div class="card-body pb-2 d-flex justify-content-center p-0" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-                <div class="row p-0 w-100">
-                  <div class="col-xl-9 col-sm-9 mb-xl-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid red;">
-                    {{ grafico_linha|safe }}
-                </div>
-              </div> 
-            </div>
-          </div>
-        </div>
-        </div><!--end row-->
-  
-        <!--linha 4 ocupando 10 col -->
-        <div class="container-fluid py-2">
-          <div class="row g-0 mb-3"> <!--margem inferior de 3-->
-          <!-----------------------------------Gráfico de nota e meta-->
-            <div class="col-xl-8 col-sm-8 mb-xl-0">
-            
-              <div class="row">
-                <div class="card p-1 pb-3">
-                  <span class="font-titulo">
-                    Aderência do CIS Controls por tipo de ativo
-                  </span>
-                  <p class="subtitulo">
-                    Quantidade de itens aderentes por tipo de ativo
-                  </p>
-                  <div class="row">
-                    <!--cartao 1-->
-                    <div class="card-tamanho col-2 col-sm-2 pt-2" style="border: 1px solid gray">
-                      <div class="row">
-                        <div class="col-1 pt-2">
-                          <div class="icon icon-shape">
-                            <svg width="25" height="25" fill="currentColor" class="bi bi-window-stack" viewBox="0 0 16 16" >
-                              <path d="M4.5 6a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M6 6a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0" />
-                              <path d="M12 1a2 2 0 0 1 2 2 2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2 2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM2 12V5a2 2 0 0 1 2-2h9a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1m1-4v5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8zm12-1V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2z" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="col-7 text-center">
-                          <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
-                            Applications
-                          </h5>
-                          <h5
-                            style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
-                            <span> x</span> /y
-                          </h5>
-                          <p style="font-size: 10px">Aderentes</p>
-                          <p></p>
-                        </div>
+                  <!--IG2-->
+                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
+                    <div class="row">
+                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: orange" >
+                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
+                          IG2
+                        </h6>
+                      </div>
+                      <div class="col-auto p-0 text-left">
+                        <h6 style="line-height: 1; margin: 0;">
+                          <span style="font-weight: bold;">40%</span></h6>
+                        <p style="font-size: 9px; line-height: 1; margin: 0;">
+                          <span> x </span> de y subconjuntos
+                        </p>
+                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
+                          Meta:<span>50%</span>
+                        </p>
                       </div>
                     </div>
-                    <!--cartao 2-->
-                    <div class="card-tamanho col-2 col-sm-2 pt-2" style="border: 1px solid gray">
-                      <div class="row">
-                        <div class="col-2 pt-2">
-                          <div class="icon icon-shape">
-                            <svg width="25" height="25" fill="currentColor" class="bi bi-database-fill"
-                              viewBox="0 0 16 16" >
-                              <path d="M3.904 1.777C4.978 1.289 6.427 1 8 1s3.022.289 4.096.777C13.125 2.245 14 2.993 14 4s-.875 1.755-1.904 2.223C11.022 6.711 9.573 7 8 7s-3.022-.289-4.096-.777C2.875 5.755 2 5.007 2 4s.875-1.755 1.904-2.223"/>
-                              <path d="M2 6.161V7c0 1.007.875 1.755 1.904 2.223C4.978 9.71 6.427 10 8 10s3.022-.289 4.096-.777C13.125 8.755 14 8.007 14 7v-.839c-.457.432-1.004.751-1.49.972C11.278 7.693 9.682 8 8 8s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972"/> 
-                              <path d="M2 9.161V10c0 1.007.875 1.755 1.904 2.223C4.978 12.711 6.427 13 8 13s3.022-.289 4.096-.777C13.125 11.755 14 11.007 14 10v-.839c-.457.432-1.004.751-1.49.972-1.232.56-2.828.867-4.51.867s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972"/>
-                              <path d="M2 12.161V13c0 1.007.875 1.755 1.904 2.223C4.978 15.711 6.427 16 8 16s3.022-.289 4.096-.777C13.125 14.755 14 14.007 14 13v-.839c-.457.432-1.004.751-1.49.972-1.232.56-2.828.867-4.51.867s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972"/>
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="col-6 text-center">
-                          <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">Data</h5>
-                          <h5 style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
-                            <span> x</span> /y
-                          </h5>
-                          <p style="font-size: 10px">Aderentes</p>
-                        </div>
-                      </div>
                     </div>
-                    <!--cartao 3-->
-                    <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray">
-                      <div class="row">
-                        <div class="col-2 pt-2">
-                          <div class="icon icon-shape text-center">
-                            <svg width="25" height="25" fill="currentColor" class="bi bi-tablet"
-                              viewBox="0 0 16 16" >
-                              <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/> <path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="col-6 text-center">
-                          <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
-                            Devices
-                          </h5>
-                          <h5
-                            style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
-                            <span> x</span> /y
-                          </h5>
-                          <p style="font-size: 10px">Aderentes</p>
-                        </div>
+                  <!--IG3-->
+                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
+                    <div class="row">
+                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #a0cad8" >
+                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
+                          IG3
+                        </h6>
                       </div>
-                    </div>
-                    <!--cartao 4-->
-                    <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray">
-                      <div class="row">
-                        <div class="col-2 pt-2">
-                          <div class="icon icon-shape text-center">
-                            <svg width="25" height="25" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
-                              <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="col-6 text-center">
-                          <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
-                            Users
-                          </h5>
-                          <h5
-                            style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
-                            <span> x</span> /y
-                          </h5>
-                          <p style="font-size: 10px">Aderentes</p>
-                        </div>
-                      </div>
-                    </div>
-                    <!--cartao 5-->
-                    <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray" >
-                      <div class="row">
-                        <div class="col-2 pt-2">
-                          <div class="icon icon-shape text-center">
-                            <svg width="25" height="25" fill="currentColor"  class="bi bi-globe" viewBox="0 0 16 16" >
-                              <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7 7 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7 7 0 0 0 13.745 12H11.91a9.3 9.3 0 0 1-.64 1.539 7 7 0 0 1-.597.933M8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7 7 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="col-6 text-center">
-                          <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
-                            Network
-                          </h5>
-                          <h5 style=" font-weight: bold;font-size: 12px; line-height: 1px; color: darkblue;" >
-                            <span> x</span> /y
-                          </h5><p style="font-size: 10px">Aderentes</p>
-                        </div>
-                      </div>
-                    </div>
-                    <!--cartao 6-->
-                    <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray">
-                      <div class="row">
-                        <div class="col-2 pt-2">
-                          <div class="icon icon-shape text-center">
-                            <svg width="25" height="25" fill="currentColor" class="bi bi-arrows-move" viewBox="0 0 16 16" >
-                              <path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 
-                              2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10M.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L1.707 7.5H5.5a.5.5 0 0 1 0 1H1.707l1.147 1.146a.5.5 0 0 1-.708.708zM10 8a.5.5 0 0 1
-                              .5-.5h3.793l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L14.293 8.5H10.5A.5.5 0 0 1 10 8"/>
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="col-6 text-center">
-                          <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">N/A</h5>
-                          <h5 style=" font-weight: bold; font-size: 12px; line-height: 1px; ">
-                            <span> x</span> /y
-                          </h5>
-                          <p style="font-size: 10px">Aderentes</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div> <!--end row-->
-                </div> <!--end card-->
-              </div> <!--end row-->
-             <!--end container -->
-        </div> <!--end col-xl-->
-        </div> <!--end row-->
-       </div> 
-    </div><!--Container seção-->
-    <!--Seção 2..................................................................-->
-    <div class="container-fluid py-2">
-      <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
-        <div class="nome_secao">Status do plano de Ação</div>
-        <div class="nome_secao">16/10/2024</div>
-      </div>
-      <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
-    </div>
-    <!-- Container para melhor controle da responsividade-->
-    <div class="container-fluid py-2">
-      <!--linha 5 dividida em 2 colunas -->
-      <div class="row g-0 mb-3"> 
-  
-        <!-------------------------------------- Gráfico de Ações-->
-        <div class="col-xl-4 col-sm-4 mb-xl-0"> 
-            <div class="row d-flex">
-                  <div class="col-5" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-                   <!--cartao1-->
-                   <div class="card mb-1"> 
-                      <div class="card-header">
-                        Qtde Ações por plano                
-                      </div>
-                      <div class="card-body p-1">
-                        <div class="row w-100">
-                          <div class="col-auto">
-                            <div> <h6 style="font-weight: bold"> 114 </h6>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div> <!--end card1-->
-                  </div> <!--end col cartao 1-->
-                
-                <div class="col-5 p-0" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-                   <!--cartao2-->
-                  <div class="card mb-1"> 
-                    <div class="card-header">
-                      % Ações por plano                 
-                    </div>
-                      <div class="card-body p-1">
-                        <div class="row w-100">
-                          <div class="col-auto">
-                            <div> <h6 style="font-weight: bold;"> 15% </h6>
-                            </div>
-                          </div>
-                        </div>
-                    </div>
-                  </div> <!--end col card2-->
-                 </div> 
-                </div> <!--end row cards-->  
-                <!---------------------------------------Grafico roda -->
-                <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
-                  <div class="font-titulo">Status Geral</div>
-                    <p class="subtitulo">Soma do staus das ações do Plano de Ação</p>
-                  <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
-                    <div class="row p-0 w-100">
-                      <div class="col-10 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-                        {{ grafico_roda|safe }}
+                      <div class="col-auto p-0 text-left">
+                        <h6 style="line-height: 1; margin: 0;">
+                          <span style="font-weight: bold;">40%</span></h6>
+                        <p style="font-size: 9px; line-height: 1; margin: 0;">
+                          <span> x </span> de y subconjuntos
+                        </p>
+                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
+                          Meta:<span>50%</span>
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
-             
-        </div>  <!--coluna grafico ações-->
-        <!-------------------------------------- Gráfico de barra responsavel-->
-        <div class="col-xl-7 col-sm-7 mb-xl-0">
-          <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
-            <span class="font-titulo"> Status das ações por responsável</span>
-            <p class="subtitulo"> Status das ações atribuidas por responsável no Plano de Ação </p>
-            <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
+              </div>  
+              </div> <!--row-->
+            </div><!--end card body-->
+          </div> <!--end card-->
+        </div> <!--col-->
+      
+        <!-------------------------------------- Gráfico de radar-->
+        <div class="col-xl-5 col-sm-5 mb-xl-0">
+          <div class="card p-1">
+            <span class="font-titulo"> Aderência ao CIS por função de segurança</span>
+            <p class="subtitulo"> Medição por porcentagem (%) </p>
+            <div class="card-body" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 w-100">
-                <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid red;">
-                   {{ grafico_barra_r|safe }}
-                </div>
-              </div> 
+                <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                  {{ grafico_radar|safe }}
+              </div>
             </div>
           </div>
         </div>
-  
       </div> <!--end row-->
-    </div> <!-- container-->
-  
-    <!--Seção 3..................................................................-->
-    
+   </div> 
+   </div> <!--end id=content1--> 
+      <!--linha 2 dividida em 1 coluna -->
+      <div class="row g-0 mb-2"> 
+        <!-----------------------------------Gráfico de Aderencia/Serie-->
+        <div class="col-xl-8 col-sm-8 mb-xl-0">
+          <div class="card p-1 d-flex justify-content-center">
+            <span class="font-titulo"> Aderência do CIS Controls por Categoria vs Meta</span>
+            <p class="subtitulo">
+              Medição por porcentagem (%) quantidade de controles aderentes e meta
+            </p>
+            <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+              <div class="row p-0 g-0 w-100">
+                <div class="col-11" style="margin-left:-5px;">
+                   {{ grafico_serie|safe }}
+                </div>
+              </div> 
+            </div>
+          
+          </div>
+        </div> 
+      </div> <!--end row-->
+
+      <!--linha 3 dividida em 1 coluna -->
+      <div class="row g-0 mb-2" style="page-break-after:auto"> 
+        <!-----------------------------------Gráfico de linha/nota-->
+        <div class="col-xl-8 col-sm-8 mb-xl-0">
+          <div class="card p-1 pb-0 d-flex justify-content-center"  style=" box-sizing: border-box; margin: 0; padding: 0;">
+            <span class="font-titulo">
+              Aderência ao CIS por função de segurança</span>
+            <p class="subtitulo">
+              Comparação entre a nota e meta de cada assessment CIS Controls V8.1 realizados
+            </p>
+            <div class="card-body pb-2 d-flex justify-content-center p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+              <div class="row p-0 w-100">
+                <div class="col-xl-11 col-sm-11 mb-xl-0 justify-content-center">
+                  {{ grafico_linha|safe }}
+              </div>
+            </div> 
+          </div>
+        </div>
+      </div>
+      </div><!--end row-->
+
+      <!--linha 4 ocupando 10 col -->
+      <div class="container-fluid py-2">
+        <div class="row g-0 mb-3"> <!--margem inferior de 3-->
+        <!-----------------------------------Gráfico de nota e meta-->
+          <div class="col-xl-8 col-sm-8 mb-xl-0">
+          
+            <div class="row">
+              <div class="card p-1 pb-3">
+                <span class="font-titulo">
+                  Aderência do CIS Controls por tipo de ativo
+                </span>
+                <p class="subtitulo">
+                  Quantidade de itens aderentes por tipo de ativo 
+                </p>
+                <div class="row">
+                  <!--cartao 1-->
+                  <div class="card-tamanho col-2 col-sm-2 pt-2" style="border: 1px solid gray">
+                    <div class="row">
+                      <div class="col-1 pt-2">
+                        <div class="icon icon-shape">
+                          <svg width="25" height="25" fill="currentColor" class="bi bi-window-stack" viewBox="0 0 16 16" >
+                            <path d="M4.5 6a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M6 6a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0" />
+                            <path d="M12 1a2 2 0 0 1 2 2 2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2 2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zM2 12V5a2 2 0 0 1 2-2h9a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1m1-4v5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8zm12-1V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="col-7 text-center">
+                        <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
+                          Applications
+                        </h5>
+                        <h5
+                          style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
+                          <span> x</span> /y
+                        </h5>
+                        <p style="font-size: 10px">Aderentes</p>
+                        <p></p>
+                      </div>
+                    </div>
+                  </div>
+                  <!--cartao 2-->
+                  <div class="card-tamanho col-2 col-sm-2 pt-2" style="border: 1px solid gray">
+                    <div class="row">
+                      <div class="col-2 pt-2">
+                        <div class="icon icon-shape">
+                          <svg width="25" height="25" fill="currentColor" class="bi bi-database-fill"
+                            viewBox="0 0 16 16" >
+                            <path d="M3.904 1.777C4.978 1.289 6.427 1 8 1s3.022.289 4.096.777C13.125 2.245 14 2.993 14 4s-.875 1.755-1.904 2.223C11.022 6.711 9.573 7 8 7s-3.022-.289-4.096-.777C2.875 5.755 2 5.007 2 4s.875-1.755 1.904-2.223"/>
+                            <path d="M2 6.161V7c0 1.007.875 1.755 1.904 2.223C4.978 9.71 6.427 10 8 10s3.022-.289 4.096-.777C13.125 8.755 14 8.007 14 7v-.839c-.457.432-1.004.751-1.49.972C11.278 7.693 9.682 8 8 8s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972"/> 
+                            <path d="M2 9.161V10c0 1.007.875 1.755 1.904 2.223C4.978 12.711 6.427 13 8 13s3.022-.289 4.096-.777C13.125 11.755 14 11.007 14 10v-.839c-.457.432-1.004.751-1.49.972-1.232.56-2.828.867-4.51.867s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972"/>
+                            <path d="M2 12.161V13c0 1.007.875 1.755 1.904 2.223C4.978 15.711 6.427 16 8 16s3.022-.289 4.096-.777C13.125 14.755 14 14.007 14 13v-.839c-.457.432-1.004.751-1.49.972-1.232.56-2.828.867-4.51.867s-3.278-.307-4.51-.867c-.486-.22-1.033-.54-1.49-.972"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="col-6 text-center">
+                        <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">Data</h5>
+                        <h5 style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
+                          <span> x</span> /y
+                        </h5>
+                        <p style="font-size: 10px">Aderentes</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!--cartao 3-->
+                  <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray">
+                    <div class="row">
+                      <div class="col-2 pt-2">
+                        <div class="icon icon-shape text-center">
+                          <svg width="25" height="25" fill="currentColor" class="bi bi-tablet"
+                            viewBox="0 0 16 16" >
+                            <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/> <path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="col-6 text-center">
+                        <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
+                          Devices
+                        </h5>
+                        <h5
+                          style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
+                          <span> x</span> /y
+                        </h5>
+                        <p style="font-size: 10px">Aderentes</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!--cartao 4-->
+                  <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray">
+                    <div class="row">
+                      <div class="col-2 pt-2">
+                        <div class="icon icon-shape text-center">
+                          <svg width="25" height="25" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="col-6 text-center">
+                        <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
+                          Users
+                        </h5>
+                        <h5
+                          style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
+                          <span> x</span> /y
+                        </h5>
+                        <p style="font-size: 10px">Aderentes</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!--cartao 5-->
+                  <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray" >
+                    <div class="row">
+                      <div class="col-2 pt-2">
+                        <div class="icon icon-shape text-center">
+                          <svg width="25" height="25" fill="currentColor"  class="bi bi-globe" viewBox="0 0 16 16" >
+                            <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7 7 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5zm6.853 3.472A7 7 0 0 0 13.745 12H11.91a9.3 9.3 0 0 1-.64 1.539 7 7 0 0 1-.597.933M8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7 7 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="col-6 text-center">
+                        <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">
+                          Network
+                        </h5>
+                        <h5 style=" font-weight: bold;font-size: 12px; line-height: 1px; color: darkblue;" >
+                          <span> x</span> /y
+                        </h5><p style="font-size: 10px">Aderentes</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!--cartao 6-->
+                  <div class="card-tamanho col-2 pt-2" style="border: 1px solid gray">
+                    <div class="row">
+                      <div class="col-2 pt-2">
+                        <div class="icon icon-shape text-center">
+                          <svg width="25" height="25" fill="currentColor" class="bi bi-arrows-move" viewBox="0 0 16 16" >
+                            <path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 
+                            2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10M.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L1.707 7.5H5.5a.5.5 0 0 1 0 1H1.707l1.147 1.146a.5.5 0 0 1-.708.708zM10 8a.5.5 0 0 1
+                            .5-.5h3.793l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L14.293 8.5H10.5A.5.5 0 0 1 10 8"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="col-6 text-center">
+                        <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">N/A</h5>
+                        <h5 style=" font-weight: bold; font-size: 12px; line-height: 1px; ">
+                          <span> x</span> /y
+                        </h5>
+                        <p style="font-size: 10px">Aderentes</p>
+                      </div>
+                    </div>
+                  </div>
+                </div> <!--end row-->
+              </div> <!--end card-->
+            </div> <!--end row-->
+           <!--end container -->
+      </div> <!--end col-xl-->
+      </div> <!--end row-->
+     </div> 
+  </div><!--Container seção-->
+  <!--Seção 2..................................................................-->
+  <div class= "content2" id="content2">
     <div class="container-fluid py-2">
       <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
-        <div class="nome_secao">Custo estimado do plano de Ação</div>
-        <div class="nome_secao">16/10/2024</div>
+        <div class="nome_secao">Status do Plano de Ação</div>
+        <div class="nome_secao"></div>
+        <span id="downloadIcon" onclick="downloadPDF(1)">
+          <svg class="bi-gear-fill" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
+          </svg>
+       </span>
       </div>
       <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
     </div>
     <!-- Container para melhor controle da responsividade-->
     <div class="container-fluid py-2">
       <!--linha 5 dividida em 2 colunas -->
-      <div class="row g-0 mb-3"> 
-  
+      <div class="row g-0 mb-2"> 
+
+      <!-------------------------------------- Gráfico de Ações-->
+      <div class="col-xl-4 col-sm-4 mb-xl-0"> 
+          <div class="row d-flex">
+                <div class="col-5" style="box-sizing: border-box; margin: 0; padding: 0;">
+                 <!--cartao1-->
+                 <div class="card mb-1"> 
+                    <div class="card-header">
+                      Qtde Ações no plano                
+                    </div>
+                    <div class="card-body p-1">
+                      <div class="row w-100" style="margin:1px;">
+                        <div class="col-auto" >
+                          <div> <h6 style="font-weight: bold"> 114 </h6>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div> <!--end card1-->
+                </div> <!--end col cartao 1-->
+              
+              <div class="col-5 p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+                 <!--cartao2-->
+                <div class="card mb-1"> 
+                  <div class="card-header">
+                    % ações por concluídas                 
+                  </div>
+                    <div class="card-body p-1">
+                      <div class="row w-100" style="margin:1px;">
+                        <div class="col-auto">
+                          <div> <h6 style="font-weight: bold;"> 15% </h6>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                </div> <!--end col card2-->
+               </div> 
+              </div> <!--end row cards-->  
+              <!---------------------------------------Grafico roda -->
+              <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="font-titulo">Status Geral</div>
+                  <p class="subtitulo">Soma do staus das ações do Plano de Ação</p>
+                <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                  <div class="row p-0 w-100">
+                    <div class="col-10 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                      {{ grafico_roda|safe }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+           
+      </div>  <!--coluna grafico ações-->
+      <!-------------------------------------- Gráfico de barra responsavel-->
+      <div class="col-xl-7 col-sm-7 mb-xl-0">
+        <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+          <span class="font-titulo"> Status das ações por responsável</span>
+          <p class="subtitulo"> Status das ações atribuidas por responsável no Plano de Ação </p>
+          <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+            <div class="row p-0 w-100">
+              <div class="col-11 justify-content-center">
+                 {{ grafico_barra_r|safe }}
+              </div>
+            </div> 
+          </div>
+        </div>
+      </div>
+
+    </div> <!--end row-->
+    </div> <!-- container-->
+  </div> <!--end content2-->
+  <!--Seção 3..................................................................-->
+  <div class="content3" id="content3">
+    <div class="container-fluid py-2">
+      <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
+      <div class="nome_secao">Custo estimado do Plano de Ação</div>
+      <div class="nome_secao"></div>
+      <span id="downloadIcon" onclick="downloadPDF(3)">
+        <svg class="bi-gear-fill" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
+        </svg>
+     </span>
+      </div>
+      <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
+    </div>
+    <!-- Container para melhor controle da responsividade-->
+    <div class="container-fluid py-2">
+      <!--linha 5 dividida em 2 colunas -->
+      <div class="row g-0 mb-2"> 
+
         <!-------------------------------------- Cartão custo Estimado-->
         <div class="col-xl-4 col-sm-4 mb-xl-0"> 
             <div class="row d-flex">
-                  <div class="col-11" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
+                  <div class="col-11" style="box-sizing: border-box; margin: 0; padding: 0;">
                    <!--cartao1-->
                    <div class="card mb-1"> 
                       <div class="card-header">
@@ -498,44 +526,69 @@
                       </div>
                     </div> <!--end card1-->
                   </div> <!--end col cartao 1-->
-                
-  
-                </div> <!--end row cards-->  
-                <!---------------------------------------Grafico pizza -->
-                <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
-                  <div class="font-titulo">Custo estimado or projeto</div>
-                    <p class="subtitulo">Custo estimado por projeto dentro do plano de ação</p>
-                  <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
-                    <div class="row p-0 w-100">
-                      <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-                        {{ grafico_pizza|safe }}
-                      </div>
+            </div> <!--end row cards-->  
+              <!---------------------------------------Grafico pizza -->
+              <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="font-titulo">Custo estimado por projeto</div>
+                  <p class="subtitulo">Custo estimado por projeto dentro do plano de ação</p>
+                <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                  <div class="row p-0 w-100">
+                    <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                      {{ grafico_pizza|safe }}
                     </div>
                   </div>
                 </div>
-             
-        </div>  <!--coluna grafico ações-->
-        <!-------------------------------------- Gráfico de barra Custo-->
-        <div class="col-xl-7 col-sm-7 mb-xl-0">
-          <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
-            <span class="font-titulo"> Custo estimado das ações por controle </span>
-            <p class="subtitulo">Custo estimado de todas as ações do plano de ação separadas por categoria em reais (R$)</p>
-            <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid blue;">
-              <div class="row p-0 w-100">
-                <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0; border: 1px solid red;">
-                   {{ grafico_barra|safe }}
-                </div>
-              </div> 
-            </div>
+              </div>
+           
+      </div>  <!--coluna grafico ações-->
+      <!-------------------------------------- Gráfico de barra Custo-->
+      <div class="col-xl-7 col-sm-7 mb-xl-0">
+        <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+          <span class="font-titulo"> Custo estimado das ações por controle </span>
+          <p class="subtitulo">Custo estimado de todas as ações do plano de ação separadas por categoria em reais (R$)</p>
+          <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+            <div class="row p-0 w-100">
+              <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                 {{ grafico_barra|safe }}
+              </div>
+            </div> 
           </div>
         </div>
-  
-      </div> <!--end row-->
+      </div>
+
+    </div> <!--end row-->
     </div> <!-- container-->
-      
-      <!-----------------------------------------Fim CIS-------------------------------->
+          <!--linha 2 dividida em 1 coluna -->
+          <div class="row g-0"> 
+            <!-----------------------------------Gráfico de Aderencia/Serie-->
+            <div class="col-xl-9 col-sm-9 mb-xl-0">
+              <div class="card p-1 d-flex justify-content-center">
+                <span class="font-titulo"> Custo estimado e aumento da maturidade por controle
+                </span>
+                <p class="subtitulo">
+                  Comparação entre o custo estimado das ações por controle e aumento de maturidade planejado 
+                </p>
+                <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                  <div class="row p-0 g-0 w-100">
+                    <div class="col-11" style="margin-left:-5px;">
+                       {{ grafico_serie_maturidade|safe }}
+                    </div>
+                  </div> 
+                </div>
+            
+              </div>
+            </div> 
+          </div> <!--end row-->
+          <!-----------------------------------------Fim CIS-------------------------------->
     </div> <!-- container-->
-    </div>  <!--Content -->
-  </main>     
+    </div> <!--<div id="content3">-->
+    <div style="text-align: right; margin-right:30px; margin-bottom:30px; background-color: #F6F7F8";> 
+      <a href="#content0"> <svg width="20" height="20" fill="currentColor" class="bi bi-arrow-bar-up" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5m-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5"/>
+      </svg>
+      </a>
+    </div>
+</div>  
+</main>
 
 {% endblock %}

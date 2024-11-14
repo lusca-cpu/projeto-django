@@ -47,6 +47,10 @@ def process_save_cis(request, assessment):
                 if value in ['Sim', 'Não']:
                     cis.meta = value
                     cis.save()
+
+    # Atualizar a data de upload para a data atual
+    assessment.data_upload = timezone.now().date()
+    assessment.save()
     
     update_assessment_file_cis(assessment)
 # Função quando a pessoa aperta o botão "Enviar" do Cis
