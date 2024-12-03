@@ -57,3 +57,32 @@ class RedirecionarFramework2(View):
 class RedirecionarPlanoAcao(View):
     def get(self, request, id):
         return redirect('cad_planodeacao', id=id)
+
+class RedirecionarPainelResultados(View):
+    def get(self, request):
+        ultimo_assessment = AssessmentModel.objects.order_by('-id').first()
+    
+        if ultimo_assessment:
+
+            nome = ultimo_assessment.nome.lower()
+            
+            if 'cis' in nome:
+                return redirect('painel_result_cis') 
+            elif 'nist' in nome:
+                return redirect('painel_result_nist')  
+            elif 'iso' in nome:
+                return redirect('painel_result_iso')  
+    
+class RedirecionarPainelResultados2(View):
+    def get(self, request, id):
+        assessment = AssessmentModel.objects.get(id=id)
+    
+        # Normaliza o nome para comparação
+        nome = assessment.nome.lower()
+        
+        if 'cis' in nome:
+            return redirect('painel_result_cis')  # Substitua pelo nome correto da URL
+        elif 'nist' in nome:
+            return redirect('painel_result_nist')  # Substitua pelo nome correto da URL
+        elif 'iso' in nome:
+            return redirect('painel_result_iso')  # Substitua pelo nome correto da URL

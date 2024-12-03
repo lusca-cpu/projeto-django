@@ -48,9 +48,9 @@
                             </a>                    
                         </div>   
                     </td>
-                    <td>{{ acao.data_upload }}</td>
+                    <td>{{ acao.data_upload|date:"d/m/Y" }}</td>
                     <td>{{ acao.nome }}</td>
-                    <td>{{ acao.data_assess }}</td>
+                    <td>{{ acao.data_assess|date:"d/m/Y" }}</td>
                     <td style="text-align: center;">{{ acao.acoes_cad }}</td>
                     <td style="text-align: center;">
                         {% if acao.custo_estimado > 0 %}

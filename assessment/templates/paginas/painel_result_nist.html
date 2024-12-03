@@ -1,0 +1,412 @@
+<!-- Página testada em Firefox, Chrome, Edge, celular vertical/horizontal galaxi note, 
+ iphone pro, compatível com a função de exportação em visualização de 100%
+-->
+{% extends 'base.html' %} 
+{% block title %}Painel de Resultados{% endblock %} 
+{% load static %} 
+{% block content %}
+
+<!--avaliar alteração para bloco editavel dentro da página do painel_result-->
+<link href="{% static 'assets/css/graficos.css' %}" rel="stylesheet" />
+<script src="{% static 'assets/js/html2pdf.bundle.min.js' %}" defer></script>
+
+<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ps ps--active-y" style="background-color: #F6F7F8;">
+  <div class="container-fluid py-2">
+    <div class="content0" id="content0">
+      <!--div de cabeçalho -->
+      <div class="d-flex mb-2" style="margin-top: 30px; margin-left: 30px; margin-right: 20px">
+        <div class="d-none d-md-inline-block btn-primary d-flex me-2" style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
+          <div>Dashboard</div>
+        </div>
+        <!--botao framework-->
+        <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
+          Framework
+          <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
+            <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
+          </svg>
+        </button>
+      <ul class="dropdown-menu font-small">
+          {% for assessment in assessments %}
+              <li><a class="dropdown-item" href="{% url 'redirecionar_painel_result2' assessment.id %}">{{ assessment.nome }} - {{ assessment.data_upload|date:"d/m/Y" }}</a></li>
+          {% endfor %}
+      </ul>
+      </div>
+    </div> <!--end content0-->
+  </div> <!--end content-fluid-->
+<div style="background-color: #F6F7F8">
+
+<!--Seção 1.................................................................... -->    
+  <div class="content1" id="content1"> <!--Necessario content para exportação do conteúdo-->
+    <div class="container-fluid py-2">
+      <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
+           <div class="nome_secao">Resultado do Assessment</span> 
+           </div>
+           <span id="downloadIcon" onclick="downloadPDF(1)">
+                <span id="data" style="color: #7d7c80; font-size: 11px;"></span>
+                <svg class="bi-gear-fill" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
+                </svg>
+           </span>
+      </div>
+        <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
+    </div>
+      <!-- Container para melhor controle da responsividade-->
+      <div class="container-fluid py-2">
+        <!--linha 1 dividida em 2 colunas -->
+        <div class="row g-0 mb-2"> <!--espaçamento entre linhas de 2-->
+          <!-------------------------------------- Gráfico de velocimetro-->
+          <div class="col-xl-6 col-sm-6 mb-xl-0"> <!-- 6 colunas em telas  (como desktops) e 6 colunas em telas pequenas -->
+            <div class="card p-1" style="box-sizing: border-box; margin: 0; padding: 0;">
+              <div class="font-titulo">Nota do Assessment</div>
+              <p class="subtitulo">Nota total do Assessment e meta</p>
+              <div class="card-body" style="box-sizing:border-box; margin:0; padding:0;">  
+                <div class="container-fluid">
+                 <div class="row p-0">
+                    <!-- zera espaço entre card tb coluna e margem esquerda-->
+                    <div class="col-xl-8 col-sm-8 mb-xl-0 justify-content-center">
+                      {{ grafico_velocimetro|safe }}
+                    </div>
+                  </div>  
+                </div> <!--container-->
+              </div><!--end card body-->
+            </div> <!--end card-->
+          </div> <!--col-->
+      
+         <!-------------------------------------- Gráfico de radar-->
+          <div class="col-xl-5 col-sm-5 mb-xl-0">
+            <div class="card p-1">
+              <span class="font-titulo">Nota e Meta por função de segurança</span>
+              <p class="subtitulo">Nota e Meta do Assessment por função de segurança </p>
+              <div class="card-body" style="box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="row p-0 w-100">
+                 <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                    {{ grafico_radar|safe }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div> <!--end col-->
+        </div> <!--end row-->
+      </div> <!--end content-fluid--> 
+      
+       <!--linha 2 dividida em 2 colunas -->
+      <div class="container-fluid">
+        <div class="row g-0 mb-2"> 
+           <div class="col-xl-6 col-sm-6 mb-xl-0"> 
+               <!---------------------------------------Grafico serie govern -->
+                <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                  <div class="font-titulo">Nota e meta por categoria da função GOVERN</div>
+                    <p class="subtitulo">Nota e meta do Assessment por categoria</p>
+                  <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                   <div class="row p-0 w-100">
+                      <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                        {{ grafico_serie_govern|safe }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>  <!--end coluna grafico ações-->
+          <!-------------------------------------- Gráfico serie identify-->
+          <div class="col-xl-5 col-sm-5 mb-xl-0">
+            <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+            <span class="font-titulo"> Nota e meta por categoria da função IDENTIFY </span>
+            <p class="subtitulo">Nota e Meta do Assessment por categoria</p>
+              <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="row p-0 w-100">
+                  <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                     {{ grafico_serie_identify|safe }}
+                  </div>
+                </div> 
+              </div>
+            </div>
+          </div>
+        </div> <!--end row-->
+      </div> <!--end container-fluid>
+
+       <!--linha 3 dividida em 2 colunas -->
+       <div class="container-fluid">
+        <div class="row g-0 mb-2"> 
+           <div class="col-xl-6 col-sm-6 mb-xl-0"> 
+               <!---------------------------------------Grafico serie protect -->
+                <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                  <div class="font-titulo">Nota e meta por categoria da função PROTECT</div>
+                    <p class="subtitulo">Nota e meta do Assessment por categoria</p>
+                  <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                   <div class="row p-0 w-100">
+                      <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                        {{ grafico_serie_protect|safe }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>  <!--end coluna grafico ações-->
+          <!-------------------------------------- Gráfico serie detect-->
+          <div class="col-xl-5 col-sm-5 mb-xl-0">
+            <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+            <span class="font-titulo"> Nota e meta por categoria da função DETECT </span>
+            <p class="subtitulo">Nota e Meta do Assessment por categoria</p>
+              <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="row p-0 w-100">
+                  <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                     {{ grafico_serie_detect|safe }}
+                  </div>
+                </div> 
+              </div>
+            </div>
+          </div>
+        </div> <!--end row-->
+      </div> <!--end container-fluid>
+
+       <!--linha 4 dividida em 2 colunas -->
+       <div class="container-fluid">
+        <div class="row g-0 mb-2"> 
+           <div class="col-xl-6 col-sm-6 mb-xl-0"> 
+               <!---------------------------------------Grafico serie respond -->
+                <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                  <div class="font-titulo">Nota e meta por categoria da função RESPOND</div>
+                    <p class="subtitulo">Nota e meta do Assessment por categoria</p>
+                  <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                   <div class="row p-0 w-100">
+                      <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                        {{ grafico_serie_respond|safe }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>  <!--end coluna grafico ações-->
+          <!-------------------------------------- Gráfico serie recover-->
+          <div class="col-xl-5 col-sm-5 mb-xl-0">
+            <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+            <span class="font-titulo"> Nota e meta por categoria da função RECOVER </span>
+            <p class="subtitulo">Nota e Meta do Assessment por categoria</p>
+              <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="row p-0 w-100">
+                  <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                     {{ grafico_serie_recover|safe }}
+                  </div>
+                </div> 
+              </div>
+            </div>
+          </div>
+        </div> <!--end row-->
+      </div> <!--end container-fluid>
+      
+      <!--linha 5 dividida em 1 coluna -->
+    <div class="container-fluid">
+      <div class="row g-0 mb-2" style="page-break-after:auto"> 
+        <!-----------------------------------Gráfico de linha/nota 6 meses-->
+        <div class="col-xl-11 col-sm-11 mb-xl-0">
+          <div class="card p-1 pb-0 d-flex justify-content-center"  style=" box-sizing: border-box; margin: 0; padding: 0;">
+            <span class="font-titulo">
+              Nota e meta dos Assessments NIST CSF 2.0 </span>
+            <p class="subtitulo">
+              Comparação entre a nota e meta de cada assessment realizado
+            </p>
+            <div class="card-body pb-2 d-flex justify-content-center p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+              <div class="row p-0 w-100">
+                <div class="col-xl-11 col-sm-11 mb-xl-0 justify-content-center">
+                  {{ grafico_linha|safe }}
+                </div>
+             </div> 
+           </div>
+         </div>
+       </div>
+      </div><!--end row-->
+    </div> <!-- container-fluid-->
+  </div> <!--end id=content1--> 
+
+  <!--Seção 2..................................................................-->
+  <div class="content2" id="content2">
+    <div class="container-fluid py-2">
+      <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
+        <div class="nome_secao">Status do Plano de Ação</div>
+        <div class="nome_secao"></div>
+        <span id="downloadIcon" onclick="downloadPDF(2)">
+          <svg class="bi-gear-fill" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
+          </svg>
+       </span>
+      </div>
+      <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
+    </div>
+    <!-- Container para melhor controle da responsividade-->
+    <div class="container-fluid py-2">
+      <!--linha 5 dividida em 2 colunas -->
+      <div class="row g-0 mb-2"> 
+
+      <!-------------------------------------- Gráfico de Ações-->
+      <div class="col-xl-4 col-sm-4 mb-xl-0"> 
+          <div class="row d-flex">
+                <div class="col-5" style="box-sizing: border-box; margin: 0; padding: 0;">
+                 <!--cartao1-->
+                 <div class="card mb-1"> 
+                    <div class="card-header">
+                      Qtde ações no plano                
+                    </div>
+                    <div class="card-body p-1">
+                      <div class="row w-100" style="margin:1px;">
+                        <div class="col-auto" >
+                          <div> <h6 style="font-weight: bold"> 114 </h6>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div> <!--end card1-->
+                </div> <!--end col cartao 1-->
+              
+              <div class="col-5 p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+                 <!--cartao2-->
+                <div class="card mb-1"> 
+                  <div class="card-header">
+                    % de ações concluídas                 
+                  </div>
+                    <div class="card-body p-1">
+                      <div class="row w-100" style="margin:1px;">
+                        <div class="col-auto">
+                          <div> <h6 style="font-weight: bold;"> 15% </h6>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+                </div> <!--end col card2-->
+               </div> 
+              </div> <!--end row cards-->  
+              <!---------------------------------------Grafico roda -->
+              <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="font-titulo">Status Geral</div>
+                  <p class="subtitulo">Soma do staus das ações do Plano de Ação</p>
+                <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                  <div class="row p-0 w-100">
+                    <div class="col-10 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                      {{ grafico_roda|safe }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+           
+      </div>  <!--coluna grafico ações-->
+      <!-------------------------------------- Gráfico de barra responsavel-->
+      <div class="col-xl-7 col-sm-7 mb-xl-0">
+        <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+          <span class="font-titulo">Status das ações por responsável</span>
+          <p class="subtitulo">Status das ações atribuidas por responsável no Plano de Ação </p>
+          <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+            <div class="row p-0 w-100">
+              <div class="col-11 justify-content-center">
+                 {{ grafico_barra_r|safe }}
+              </div>
+            </div> 
+          </div>
+        </div>
+      </div>
+
+    </div> <!--end row-->
+    </div> <!-- container-->
+  </div> <!--end content2-->
+  <!--Seção 3..................................................................-->
+  <div class="content3" id="content3">
+    <div class="container-fluid py-2">
+      <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
+        <div class="nome_secao">Custo estimado do Plano de Ação</div>
+        <div class="nome_secao"></div>
+          <span id="downloadIcon" onclick="downloadPDF(3)">
+          <svg class="bi-gear-fill" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
+          </svg>
+          </span>
+      </div>
+      <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
+    </div>
+    <!-- Container para melhor controle da responsividade-->
+    <div class="container-fluid py-2">
+      <!--linha 5 dividida em 2 colunas -->
+      <div class="row g-0 mb-2"> 
+        <!-------------------------------------- Cartão custo estimado-->
+        <div class="col-xl-4 col-sm-4 mb-xl-0"> 
+            <div class="row d-flex">
+                  <div class="col-11" style="box-sizing: border-box; margin: 0; padding: 0;">
+                   <!--cartao1-->
+                   <div class="card mb-1"> 
+                      <div class="card-header">
+                        Custo estimado das ações do plano              
+                      </div>
+                      <div class="card-body p-1">
+                        <div class="row w-100">
+                          <div class="col-auto">
+                            <div> <h6 style="font-weight: bold"> R$ 200 500,00 </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div> <!--end card1-->
+                  </div> <!--end col cartao 1-->
+            </div> <!--end row cards-->  
+              <!---------------------------------------Grafico pizza custo -->
+              <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+                <div class="font-titulo">Custo estimado por projeto</div>
+                  <p class="subtitulo">Custo estimado por projeto dentro do plano de ação</p>
+                <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
+                  <div class="row p-0 w-100">
+                    <div class="col-11 p-0 mb-3 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                      {{ grafico_pizza|safe }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>  <!--coluna grafico pizza-->
+        <!-------------------------------------- Gráfico de barra Custo-->
+        <div class="col-xl-7 col-sm-7 mb-xl-0">
+          <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
+           <span class="font-titulo">Custo estimado e aumento da maturidade por controle </span>
+           <p class="subtitulo">Comparação entre o custo estimado das ações por controle e aumento de maturidade planejado </p>
+            <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+              <div class="row p-0 w-100">
+                <div class="col-xl-11 col-sm-11 mb-1 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                   {{ grafico_serie_maturidade|safe }}
+                </div>
+              </div> 
+            </div>
+          </div>
+        </div>
+    </div> <!--end row-->
+    </div> <!-- container-->
+          <!--linha 2 dividida em 1 coluna -->
+        <div class="container-fluid">  
+          <div class="row g-0"> 
+            <!-----------------------------------Gráfico de Aderencia/Serie-->
+            <div class="col-xl-11 col-sm-11 mb-xl-0">
+              <div class="card p-1 d-flex justify-content-center">
+                <span class="font-titulo">Custo estimado das ações por categoria
+                </span>
+                <p class="subtitulo">
+                  Custo estimado de todas as ações do plano de ação separadas por categoria em reais (R$)
+                </p>
+                <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                  <div class="row p-0 g-0 w-100">
+                    <div class="col-xl-11 col-sm-11 mb-xl-0" style="margin-left:-5px;">
+                       {{ grafico_barra|safe }}
+                    </div>
+                  </div> 
+                </div>
+              </div>
+            </div> 
+          </div> <!--end row-->
+        </div>  
+          <!---------------------Fim NIST-------------------------------->
+    </div> <!-- container-->
+    </div> <!--<div id="content3">-->
+    <div style="text-align: right; margin-right:30px; margin-bottom:30px; background-color: #F6F7F8";> 
+      <a href="#content0"> 
+        <svg width="20" height="20" fill="currentColor" class="bi bi-arrow-bar-up" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M8 10a.5.5 0 0 0 .5-.5V3.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 3.707V9.5a.5.5 0 0 0 .5.5m-7 2.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5"/>
+        </svg>
+      </a>
+    </div>
+</div> 
+
+</main>
+
+{% endblock %}

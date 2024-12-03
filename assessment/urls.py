@@ -56,8 +56,18 @@ urlpatterns = [
     path('deletar-cad-planodeacao/<int:id>/', views.CadPlanodeAcao.as_view(), name='deletar_cad_planodeacao'),  # Para exclusão
     path('editar-cad-planodeacao/<int:id>/', views.editar_cad_plano_acao, name='editar_cad_plano_acao'), # Para edição
 
-    # urls para a pagina painel_result.html
-    path('painel_result/', views.PaineldeResultados.as_view(), name='painelderesultados')
+    path('redirecionar_painel/', views.RedirecionarPainelResultados.as_view(), name='redirecionar_painel_result'),
+    path('redirecionar_painel2/<int:id>/', views.RedirecionarPainelResultados2.as_view(), name='redirecionar_painel_result2'),
+
+    # urls para a pagina painel_result_cis.html
+    path('painel_result_cis/', views.PaineldeResultadosCis.as_view(), name='painel_result_cis'),
+    path('painel/resultados/cis/ajax/', views.PaineldeResultadosCis.as_view(), name='painel_resultados_cis_ajax'),
+
+    # urls para a pagina painel_result_nist.html
+    path('painel_result_nist/', views.PaineldeResultadosNist.as_view(), name='painel_result_nist'),
+
+    # urls para a pagina painel_result_nist.html
+    path('painel_result_iso/', views.PaineldeResultadosIso.as_view(), name='painel_result_iso'),
 ]
 
 if settings.DEBUG:

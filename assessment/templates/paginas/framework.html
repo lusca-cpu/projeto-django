@@ -93,7 +93,7 @@
                         <td>{{ framework.nome }}</td>
                         <td>{{ framework.descricao }}</td>
                         <td>{{ framework.criterio }}</td>
-                        <td>{{ framework.data_upload }}</td>
+                        <td>{{ framework.data_upload|date:"d/m/Y" }}</td>
                         <td></td> <!-- Coluna vazia para "Adicionado por" -->
                     </tr>
                     {% empty %}

@@ -24,50 +24,21 @@
   <div class="content0" id="content0">
     <!--div de cabeçalho -->
     <div class="d-flex mb-2" style="margin-top: 30px; margin-left: 30px; margin-right: 20px">
-      <div class="d-none d-md-inline-block btn-primary d-flex me-2" style=" background-color: #a0cad8; color: white; font-size: 12px; font-weight: bold;
-          padding: 5px; width: 100%; justify-content: flex-start;">
-        <div>{{ framework.nome }}Dashboards </div>
+      <div class="d-none d-md-inline-block btn-primary d-flex me-2" style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
+        <div>Dashboard</div>
       </div>
       <!--botao framework-->
-      <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2"
-        data-bs-toggle="dropdown" aria-expanded="false" >
-        <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1" viewBox="0 0 16 16" >
-          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
-        </svg>
+      <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
         Framework
-      </button>
-      <ul class="dropdown-menu font-small">
-        <li>
-          <a class="dropdown-item"  href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">Lista de framewors</a>
-        </li>
-        {% for framework in frameworks %}
-        <li> <a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}"
-            >{{ framework.nome }}</a>
-        </li>
-        {% endfor %}
-      </ul>
-      <!--botao selecionar data -->
-      <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2"
-        data-bs-toggle="dropdown" aria-expanded="false" >
-        <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill me-1"
-          viewBox="0 0 16 16" >
-          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
+        <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
+          <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
         </svg>
-        Data...........
       </button>
-      <ul class="dropdown-menu font-small"> 
-        <li><a class="dropdown-item" href="#" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
-          Lista de datas</a>
-          Lista de datas</a> 
-        </li>
-        {% for framework in frameworks %}
-        <li>
-          <a class="dropdown-item" href="{% url 'redirecionar_framework' framework.id %}">
-            {{ framework.nome }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
+    <ul class="dropdown-menu font-small">
+      {% for assessment in assessments %}
+          <li><a class="dropdown-item" href="{% url 'redirecionar_painel_result2' assessment.id %}">{{ assessment.nome }} - {{ assessment.data_upload|date:"d/m/Y" }}</a></li>
+      {% endfor %}
+    </ul>
       <!--botao exportar
       <button id="generate-pdf" type="button" onclick="downloadPDF()"
         class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
@@ -86,15 +57,14 @@
     <div class="container-fluid py-2">
 
       <div class="d-flex mb-0 justify-content-between mt-2" style="margin-left: 30px; margin-right: 30px">
-           <div class="nome_secao">Resultado do Assessment <span id="data" style="color: #7d7c80; margin-left:530px;font-size:11px;"></span> </div>
-           <div class="nome_secao" style="align:left"></div>
+           <div class="nome_secao">Resultado do Assessment</div>
            <span id="downloadIcon" onclick="downloadPDF(1)">
+              <span id="data" style="color: #7d7c80; font-size:11px;"></span>   
               <svg class="bi-gear-fill" viewBox="0 0 16 16">
                   <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"></path>
                   <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"></path>
               </svg>
-           </span>
-      
+           </span>     
         </div>
         <hr class="horizontal mb-0 dark mt-0" style="margin-left: 30px; margin-right: 30px">
       </div>
@@ -112,67 +82,69 @@
               <div class="row p-0">
                 <!-- zera espaço entre card tb coluna e margem esquerda-->
                 <div class="col-xl-6 col-sm-6 mb-xl-0 p-0">
-                  {{ grafico_velocimetro|safe }}
+                  {{ grafico_velocimetro_html|safe }}
                 </div>
 
-                <div class="col-auto mt-0" style="box-sizing: border-box; margin: 0; padding: 0;  ">
-                  <!--IG1-->
-                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
+                <div class="col-auto mt-0" style="box-sizing: border-box; margin: 0; padding: 0;">
+                  <!-- IG1 -->
+                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px">
                     <div class="row">
-                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #27bb60" >
-                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
+                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #27bb60">
+                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0;">
                           IG1
                         </h6>
                       </div>
                       <div class="col-auto p-0 text-left">
                         <h6 style="line-height: 1; margin: 0;">
-                          <span style="font-weight: bold;">40%</span>
+                          <span style="font-weight: bold;">{{ percentuais_igs.IG1 }}%</span>
                         </h6>
                         <p style="font-size: 9px; line-height: 1; margin: 0;">
                           <span> x </span> de y subconjuntos
                         </p>
-                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
-                          Meta:<span>50%</span>
+                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0">
+                          Meta:<span>{{ percentuais_meta.IG1 }}%</span>
                         </p>
                       </div>
                     </div>
                   </div>
-                  <!--IG2-->
-                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
+                  <!-- IG2 -->
+                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px">
                     <div class="row">
-                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: orange" >
-                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
+                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: orange">
+                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0;">
                           IG2
                         </h6>
                       </div>
                       <div class="col-auto p-0 text-left">
                         <h6 style="line-height: 1; margin: 0;">
-                          <span style="font-weight: bold;">40%</span></h6>
+                          <span style="font-weight: bold;">{{ percentuais_igs.IG2 }}%</span>
+                        </h6>
                         <p style="font-size: 9px; line-height: 1; margin: 0;">
                           <span> x </span> de y subconjuntos
                         </p>
-                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
-                          Meta:<span>50%</span>
+                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0">
+                          Meta:<span>{{ percentuais_meta.IG2 }}%</span>
                         </p>
                       </div>
                     </div>
-                    </div>
-                  <!--IG3-->
-                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px" >
+                  </div>
+                  <!-- IG3 -->
+                  <div class="card mb-1" style="box-shadow: 0 0px 0px; display: flex; width: 150px">
                     <div class="row">
-                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #a0cad8" >
-                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0; ">
+                      <div class="col-auto text-center m-0" style="display: flex; align-items: center; background-color: #a0cad8">
+                        <h6 style="font-weight: bold; color: white; font-size: 12px; line-height: 1; margin: 0;">
                           IG3
                         </h6>
                       </div>
                       <div class="col-auto p-0 text-left">
                         <h6 style="line-height: 1; margin: 0;">
-                          <span style="font-weight: bold;">40%</span></h6>
+                          <span style="font-weight: bold;">{{ percentuais_igs.IG3 }}%</span>
+                        </h6>
                         <p style="font-size: 9px; line-height: 1; margin: 0;">
                           <span> x </span> de y subconjuntos
                         </p>
-                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0" >
-                          Meta:<span>50%</span>
+                        <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0">
+                          Meta:<span>{{ percentuais_meta.IG3 }}%</span>
                         </p>
                       </div>
                     </div>
@@ -191,9 +163,9 @@
             <p class="subtitulo"> Medição por porcentagem (%) </p>
             <div class="card-body" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 w-100">
-                <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                  {{ grafico_radar|safe }}
-              </div>
+                <div class="col-sm-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
+                  {{ grafico_radar_html|safe }}
+                </div>
             </div>
           </div>
         </div>
@@ -212,11 +184,10 @@
             <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 g-0 w-100">
                 <div class="col-11" style="margin-left:-5px;">
-                   {{ grafico_serie|safe }}
+                   {{ grafico_barra_linha_html|safe }}
                 </div>
               </div> 
-            </div>
-          
+            </div>  
           </div>
         </div> 
       </div> <!--end row-->
@@ -234,7 +205,7 @@
             <div class="card-body pb-2 d-flex justify-content-center p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 w-100">
                 <div class="col-xl-11 col-sm-11 mb-xl-0 justify-content-center">
-                  {{ grafico_linha|safe }}
+                  {{ grafico_linha_html|safe }}
               </div>
             </div> 
           </div>
@@ -274,7 +245,7 @@
                         </h5>
                         <h5
                           style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
-                          <span> x</span> /y
+                          <span>{{ card_tipo_ativo.Applications }}/{{ total_tipo_ativo.Applications }}</span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                         <p></p>
@@ -298,7 +269,7 @@
                       <div class="col-6 text-center">
                         <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">Data</h5>
                         <h5 style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
-                          <span> x</span> /y
+                          <span>{{ card_tipo_ativo.Data }}/{{ total_tipo_ativo.Data }}</span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -321,7 +292,7 @@
                         </h5>
                         <h5
                           style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
-                          <span> x</span> /y
+                          <span>{{  card_tipo_ativo.Devices }}/{{ total_tipo_ativo.Devices }}</span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -343,7 +314,7 @@
                         </h5>
                         <h5
                           style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
-                          <span> x</span> /y
+                          <span>{{ card_tipo_ativo.Users }}/{{ total_tipo_ativo.Users }}</span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -364,7 +335,7 @@
                           Network
                         </h5>
                         <h5 style=" font-weight: bold;font-size: 12px; line-height: 1px; color: darkblue;" >
-                          <span> x</span> /y
+                          <span>{{ card_tipo_ativo.Network }}/{{ total_tipo_ativo.Network }}</span>
                         </h5><p style="font-size: 10px">Aderentes</p>
                       </div>
                     </div>
@@ -384,7 +355,7 @@
                       <div class="col-6 text-center">
                         <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">N/A</h5>
                         <h5 style=" font-weight: bold; font-size: 12px; line-height: 1px; ">
-                          <span> x</span> /y
+                          <span>{{ total_por_nivel.NA }}/{{ sim_por_ativo.NA }}</span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -430,7 +401,7 @@
                     <div class="card-body p-1">
                       <div class="row w-100" style="margin:1px;">
                         <div class="col-auto" >
-                          <div> <h6 style="font-weight: bold"> 114 </h6>
+                          <div> <h6 style="font-weight: bold"> {{ qtd_acoes_cad }} </h6>
                           </div>
                         </div>
                       </div>
@@ -447,8 +418,8 @@
                     <div class="card-body p-1">
                       <div class="row w-100" style="margin:1px;">
                         <div class="col-auto">
-                          <div> <h6 style="font-weight: bold;"> 15% </h6>
-                          </div>
+                          <div> <h6 style="font-weight: bold;"> {{ percentual_acoes_cad|floatformat:1 }}% </h6>
+                        </div>
                         </div>
                       </div>
                   </div>
@@ -462,7 +433,7 @@
                 <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                   <div class="row p-0 w-100">
                     <div class="col-10 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                      {{ grafico_roda|safe }}
+                      {{ grafico_pizza_conclusao_html|safe }}
                     </div>
                   </div>
                 </div>
@@ -519,8 +490,7 @@
                       <div class="card-body p-1">
                         <div class="row w-100">
                           <div class="col-auto">
-                            <div> <h6 style="font-weight: bold"> R$ 200 500,00 </h6>
-                            </div>
+                            <div><h6 style="font-weight: bold">R${{ soma_custo_estimado|floatformat:2 }}</h6></div>
                           </div>
                         </div>
                       </div>
@@ -534,7 +504,7 @@
                 <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                   <div class="row p-0 w-100">
                     <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                      {{ grafico_pizza|safe }}
+                      {{ grafico_pizza_custo_estimado_html|safe }}
                     </div>
                   </div>
                 </div>
@@ -549,7 +519,7 @@
           <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
             <div class="row p-0 w-100">
               <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                 {{ grafico_barra|safe }}
+                 {{ grafico_barra_acao_controle_html|safe }}
               </div>
             </div> 
           </div>
@@ -571,7 +541,7 @@
                 <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
                   <div class="row p-0 g-0 w-100">
                     <div class="col-11" style="margin-left:-5px;">
-                       {{ grafico_serie_maturidade|safe }}
+                       {{ grafico_serie_maturidade_html|safe }}
                     </div>
                   </div> 
                 </div>
@@ -590,5 +560,28 @@
     </div>
 </div>  
 </main>
+
+<script>
+  // Função para atualizar o gráfico via AJAX
+  function atualizarGrafico() {
+      fetch("{% url 'painel_resultados_cis_ajax' %}", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          document.getElementById('grafico-velocimetro').innerHTML = data.grafico_html;
+      })
+      .catch(error => console.error('Erro ao atualizar gráfico:', error));
+  }
+
+  // Aqui você pode chamar a função para atualizar o gráfico, por exemplo, em um intervalo ou após uma ação
+  // setInterval(atualizarGrafico, 5000);  // Atualizar a cada 5 segundos
+
+  // Ou chamar a função sempre que uma instância for adicionada ou removida
+</script>
 
 {% endblock %}

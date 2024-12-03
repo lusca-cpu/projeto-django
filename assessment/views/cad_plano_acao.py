@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Sum, Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -7,6 +8,7 @@ from django.views import View
 from ..forms import MeuModeloAcaoForm, MeuModeloAcaoEditForm 
 from ..models import AssessmentModel,PlanoAcaoModel, CadPlanodeAcaoModel, NistModel, IsoModel, CisModel, PlanilhaGenericaModel
 
+import os
 import pandas as pd
 
 def get_subcontrole_choices(assessment):
@@ -213,6 +215,10 @@ def editar_cad_plano_acao(request, id):
 
             # Salvar todas as alterações no banco
             cad_acao_instance.save()
+
+            # Atualizar o custo_estimado, subtraindo o custo da instância excluída
+            custo_total = CadPlanodeAcaoModel.objects.filter(planoacao=acao).aggregate(total_custo=Sum('quanto'))['total_custo'] or 0
+            acao.custo_estimado = custo_total
 
             # Atualizar o campo `acoes_cad` e `conclusao` para o plano de ação
             acao.acoes_cad = CadPlanodeAcaoModel.objects.filter(planoacao=acao).count()

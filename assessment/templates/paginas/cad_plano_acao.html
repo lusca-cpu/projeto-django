@@ -16,7 +16,7 @@
 <main> 
     <div class="d-flex mb-3" style="margin-top: 50px; margin-left: 45px; margin-right: 40px;">
         <div class="d-none d-md-inline-block btn-primary d-flex me-2" style="background-color: #a0cad8; color: white; font-size: 11px; border-radius: 4px; padding: 5px; width: 100%; justify-content: flex-start;">
-            <div>{{acao.nome}} / {{acao.data_assess}}</div>
+            <div>{{acao.nome}} - {{acao.data_assess|date:"d/m/Y"}}</div>
         </div>
         <button type="button" onclick="window.location.href='{% url 'exportar_excel' acao_id %}'" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
             <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
@@ -49,7 +49,7 @@
                     <th scope="col">Início Real.</th>
                     <th scope="col">Fim Real.</th>
                     <th scope="col">Status</th>
-                    <th scope="col" style="text-align: center;">Observações</th>
+                    <th scope="col" style="text-align: center;">Obs.</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,10 +83,10 @@
                             R${{ cad_acao.quanto|floatformat:2 }}
                         {% endif %}
                     </td>
-                    <td style="white-space: nowrap;">{{ cad_acao.inicio_pla|default_if_none:"" }}</td>
-                    <td style="white-space: nowrap;">{{ cad_acao.fim_pla|default_if_none:"" }}</td>
-                    <td style="white-space: nowrap;">{{ cad_acao.inicio_real|default_if_none:"" }}</td>
-                    <td style="white-space: nowrap;">{{ cad_acao.fim_real|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.inicio_pla|date:"d/m/Y"|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.fim_pla|date:"d/m/Y"|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.inicio_real|date:"d/m/Y"|default_if_none:"" }}</td>
+                    <td style="white-space: nowrap;">{{ cad_acao.fim_real|date:"d/m/Y"|default_if_none:"" }}</td>
                     <td>{{ cad_acao.status }}</td>
                     <td style="text-align: center;">
                         <div class="icon-container">

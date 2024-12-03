@@ -76,10 +76,8 @@ function abrirJanela(pagina, largura, altura) {
     minhaJanela = window.open(pagina, '', 'height=' + altura + ', width=' + largura + ', top=' + topo + ', left=' + esquerda);
 }
 
-
 //!---------Graficos---------------------->
-
-function downloadPDF(itemToExport) {
+function downloadPDF (itemToExport) {
     const item0 = document.querySelector("#content0");
     const item1 = document.querySelector("#content1");
     const item2 = document.querySelector("#content2");
@@ -97,9 +95,7 @@ function downloadPDF(itemToExport) {
     tempDiv.style.overflow = 'visible';
 
     // Adicionar os conteúdos de acordo com o parâmetro
-    if (itemToExport === 0) {
-        tempDiv.appendChild(item0.cloneNode(true)); // Adiciona item0
-    } else if (itemToExport === 1) {
+    if (itemToExport === 1) {
         tempDiv.appendChild(item0.cloneNode(true)); // Adiciona item0
         tempDiv.appendChild(item1.cloneNode(true)); // Adiciona item1
     } else if (itemToExport === 2) {
@@ -167,7 +163,7 @@ function downloadPDF(itemToExport) {
                 window.removeEventListener('resize', handleResize); // Remove o listener após gerar o PDF
             });
     }
-}
+    }
 
         // Obtém a data atual
         const dataAtual = new Date();
