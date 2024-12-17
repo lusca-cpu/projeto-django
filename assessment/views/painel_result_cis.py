@@ -1,4 +1,5 @@
 from django.db.models import Count, Sum, Q
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 
@@ -12,6 +13,27 @@ import re
 # Função para renderizar a página painelderesultados.html
 class PaineldeResultadosCis(View):
     template_name = 'paginas/painel_result_cis.html'
+
+    # Responsável por abreviar a categoria
+    def abreviar_categoria(self,cat):
+        # Remover o texto entre parênteses e os próprios parênteses
+        cat_sem_parenteses = re.sub(r"\s*\(.*?\)", "", cat).strip()
+        palavras = cat_sem_parenteses.split()
+
+        # Se a categoria tiver até 3 palavras, retornamos como está
+        if len(palavras) <= 3:
+            if len(palavras) > 1 and palavras[1].lower() == "de":
+                return " ".join(palavras[:2]) + "<br>" + " ".join(palavras[2:])
+            else:    
+                return palavras[0] + "<br>" + " ".join(palavras[1:])
+        # Se tiver mais de 3 palavras, pegamos apenas as 3 primeiras
+        else:
+            if palavras[0:3] == ['Inventário', 'e', 'controle']:
+                return " ".join(palavras[-3:])
+            elif len(palavras) > 1 and palavras[1].lower() == "de":
+                return " ".join(palavras[:2]) + "<br>" + " ".join(palavras[2:3])
+            else:
+                return palavras[0] + "<br>" + " ".join(palavras[1:3])
 
     # INÍCIO GRÁFICOS DO ASSESSMENT ########################################################
     # Responsável pela criação do gráfico de velocímetro
@@ -126,7 +148,6 @@ class PaineldeResultadosCis(View):
                 percentuais[nivel] = round((count / total_cis) * 100, 2)
 
         return percentuais
-
     # Responsável por cacular a porcentagem dos metas dos níveis IGS
     def calcular_percentual_meta(self):
         # Total de registros no CisModel
@@ -353,11 +374,13 @@ class PaineldeResultadosCis(View):
         sorted_data = sorted(zip(y_result, y_meta, categorias), key=lambda x: x[0], reverse=True)
         y_result_sorted, y_meta_sorted, categorias_sorted = zip(*sorted_data)
 
+        rodape = [self.abreviar_categoria(cat) for cat in categorias_sorted]
+
         fig_serie = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_serie.add_trace(go.Bar(
-                x=categorias_sorted,
+                x=rodape,
                 y=y_result_sorted,
                 hovertemplate="%{y} em %{x}<extra></extra>",
                 name='Aderente',
@@ -368,7 +391,7 @@ class PaineldeResultadosCis(View):
 
         # Adicionando o gráfico de linha
         fig_serie.add_trace(go.Scatter(
-            x=categorias_sorted[:len(y_result_sorted)],  # Ajustar o x para corresponder ao comprimento dos y
+            x=rodape[:len(y_result_sorted)],  # Ajustar o x para corresponder ao comprimento dos y
             y=y_meta_sorted,
             name='Meta',
             hovertemplate="%{customdata} de %{y}<extra></extra>",
@@ -376,7 +399,8 @@ class PaineldeResultadosCis(View):
             text=y_meta_sorted,
             textposition='top center',  # Posição do texto
             mode='lines+markers+text', 
-            line=dict(color='darkblue')
+            line=dict(color='darkblue'),
+            yaxis='y2'
         ))
 
         # Configurações adicionais do layout
@@ -395,6 +419,11 @@ class PaineldeResultadosCis(View):
                     range=[0, (max(y_meta_sorted)+10)],  # Ajusta o intervalo do eixo Y
                     dtick=1.0                # Define o intervalo dos ticks
                 ),
+                yaxis2=dict(
+                    range=[0, (max(y_meta_sorted)+10)],  # Ajusta o intervalo do eixo Y para a linha
+                    overlaying='y',  # Sobrepõe ao eixo Y primário
+                    side='right'     # Coloca o eixo Y2 do lado direito
+                ),
                 showlegend=True,
                 legend=dict(
                         yanchor="top",         # Ancoragem na parte inferior
@@ -407,10 +436,11 @@ class PaineldeResultadosCis(View):
         return fig_serie.to_html(full_html=False)
 
     # Responsável por criar o gráfico de linha
-    def view_grafico_linha(self):
-        # Filtrar apenas as instâncias relacionadas ao CisModel
-        assessments_cis = AssessmentModel.objects.filter(framework__nome__icontains='cis')
-
+    def view_grafico_linha(self, request):
+        # Obter o parâmetro 'limite' da requisição (padrão para 3 se não fornecido)
+        limite = int(request.GET.get('limite', 12))
+        # Filtrar apenas as instâncias relacionadas ao CisModel com status 'Concluído'
+        assessments_cis = AssessmentModel.objects.filter(framework__nome__icontains='cis', status='Concluído').order_by('-data_upload')[:limite]
         # Total de registros filtrados
         total_cis = assessments_cis.count()
 
@@ -418,71 +448,57 @@ class PaineldeResultadosCis(View):
             # Calcular os percentuais de meta e resultado (remover o % e converter para float)
             percentual_meta = [float(value.replace('%', '')) for value in assessments_cis.values_list('meta', flat=True)]
             percentual_resultado = [float(value.replace('%', '')) for value in assessments_cis.values_list('resultado', flat=True)]
+            percentual_meta.reverse()
+            percentual_resultado.reverse()
+
 
             # Coletar as datas de upload no formato desejado
             data_meta = [data.strftime("%d/%m/%Y") for data in assessments_cis.values_list('data_upload', flat=True)]
-            data_resultado = data_meta.copy()  # Supondo que as datas sejam as mesmas
+            data_meta.reverse()
+            data_resultado = data_meta.copy()
         else:
             percentual_meta = []
             percentual_resultado = []
             data_meta = []
             data_resultado = []
 
-        # Criar o gráfico eixos x e y
+        # Criar o gráfico
         fig_linha = go.Figure()
-        
         fig_linha.add_trace(go.Scatter(
-                        x=data_meta, 
-                        y=percentual_meta,
-                        name='Meta',
-                        hovertemplate="%{y}<extra></extra>",
-                        text=[f"{p}%" for p in percentual_meta],  # Adiciona o símbolo de % aos rótulos
-                        textposition='top center',  # Posição do texto
-                        mode='lines+markers+text',
-                        line=dict(color='darkblue')
+            x=data_meta,
+            y=percentual_meta,
+            name='Meta',
+            hovertemplate="%{y}<extra></extra>",
+            text=[f"{p}%" for p in percentual_meta],
+            textposition='top center',
+            mode='lines+markers+text',
+            line=dict(color='darkblue')
         ))
         fig_linha.add_trace(go.Scatter(
-                        x=data_resultado, 
-                        y=percentual_resultado,
-                        name='Nota',
-                        hovertemplate="%{y}<extra></extra>",
-                        text=[f"{p}%" for p in percentual_resultado],
-                        textposition='top center',  # Posição do texto
-                        mode='lines+markers+text',
-                        line=dict(color='RoyalBlue')
+            x=data_resultado,
+            y=percentual_resultado,
+            name='Nota',
+            hovertemplate="%{y}<extra></extra>",
+            text=[f"{p}%" for p in percentual_resultado],
+            textposition='top center',
+            mode='lines+markers+text',
+            line=dict(color='RoyalBlue')
         ))
+
         # Atualizar o layout
         fig_linha.update_layout(
-            plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-            
-            xaxis=dict(
-                visible=True,# Oculta o eixo x
-            ),
-            yaxis_title='CIS Controls v8.1',  # Título do eixo Y
-            yaxis=dict(
-                visible=True,   # Oculta o eixo Y
-                showticklabels=False,   # Oculta os valores dos ticks
-                range=[0, 200],        # Ajuste os valores conforme necessário
-                tick0=1,  # Valor inicial para os ticks
-                dtick=10   # Espaçamento entre os ticks
-            ),
+            plot_bgcolor='rgba(0, 0, 0, 0)',
+            xaxis=dict(visible=True),
+            yaxis_title='CIS Controls v8.1',
+            yaxis=dict(visible=True, showticklabels=False, range=[0, 200], tick0=1, dtick=10),
             margin=dict(l=0, r=0, t=1, b=0),
             height=200,
-            width=None,
-            font=dict(
-                family="Arial",
-                size=9
-            ),
-            legend=dict(
-                yanchor="top",         # Ancoragem na parte inferior
-                x=0.9,                # Orientação horizontal
-                y=1.0,                 # Ajusta a posição vertical da legenda
-            )
+            font=dict(family="Arial", size=9),
+            legend=dict(yanchor="top", x=0.9, y=1.0),
         )
-        
+
         # Converter o gráfico para HTML
-        grafico_linha_html = fig_linha.to_html(full_html=False, config={'responsive': True})
-        return grafico_linha_html
+        return fig_linha.to_html(full_html=False, config={'responsive': True})
     
     # Responsável por contar os tipor de ativos
     def view_card_tipo_ativo(self):
@@ -602,8 +618,7 @@ class PaineldeResultadosCis(View):
         )
 
         # Converter o gráfico para HTML
-        grafico_pizza_conclusao_html = fig_roda.to_html(full_html=False, config={'responsive': True})
-        return grafico_pizza_conclusao_html
+        return fig_roda.to_html(full_html=False, config={'responsive': True})
     # FIM DAS DOS GRÁFICOS DO PLANO DE AÇÃO ################################################
 
     # INÍCIO DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
@@ -658,12 +673,11 @@ class PaineldeResultadosCis(View):
         )
 
         # Converter o gráfico para HTML
-        grafico_pizza_custo_estimado_html = fig_pizza.to_html(full_html=False, config={'responsive': True})
-        return grafico_pizza_custo_estimado_html
+        return fig_pizza.to_html(full_html=False, config={'responsive': True})
     
     # Resposável por calcular a soma de custos de cada controle
     def calcular_soma_custos_de_cada_controle(self):
-        categorias = [
+        categorias = ["Inventário e controle <br>de ativos corporativos",
                         "Inventário e controle de <br>ativos de software",
                         "Proteção de Dados",
                         "Configuração segura de <br>ativos corporativos e software",
@@ -680,8 +694,8 @@ class PaineldeResultadosCis(View):
                         "Gestão de provedor <br>de serviços",
                         "Segurança de Aplicações",
                         "Gestão de respostas <br>a incidentes",
-                        "Testes de invasão",
-                        "Inventário e controle <br>de ativos corporativos",]
+                        "Testes de invasão"
+                    ]
         categorias_limpa = [re.sub(r"<br>", "", cat).strip() for cat in categorias]
         
         subcontrole_somas = CadPlanodeAcaoModel.objects.values('subcontrole').annotate(total=Sum('quanto'))
@@ -704,7 +718,7 @@ class PaineldeResultadosCis(View):
         valores_barra = [controle_somas[controle] for controle in categorias_limpa]
 
         return categorias, categorias_limpa, controle_somas, valores_barra
-
+    
     # Responsanvel por somar todos os valores no cuso estimado do plano de ação porr controle
     def view_grafico_barra_acao_controle(self):
         categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_controle()
@@ -715,12 +729,14 @@ class PaineldeResultadosCis(View):
             reverse=True
         )
         categorias_ordenadas, valores_barra_ordenados = zip(*valores_barra_e_categorias)
+
+        rodape = [self.abreviar_categoria(cat) for cat in categorias_ordenadas]
         
         fig_barra = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_barra.add_trace(go.Bar(
-                x=categorias_ordenadas,
+                x=rodape,
                 y=valores_barra_ordenados,
                 hovertemplate="%{y} em %{x}<extra></extra>",
                 name='Custo',
@@ -755,8 +771,7 @@ class PaineldeResultadosCis(View):
         )
 
         # Converter o gráfico para HTML 
-        grafico_barra_acao_controle_html = fig_barra.to_html(full_html=False)
-        return grafico_barra_acao_controle_html
+        return fig_barra.to_html(full_html=False)
     
     # Responsavel por somar todos os valores no cuso estimado do plano de ação por meta
     def view_grafico_serie_maturidade(self):
@@ -853,12 +868,14 @@ class PaineldeResultadosCis(View):
         # Restaurar os <br> nas categorias ordenadas
         categorias_sorted = [mapa_categorias[categoria] for categoria in categorias_sorted]
 
+        rodape = [self.abreviar_categoria(cat) for cat in categorias_sorted]
+
         # Criar o gráfico
         fig_serie_mat = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_serie_mat.add_trace(go.Bar(
-                x=categorias_sorted,
+                x=rodape,
                 y=valores_barra_sorted,
                 hovertemplate="%{y} em %{x}<extra></extra>",
                 name='Aumento Maturidade',
@@ -869,43 +886,47 @@ class PaineldeResultadosCis(View):
 
         # Adicionando o gráfico de linha
         fig_serie_mat.add_trace(go.Scatter(
-            x=categorias_sorted,
+            x=rodape[:len(valores_barra_sorted)],
             y=valores_meta_sorted_only,
             name='Custos',
             hovertemplate="%{y}%<extra></extra>",
-            text=[f"<b>{p:.2f}%</b>" for p in valores_meta_sorted_only],
-            textposition='top center',  # Posição do texto
-            mode='lines+text', 
-            line=dict(color='darkblue')
+            text=[f"<b>{p:.1f}%</b>" for p in valores_meta_sorted_only],
+            textposition='top center',
+            mode='lines+text',
+            line=dict(color='darkblue'),
+            yaxis='y2'  # Referencia o segundo eixo Y
         ))
 
         # Configurações adicionais do layout
         fig_serie_mat.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=0, r=0, t=0, b=0),  # Margens
-                height=270,
-                width=None,
-                font=dict(
-                    family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0, 1000],  # Ajusta o intervalo do eixo Y
-                    dtick=500,               # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                    yanchor="top",         # Ancoragem na parte inferior
-                    x=0,                # Orientação horizontal
-                    y=0.9,                 # Ajusta a posição vertical da legenda
-                )
+            plot_bgcolor='rgba(0, 0, 0, 0)',
+            margin=dict(l=0, r=0, t=0, b=0),
+            height=270,
+            width=None,
+            font=dict(
+                family="Arial",
+                size=9,
+                color='#000000'
+            ),
+            yaxis=dict(
+                range=[0, 1000],  # Ajusta o intervalo do eixo Y para as barras
+                showgrid=False
+            ),
+            yaxis2=dict(
+                range=[0, 120],  # Ajusta o intervalo do eixo Y para a linha
+                overlaying='y',  # Sobrepõe ao eixo Y primário
+                side='right'     # Coloca o eixo Y2 do lado direito
+            ),
+            showlegend=True,
+            legend=dict(
+                yanchor="top",
+                x=0,
+                y=0.9
+            )
         )
 
         # Converter o gráfico para HTML 
-        grafico_serie_maturidade_html = fig_serie_mat.to_html(full_html=False)
-        return grafico_serie_maturidade_html
+        return fig_serie_mat.to_html(full_html=False)
     # FIM DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
 
     def get(self, request):
@@ -926,7 +947,7 @@ class PaineldeResultadosCis(View):
         grafico_barra_linha_html = self.view_grafico_barra_linha()
 
         # Gráfico de linha
-        grafico_linha_html = self.view_grafico_linha()
+        grafico_linha_html = self.view_grafico_linha(request)
 
         # Card do tipo de ativo
         total_tipo_ativo, card_tipo_ativo = self.view_card_tipo_ativo()
@@ -952,6 +973,7 @@ class PaineldeResultadosCis(View):
         # Gráfico de barra de custo estimado das ações por controle
         grafico_barra_acao_controle_html = self.view_grafico_barra_acao_controle()
 
+        # Gráfico de barra de custo estimado das ações por maturidade
         grafico_serie_maturidade_html = self.view_grafico_serie_maturidade()
         # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
               
@@ -1010,7 +1032,7 @@ class PaineldeResultadosCis(View):
             'percentual_acoes_cad': percentual_acoes_cad,
             'grafico_pizza_conclusao_html': grafico_pizza_conclusao_html,
             # FIM GRÁFICOS DO PLANO DE AÇÃO
-            # INÍCIO GRÁFICOS DO PLANO DE AÇÃO
+            # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
             'soma_custo_estimado': soma_custo_estimado,
             'grafico_pizza_custo_estimado_html': grafico_pizza_custo_estimado_html,
             'grafico_barra_acao_controle_html': grafico_barra_acao_controle_html,
@@ -1020,9 +1042,3 @@ class PaineldeResultadosCis(View):
         }
 
         return render(request, self.template_name, context)
-
-    def post(self, request):
-        # Aqui você pode tratar as mudanças (ex: adicionar ou remover instâncias de assessment)
-        # E depois retornar o gráfico atualizado via AJAX
-        grafico_velocimetro_html = self.view_grafico_velocimetro()
-        return JsonResponse({'grafico_html': grafico_velocimetro_html})

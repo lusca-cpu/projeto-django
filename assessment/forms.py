@@ -128,7 +128,7 @@ class MeuModeloAcaoForm(forms.ModelForm):
             'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
             'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
             'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
-            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'step': '0.01'}),
             'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
         }
         labels = {
@@ -167,7 +167,7 @@ class MeuModeloAcaoEditForm(forms.ModelForm):
             'fim_pla': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
             'inicio_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
             'fim_real': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'style': 'font-size: 11px;'}),
-            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'quanto': forms.NumberInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'step': '0.01'}),
             'observacao': forms.Textarea(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'rows': 3}),
         }
         labels = {

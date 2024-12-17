@@ -182,7 +182,7 @@ def andamento_excel_nist(excel_file, assessment):
 # Função para processar o arquivo excel do Nist
 def concluido_excel_nist(excel_file, assessment):
     df = pd.read_excel(excel_file)
-
+    print("ENTROU NO CONCLUIDO")
     total_css = 0
     total_css_count = 0
     total_meta = 0
@@ -559,6 +559,7 @@ class Assessment(View):
     def post(self, request):
         form1 = NovoAssessmentForm(request.POST, request.FILES)
         if form1.is_valid():
+            print("ENTROU NO POST")
             # Salva o formulário e obtém a instância salva
             form1.save()
             frameworks = FrameworkModel.objects.all()
@@ -570,9 +571,11 @@ class Assessment(View):
 
             if excel_file:
                 df = pd.read_excel(excel_file)
+                print("Arquivo carregado com sucesso!")
 
                 # Verifica o nome do framework e o status para chamar a função correta
                 if "nist" in nome_framework:  # Função para salvar os dados do NIST
+                    print("ENTROU NO NIST")
                     for _, row in df.iterrows():
                         NistModel.objects.create(
                             assessment=assessment, 
@@ -589,6 +592,7 @@ class Assessment(View):
                     if assessment.status == 'Andamento':  # Corrigido de 'staus' para 'status'
                         andamento_excel_nist(excel_file, assessment)
                     elif assessment.status == 'Concluído':
+                        print("Entrou1")
                         concluido_excel_nist(excel_file, assessment)
 
                 elif "iso" in nome_framework:  # Função para salvar os dados do Iso

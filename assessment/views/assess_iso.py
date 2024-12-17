@@ -17,7 +17,14 @@ def process_save_iso(request, assessment):
 
     # Itera sobre os IsoModels filtrados e atualiza os campos 
     for key, value in request.POST.items():
-        if key.startswith('notaCss_'):
+        if key.startswith('prioControle_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Mandatório', 'Good to have', 'Não']:
+                    iso.prioControle = value
+                    iso.save()
+        elif key.startswith('notaCss_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
@@ -64,7 +71,14 @@ def process_submit_iso(request, assessment):
     total_meta_count = 0
 
     for key, value in request.POST.items():
-        if key.startswith('notaCss_'):
+        if key.startswith('prioControle_'):
+            iso_id = key.split('_')[1]
+            iso = IsoModel.objects.filter(id=iso_id).first()
+            if iso:
+                if value in ['Mandatório', 'Good to have', 'Não']:
+                    iso.prioControle = value
+                    iso.save()
+        elif key.startswith('notaCss_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
@@ -87,7 +101,6 @@ def process_submit_iso(request, assessment):
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
                 comentario = value.strip()
-
                 # Se o comentário for vazio, salve uma string vazia
                 iso.comentarios = comentario if comentario else ''
                 iso.save()
@@ -279,4 +292,4 @@ def download_file(request, filename):
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
             response['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
             return response
-    raise Http404v
+    raise Http404

@@ -65,7 +65,7 @@
                  <div class="row p-0">
                     <!-- zera espaço entre card tb coluna e margem esquerda-->
                     <div class="col-xl-8 col-sm-8 mb-xl-0 justify-content-center">
-                      {{ grafico_velocimetro|safe }}
+                      {{ grafico_velocimetro_html|safe }}
                     </div>
                   </div>  
                 </div> <!--container-->
@@ -81,7 +81,7 @@
               <div class="card-body" style="box-sizing: border-box; margin: 0; padding: 0;">
                 <div class="row p-0 w-100">
                  <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                    {{ grafico_radar|safe }}
+                    {{ grafico_radar_html|safe }}
                   </div>
                 </div>
               </div>
@@ -101,7 +101,7 @@
                   <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                    <div class="row p-0 w-100">
                       <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                        {{ grafico_serie_govern|safe }}
+                        {{ grafico_barra_linha_govern_html|safe }}
                       </div>
                     </div>
                   </div>
@@ -115,7 +115,7 @@
               <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
                 <div class="row p-0 w-100">
                   <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                     {{ grafico_serie_identify|safe }}
+                     {{ grafico_barra_linha_identify_html|safe }}
                   </div>
                 </div> 
               </div>
@@ -135,7 +135,7 @@
                   <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                    <div class="row p-0 w-100">
                       <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                        {{ grafico_serie_protect|safe }}
+                        {{ grafico_barra_linha_protect_html|safe }}
                       </div>
                     </div>
                   </div>
@@ -149,7 +149,7 @@
               <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
                 <div class="row p-0 w-100">
                   <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                     {{ grafico_serie_detect|safe }}
+                     {{ grafico_barra_linha_detect_html|safe }}
                   </div>
                 </div> 
               </div>
@@ -169,7 +169,7 @@
                   <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                    <div class="row p-0 w-100">
                       <div class="col-11 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                        {{ grafico_serie_respond|safe }}
+                        {{ grafico_barra_linha_respond_html|safe }}
                       </div>
                     </div>
                   </div>
@@ -183,7 +183,7 @@
               <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
                 <div class="row p-0 w-100">
                   <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                     {{ grafico_serie_recover|safe }}
+                     {{ grafico_barra_linha_recover_html|safe }}
                   </div>
                 </div> 
               </div>
@@ -198,15 +198,33 @@
         <!-----------------------------------Gráfico de linha/nota 6 meses-->
         <div class="col-xl-11 col-sm-11 mb-xl-0">
           <div class="card p-1 pb-0 d-flex justify-content-center"  style=" box-sizing: border-box; margin: 0; padding: 0;">
-            <span class="font-titulo">
-              Nota e meta dos Assessments NIST CSF 2.0 </span>
-            <p class="subtitulo">
-              Comparação entre a nota e meta de cada assessment realizado
-            </p>
+            <div class="d-flex flex-row">
+              <div class="d-flex flex-column">
+                <span class="font-titulo">
+                  Aderência ao CIS por função de segurança
+                </span>
+                <p class="subtitulo">
+                  Comparação entre a nota e meta de cada assessment CIS Controls V8.1 realizados
+                </p>
+              </div>
+              <div class="d-flex mb-3 ms-auto text-nowrap">
+                <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
+                  Período
+                  <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
+                    <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
+                  </svg>
+                </button>
+                <ul class="dropdown-menu font-small">
+                    <li><a class="dropdown-item" href="?limite=3">3 Assessments</a></li>
+                    <li><a class="dropdown-item" href="?limite=6">6 Assessments</a></li>
+                    <li><a class="dropdown-item" href="?limite=12">12 Assessments</a></li>
+                </ul>
+              </div>
+            </div>
             <div class="card-body pb-2 d-flex justify-content-center p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 w-100">
                 <div class="col-xl-11 col-sm-11 mb-xl-0 justify-content-center">
-                  {{ grafico_linha|safe }}
+                  {{ grafico_linha_html|safe }}
                 </div>
              </div> 
            </div>
@@ -248,7 +266,7 @@
                     <div class="card-body p-1">
                       <div class="row w-100" style="margin:1px;">
                         <div class="col-auto" >
-                          <div> <h6 style="font-weight: bold"> 114 </h6>
+                          <div> <h6 style="font-weight: bold"> {{ qtd_acoes_cad }} </h6>
                           </div>
                         </div>
                       </div>
@@ -265,7 +283,7 @@
                     <div class="card-body p-1">
                       <div class="row w-100" style="margin:1px;">
                         <div class="col-auto">
-                          <div> <h6 style="font-weight: bold;"> 15% </h6>
+                          <div> <h6 style="font-weight: bold;"> {{ percentual_acoes_cad|floatformat:1 }}% </h6>
                           </div>
                         </div>
                       </div>
@@ -280,7 +298,7 @@
                 <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                   <div class="row p-0 w-100">
                     <div class="col-10 p-0 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                      {{ grafico_roda|safe }}
+                      {{ grafico_pizza_conclusao_html|safe }}
                     </div>
                   </div>
                 </div>
@@ -336,7 +354,7 @@
                       <div class="card-body p-1">
                         <div class="row w-100">
                           <div class="col-auto">
-                            <div> <h6 style="font-weight: bold"> R$ 200 500,00 </h6>
+                            <div> <h6 style="font-weight: bold">R${{ soma_custo_estimado|floatformat:2 }}</h6>
                             </div>
                           </div>
                         </div>
@@ -365,7 +383,7 @@
             <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 w-100">
                 <div class="col-xl-11 col-sm-11 mb-1 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                   {{ grafico_serie_maturidade|safe }}
+                   {{ grafico_serie_maturidade_html|safe }}
                 </div>
               </div> 
             </div>
@@ -387,7 +405,7 @@
                 <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
                   <div class="row p-0 g-0 w-100">
                     <div class="col-xl-11 col-sm-11 mb-xl-0" style="margin-left:-5px;">
-                       {{ grafico_barra|safe }}
+                       {{ grafico_barra_acao_categoria_html|safe }}
                     </div>
                   </div> 
                 </div>

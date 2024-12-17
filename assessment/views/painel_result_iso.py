@@ -1,105 +1,52 @@
+from django.db.models import Count, Sum, Q
 from django.shortcuts import render
 from django.views import View
 
-from ..models import AssessmentModel, CadPlanodeAcaoModel, PlanoAcaoModel
+from ..models import AssessmentModel, CadPlanodeAcaoModel, IsoModel, PlanoAcaoModel
 
 import plotly.graph_objects as go
 
 # Função para renderizar a página painel de resultados ISO 'paginas/painel_result_iso.html
 class PaineldeResultadosIso(View):
     template_name = 'paginas/painel_result_iso.html'
-    
-    def get(self, request):
 
-        assessments = AssessmentModel.objects.all()
-        
-        ## Grafico de linha
-        percentual1 = [10, 20, 20, 80, 90, 100]
-        data1 = ["10/04/2024", "10/05/2024", "10/06/2024", "10/07/2024", "10/08/2024", "10/09/2024"]
-        percentual2 = [5, 10, 10, 15, 20, 25]
-        data2 = ["10/04/2024", "10/05/2024", "10/06/2024", "10/07/2024", "10/08/2024", "10/09/2024"]
+    # INÍCIO GRÁFICOS DO ASSESSMENT ########################################################
+    # Responsável pela criação do gráfico de velocímetro
+    def view_grafico_velocimetro(self):
+        # Filtrar apenas as instâncias relacionadas ao IsoModel
+        acao_iso = IsoModel.objects.count()
 
-        # Criar o gráfico eixos x e y
-        fig_linha = go.Figure()
-        
-        fig_linha.add_trace(go.Scatter(
-                        x=data1, 
-                        y=percentual1,
-                        name='Meta',
-                        hovertemplate="%{y}<extra></extra>",
-                        text=[f"{p}%" for p in percentual1],  # Adiciona o símbolo de % aos rótulos
-                        textposition='top center',  # Posição do texto
-                        mode='lines+markers+text',
-                        line=dict(color='darkblue')
-        ))
-        fig_linha.add_trace(go.Scatter(
-                        x=data2, 
-                        y=percentual2,
-                        name='Nota',
-                        hovertemplate="%{y}<extra></extra>",
-                        text=[f"{p}%" for p in percentual2],
-                        textposition='top center',  # Posição do texto
-                        mode='lines+markers+text',
-                        line=dict(color='RoyalBlue')
-        ))
-        # Atualizar o layout
-        fig_linha.update_layout(
-            plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-            
-            xaxis=dict(
-                visible=True,# Oculta o eixo x
-            ),
-            yaxis_title='NIST CSF 2.0',  # Título do eixo Y
-            yaxis=dict(
-                visible=True,          # Oculta o eixo Y
-                showticklabels=False,  # Oculta os valores dos ticks
-                range=[0, 200],        # Ajuste os valores conforme necessário
-                tick0=1,   # Valor inicial para os ticks
-                dtick=10   # Espaçamento entre os ticks
-            ),
-            margin=dict(l=0, r=0, t=1, b=0),
-            height=200,
-            width=None,
-            font=dict(
-                family="Arial",
-                size=9
-            ),
-            legend=dict(
-                yanchor="top",         # Ancoragem na parte inferior
-                x=0.9,                # Orientação horizontal
-                y=1.0,                 # Ajusta a posição vertical da legenda
-            )
-        )
-        
-        # Converter o gráfico para HTML
-        grafico_linha_html = fig_linha.to_html(full_html=False, config={'responsive': True})
-        
-        ## Grafico velocimetro
+        soma_meta = IsoModel.objects.filter(meta="Conforme").count()
+        soma_resultado = IsoModel.objects.filter(notaCss="Conforme").count()
+
         # Dados para o gráfico
-        valores = [2.4, 3.8]  #valor da nota media e meta
+        valores = [soma_resultado, soma_meta]
         cormarcador = ["darkblue", "RoyalBlue", "LightBlue"]    
         
-        fig_velocimetro = go.Figure(go.Indicator( 
+        fig_velocimetro = go.Figure(go.Indicator(
             mode="gauge+number",
-            value=valores[1], 
-            number={'font': {'color': "red", 'size': 16}}, 
-            gauge={ 
+            value=valores[1],
+            number={
+                'font': {'color': "red", 'size': 16},
+            },
+            gauge={
                 'axis': {
-                            'range': [0, 10], 
-                            'tickcolor': "blue", 
-                            'ticks': "inside", 
-                            'tickfont': dict(size=10),
+                    'range': [0, acao_iso],
+                    'tickcolor': "blue",
+                    'ticks': "inside",
+                    'tickfont': dict(size=10),
                 },
-                'bar': {'color': 'rgba(0, 0, 0, 0)'},  # Cor da barra do indicador transparente
+                'bar': {'color': 'rgba(0, 0, 0, 0)'},
                 'bordercolor': "white",
-                'steps': [  # Partes
-                    {'range': [0, valores[0]], 'color': cormarcador[0]},  # nota media
-                    {'range': [valores[0], 10], 'color': cormarcador[2]}  
+                'steps': [
+                    {'range': [0, valores[0]], 'color': cormarcador[0]},
+                    {'range': [valores[0], 100], 'color': cormarcador[2]}
                 ],
-                'threshold': {  # meta
+                'threshold': {
                     'line': {'color': "red", 'width': 3},
                     'thickness': 0.80,
-                    'value': valores[1]}
+                    'value': valores[1]
+                }
             },
         ))
 
@@ -136,359 +83,318 @@ class PaineldeResultadosIso(View):
         ))
 
         # Converter o gráfico para HTML
-        grafico_velocimetro_html = fig_velocimetro.to_html(full_html=False)
+        return fig_velocimetro.to_html(full_html=False)
+    
+    # Reponsável por contar quantos controles Parcialmente conforme e Não conforme 
+    def view_count_parcial_nao_conformes(self):
+        # Total de registros no AssessmentModel relacionados ao IsoModel
+        total_iso = IsoModel.objects.count()
+
+        if total_iso == 0:  # Evitar divisão por zero
+            return {
+                'Parcialmente': 0,
+                'Não': 0,
+            }
+
+        # Contar "Parcialmente" e "Não" na coluna notaCss
+        parcial_notaCss = IsoModel.objects.filter(notaCss="Parcialmente").count()
+        nao_notaCss = IsoModel.objects.filter(notaCss="Não").count()
+
+        # Contar "Parcialmente" e "Não" na coluna meta
+        parcial_meta = IsoModel.objects.filter(meta="Parcialmente").count()
+        nao_meta = IsoModel.objects.filter(meta="Não").count()
+
+        # Retornar os resultados separados
+        return {
+            'Total': total_iso,
+            'Parcialmente_notaCss': parcial_notaCss,
+            'Nao_notaCss': nao_notaCss,
+            'Parcialmente_meta': parcial_meta,
+            'Nao_meta': nao_meta,
+        }
+    
+    # Reponsável por contar quantos controles Parcialmente
+    def view_count_prioridade_controle(self):
+        # Total de registros no AssessmentModel relacionados ao IsoModel
+        total_iso = IsoModel.objects.count()
+
+        if total_iso == 0:  # Evitar divisão por zero
+            return {
+                'Mandatório': 0,
+                'Good to have': 0,
+                'Não': 0,
+            }
+
+        # Contar "Parcialmente" e "Não" na coluna notaCss
+        mandatorio = IsoModel.objects.filter(prioControle="Mandatório").count()
+        good_to_have = IsoModel.objects.filter(prioControle="Good to have").count()
+        nao = IsoModel.objects.filter(prioControle="Não").count()
+
+        # Retornar os resultados separados
+        return {
+            'Total': total_iso,
+            'Mandatório': mandatorio,
+            'Good_to_have': good_to_have,
+            'Não': nao,
+        }
+
+    # Responsável por mostrar no grafico de quantos resultados possuem 
+    def view_grafico_barra_nota_secao(self):
+        ##Grafico Barra Nota seção
+        x = ['Política de Segurança <br>da informação', 
+                'Organizando a Segurança <br>da informação',
+                'Gestão de ativos', 
+                'Segurança de <br>recursos humanos', 
+                'Áreas seguras', 
+                'Procedimentos e <br>responsabilidades operacionais', 
+                'Requisitos do <br>negócio', 
+                'Requisitos de <br>segurança de sistemas', 
+                'Notificação', 
+                'Aspectos da gestão <br>de continuidade',
+                'Conformidade com <br>requisitos legais']
+
+        status_r = ['Conforme', 'Conforme parcialmente', 'Não conforme', 'Total']
+        fig_barra_nota = go.Figure()
         
-                      
-        ## Gráfico serie_GOVERN temporal com histograma
-        categorias = ["Contexto organizacional", "Estratégia de Risco", "Papeis e Responsabilidades", "Política", "Supervisão", "Gestão de Riscos <br> da cadeia de suprimentos", "Gestão de resposta <br>a incidentes"]
-        valores_barra = [1, 2, 3, 4, 5, 6, 7]
-        valores_meta = [1, 5, 3, 5, 5, 8, 10] # valores da linha devem ser maiores
-        
-        fig_serie_govern = go.Figure()
-
-        # Adicionando o gráfico de barras
-        fig_serie_govern.add_trace(go.Bar(
-                x=categorias,
-                y=valores_barra,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Nota',
-                text=valores_barra,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='#fffacd')  # Define a cor das barras
-        ))
-
-        # Adicionando o gráfico de linha
-        fig_serie_govern.add_trace(go.Scatter(
-            x=categorias[:len(valores_barra)],  # Ajustar o x para corresponder ao comprimento dos y
-            y=valores_meta,
-            name='Meta',
-            hovertemplate="%{customdata} de %{y}<extra></extra>",
-            customdata=valores_barra,  # Valores da barra associados aos pontos da linha
-            text=valores_meta,
-            textposition='top center',  # Posição do texto
-            mode='lines+markers+text', 
-            line=dict(color='darkblue')
-        ))
-
-        # Configurações adicionais do layout
-        fig_serie_govern.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=20, r=0, t=0, b=0),  # Margens
-                height=240,
-                width=None,
-                font=dict(
+        # Adiciona as barras
+        fig_barra_nota.add_trace(go.Bar(x=x, y=[2, 5, 1, 9, 2, 5, 1, 9, 2, 5, 1], text=[2, 5, 1, 9, 2, 5, 1, 9, 2, 5, 1], textposition='inside', marker=dict(color='DarkBlue'),  name=status_r[0] ))
+        fig_barra_nota.add_trace(go.Bar(x=x, y=[1, 4, 9, 15, 1, 4, 9, 15, 1, 4, 9], text=[1, 4, 9, 15, 1, 4, 9, 15, 1, 4, 9], textposition='inside', marker=dict(color='RoyalBlue'),  name=status_r[1] ))  
+        fig_barra_nota.add_trace(go.Bar(x=x, y=[6, 8, 4.5, 8, 6, 8, 4.5, 8, 6, 8, 4.5], text=[6, 8, 4.5, 8, 6, 8, 4.5, 8, 6, 8, 4.5], textposition='inside', marker=dict(color='LightBlue'), name=status_r[2] ))
+                
+        # Configuração do layout
+        fig_barra_nota.update_layout(
+            barmode='stack',
+            xaxis={'categoryorder': 'category descending'},  #Ordem do maior para o menor
+            yaxis={'showticklabels': False},  # Oculta os rótulos do eixo Y
+            showlegend=True,            
+            legend=dict(
+                        orientation="h",          # Orientação horizontal
+                        yanchor="bottom",         # Ancoragem na parte inferior
+                        x=0,                    # Posiciona no centro
+                        y=1.0,                   # Ajusta a posição vertical da legenda
+                        font_size=10,
+            ),
+            margin=dict(l=5, r=0, t=2, b=2),  # Margens
+            height=260,        # Ajusta a altura do gráfico
+            width=None,        # Ajusta a largura do gráfico
+            font=dict(
                     family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0,18],  # Ajusta o intervalo do eixo Y
-                    dtick=1.0                # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                        yanchor="top",         # Ancoragem na parte inferior
-                        x=0,                # Orientação horizontal
-                        y=0.9,                 # Ajusta a posição vertical da legenda
-                )
+                    size=10
+               ),
+            plot_bgcolor='rgba(0, 0, 0, 0)'  # Fundo do gráfico transparente
         )
 
-        # Converter o gráfico para HTML 
-        grafico_serie_govern_html = fig_serie_govern.to_html(full_html=False)
+        # Converter o gráfico para HTML
+        return fig_barra_nota.to_html(full_html=False,config={'responsive': True})
+
+    # Responsável por criar o gráfico de linha
+    def view_grafico_linha(self, request):
+        limite = int(request.GET.get('limite', 12))
+        # Filtrar apenas as instâncias relacionadas ao CisModel
+        assessments_iso = AssessmentModel.objects.filter(framework__nome__icontains='iso', status='Concluído').order_by('-data_upload')[:limite]
+
+        # Total de registros filtrados
+        total_iso = assessments_iso.count()
+
+        if total_iso > 0:
+            # Calcular os percentuais de meta e resultado (remover o % e converter para float)
+            percentual_meta = [float(value.replace('%', '')) for value in assessments_iso.values_list('meta', flat=True)]
+            percentual_resultado = [float(value.replace('%', '')) for value in assessments_iso.values_list('resultado', flat=True)]
+            percentual_meta.reverse()
+            percentual_resultado.reverse()
+
+
+            # Coletar as datas de upload no formato desejado
+            data_meta = [data.strftime("%d/%m/%Y") for data in assessments_iso.values_list('data_upload', flat=True)]
+            data_meta.reverse()
+            data_resultado = data_meta.copy()  # Supondo que as datas sejam as mesmas
+        else:
+            percentual_meta = []
+            percentual_resultado = []
+            data_meta = []
+            data_resultado = []
+
+        # Criar o gráfico eixos x e y
+        fig_linha = go.Figure()
         
-        ## Gráfico serie_IDENTIFY temporal com histograma
-        categorias = ["Gestão de ativos", "Avaliação de Riscos", "Melhoria"]
-        valores_barra = [1, 2, 8]
-        valores_meta = [1, 5, 10] # valores da linha devem ser maiores
+        fig_linha.add_trace(go.Scatter(
+                        x=data_meta, 
+                        y=percentual_meta,
+                        name='Meta',
+                        hovertemplate="%{y}<extra></extra>",
+                        text=[f"{p}%" for p in percentual_meta],  # Adiciona o símbolo de % aos rótulos
+                        textposition='top center',  # Posição do texto
+                        mode='lines+markers+text',
+                        line=dict(color='darkblue')
+        ))
+        fig_linha.add_trace(go.Scatter(
+                        x=data_resultado, 
+                        y=percentual_resultado,
+                        name='Nota',
+                        hovertemplate="%{y}<extra></extra>",
+                        text=[f"{p}%" for p in percentual_resultado],
+                        textposition='top center',  # Posição do texto
+                        mode='lines+markers+text',
+                        line=dict(color='RoyalBlue')
+        ))
+        # Atualizar o layout
+        fig_linha.update_layout(
+            plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
+            
+            xaxis=dict(
+                visible=True,# Oculta o eixo x
+            ),
+            yaxis_title='ISO 27000',  # Título do eixo Y
+            yaxis=dict(
+                visible=True,   # Oculta o eixo Y
+                showticklabels=False,   # Oculta os valores dos ticks
+                range=[0, 200],        # Ajuste os valores conforme necessário
+                tick0=1,  # Valor inicial para os ticks
+                dtick=10   # Espaçamento entre os ticks
+            ),
+            margin=dict(l=0, r=0, t=1, b=0),
+            height=200,
+            width=None,
+            font=dict(
+                family="Arial",
+                size=9
+            ),
+            legend=dict(
+                yanchor="top",         # Ancoragem na parte inferior
+                x=0.9,                # Orientação horizontal
+                y=1.0,                 # Ajusta a posição vertical da legenda
+            )
+        )
         
-        fig_serie_identify = go.Figure()
+        # Converter o gráfico para HTML
+        return fig_linha.to_html(full_html=False, config={'responsive': True})
+    # FIM DOS GRÁFICOS DO ASSESSMENT ##############################################################
 
-        # Adicionando o gráfico de barras_identify
-        fig_serie_identify.add_trace(go.Bar(
-                x=categorias,
-                y=valores_barra,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Nota',
-                text=valores_barra,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='LightBlue')  # Define a cor das barras
-        ))
+    # INÍCIO DAS DOS GRÁFICOS DO PLANO DE AÇÃO ################################################
+    # Responsável por mostra os quantidades de ações cadastradas do plano de ação
+    def view_qtd_acoes_cad(self):
+        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
 
-        # Adicionando o gráfico de linha
-        fig_serie_identify.add_trace(go.Scatter(
-            x=categorias[:len(valores_barra)],  # Ajustar o x para corresponder ao comprimento dos y
-            y=valores_meta,
-            name='Meta',
-            hovertemplate="%{customdata} de %{y}<extra></extra>",
-            customdata=valores_barra,  # Valores da barra associados aos pontos da linha
-            text=valores_meta,
-            textposition='top center',  # Posição do texto
-            mode='lines+markers+text', 
-            line=dict(color='darkblue')
-        ))
+        # Soma os valores de 'acoes_cad' das instâncias filtradas
+        total_acoes_cad = plano_acao.aggregate(total=Sum('acoes_cad'))['total'] or 0
 
-        # Configurações adicionais do layout
-        fig_serie_identify.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=20, r=0, t=0, b=50),  # Margens
-                height=240,
-                width=None,
-                font=dict(
-                    family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0,18],       # Ajusta o intervalo do eixo Y
-                    dtick=1.0           # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                        yanchor="top",         # Ancoragem na parte superior
-                        x=0,                   # Orientação horizontal
-                        y=0.9,                 # Ajusta a posição vertical da legenda
-                )
+        return total_acoes_cad
+
+    # Responsável por mostra o percentual de ações cadastradas do plano de ação já concluidas
+    def view_porcentagem_acoes_cad(self):
+        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
+
+        qtn_plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso').count()
+
+        por_plano_acao = plano_acao.aggregate(total=Sum('conclusao'))['total']
+
+        percentual_concluido = (por_plano_acao / qtn_plano_acao)
+        
+        return percentual_concluido
+
+    # Responsável por mostra o gráfico de pizza do status do plano de ação
+    def view_grafico_pizza_conclusao(self):
+        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
+
+        cad_planos = CadPlanodeAcaoModel.objects.filter(planoacao__in=plano_acao)
+
+        # Conta os registros para cada status
+        total_nao_iniciado = cad_planos.filter(status='A iniciar').count()
+        total_andamento = cad_planos.filter(status='Em andamento').count()
+        total_finalizado = cad_planos.filter(status='Concluído').count()
+        total_atrasado = cad_planos.filter(status='Atrasado').count()
+
+        # Verifica para evitar divisão por zero
+        total_plano_acao = plano_acao.count()
+        if total_plano_acao == 0:
+            return {
+                'A iniciar': 0,
+                'Em andamento': 0,
+                'Concluído': 0,
+                'Atrasado': 0
+            }
+
+        status = ['Não iniciado', 'Em andamento', 'Atrasado', 'Finalizado']
+        valores = [total_nao_iniciado, total_andamento, total_atrasado, total_finalizado]
+        cormarcador = ["#F4a460","#fffacd", "#d3d3d3", "#90ee90"]
+        
+        fig_roda = go.Figure(data=go.Pie(labels=status,
+                                       values=valores, 
+                                       marker_colors=cormarcador,
+                                       hole=0.5, # furo do centro do grafico
+                                       pull=[0, 0, 0, 0])) # distancia entre fatias
+
+        # Rótulos
+        fig_roda.update_traces(textposition="inside", textinfo="percent")
+
+        # Legenda
+        fig_roda.update_layout(
+                        legend=dict(
+                        orientation="h",          # Orientação horizontal
+                        yanchor="bottom",         # Ancoragem na parte inferior
+                        x=0.1,                    # Posiciona no centro
+                        y=-0.4,                   # Ajusta a posição vertical da legenda
+                        font_size=10,
+                    )
         )
 
-        # Converter o gráfico para HTML 
-        grafico_serie_identify_html = fig_serie_identify.to_html(full_html=False)
-        #----------
-        
-        ## Gráfico serie_PROTECT temporal com histograma
-        categorias = ["Contexto organizacional", "Estratégia de Risco", "Papeis e Responsabilidades", "Política", "Supervisão", "Gestão de Riscos <br> da cadeia de suprimentos", "Gestão de resposta <br>a incidentes"]
-        valores_barra = [1, 2, 3, 4, 5, 6, 7]
-        valores_meta = [1, 5, 3, 5, 5, 8, 10] # valores da linha devem ser maiores
-        
-        fig_serie_protect = go.Figure()
-
-        # Adicionando o gráfico de barras_protect
-        fig_serie_protect.add_trace(go.Bar(
-                x=categorias,
-                y=valores_barra,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Nota',
-                text=valores_barra,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='#fffacd')  # Define a cor das barras
-        ))
-
-        # Adicionando o gráfico de linha
-        fig_serie_protect.add_trace(go.Scatter(
-            x=categorias[:len(valores_barra)],  # Ajustar o x para corresponder ao comprimento dos y
-            y=valores_meta,
-            name='Meta',
-            hovertemplate="%{customdata} de %{y}<extra></extra>",
-            customdata=valores_barra,  # Valores da barra associados aos pontos da linha
-            text=valores_meta,
-            textposition='top center',  # Posição do texto
-            mode='lines+markers+text', 
-            line=dict(color='darkblue')
-        ))
-
-        # Configurações adicionais do layout
-        fig_serie_protect.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=20, r=0, t=0, b=0),  # Margens
-                height=240,
-                width=None,
-                font=dict(
-                    family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0,18],  # Ajusta o intervalo do eixo Y
-                    dtick=1.0                # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                        yanchor="top",         # Ancoragem na parte inferior
-                        x=0,                # Orientação horizontal
-                        y=0.9,                 # Ajusta a posição vertical da legenda
-                )
+        # Ajustar o layout para tamanho definido. testes: autosize=True/height='50%',
+        fig_roda.update_layout(
+               margin=dict(l=0, r=0, t=2, b=0),  # Margens
+               height=200,
+               width=None
         )
 
-        # Converter o gráfico para HTML 
-        grafico_serie_protect_html = fig_serie_protect.to_html(full_html=False)
-        
-        ## Gráfico serie_DETECT temporal com histograma
-        categorias = ["Gestão de ativos", "Avaliação de Riscos", "Melhoria"]
-        valores_barra = [1, 2, 8]
-        valores_meta = [1, 5, 10] # valores da linha devem ser maiores
-        
-        fig_serie_detect = go.Figure()
+        # Converter o gráfico para HTML
+        return fig_roda.to_html(full_html=False, config={'responsive': True})
+    # FIM DAS DOS GRÁFICOS DO PLANO DE AÇÃO ################################################
 
-        # Adicionando o gráfico de barras
-        fig_serie_detect.add_trace(go.Bar(
-                x=categorias,
-                y=valores_barra,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Nota',
-                text=valores_barra,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='#F4a460')  # Define a cor das barras
-        ))
+    # INÍCIO DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
+    # Resposánvel por somar todos os valores no cuso estimado do plano de ação
+    def view_custo_estimado(self):
+        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
 
-        # Adicionando o gráfico de linha
-        fig_serie_detect.add_trace(go.Scatter(
-            x=categorias[:len(valores_barra)],  # Ajustar o x para corresponder ao comprimento dos y
-            y=valores_meta,
-            name='Meta',
-            hovertemplate="%{customdata} de %{y}<extra></extra>",
-            customdata=valores_barra,  # Valores da barra associados aos pontos da linha
-            text=valores_meta,
-            textposition='top center',  # Posição do texto
-            mode='lines+markers+text', 
-            line=dict(color='darkblue')
-        ))
+        # Soma os valores de 'custo_estimado' das instâncias filtradas
+        total_custo_estimado = plano_acao.aggregate(total=Sum('custo_estimado'))['total'] or 0
 
-        # Configurações adicionais do layout
-        fig_serie_detect.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=20, r=0, t=0, b=50),  # Margens
-                height=240,
-                width=None,
-                font=dict(
-                    family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0,18],       # Ajusta o intervalo do eixo Y
-                    dtick=1.0           # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                        yanchor="top",         # Ancoragem na parte superior
-                        x=0,                   # Orientação horizontal
-                        y=0.9,                 # Ajusta a posição vertical da legenda
-                )
-        )
+        return total_custo_estimado
+    # FIM DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
+    
+    def get(self, request):
+        assessments = AssessmentModel.objects.all()
 
-        # Converter o gráfico para HTML 
-        grafico_serie_detect_html = fig_serie_detect.to_html(full_html=False)
-        
-        #-----------------
-     ## Gráfico serie_RESPOND temporal com histograma
-        categorias = ["Gestão de incidentes", "Análise de incidentes", "Reslatório e Comunicação <br>de incidentes", "Mitigação de Incidentes"]
-        valores_barra = [1, 2, 3, 4, 5, 6, 7]
-        valores_meta = [1, 5, 3, 5, 5, 8, 10] # valores da linha devem ser maiores
-        
-        fig_serie_respond = go.Figure()
+        # INÍCIO GRÁFICOS DO ASSESSMENT ######################################################     
+        # Gráfico de velocímetro
+        grafico_velocimetro_html = self.view_grafico_velocimetro()
 
-        # Adicionando o gráfico de barras
-        fig_serie_respond.add_trace(go.Bar(
-                x=categorias,
-                y=valores_barra,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Nota',
-                text=valores_barra,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='RoyalBlue')  # Define a cor das barras
-        ))
+        # Gráfico de parcialmente e não conformes
+        cont_parcial_nao_conformes = self.view_count_parcial_nao_conformes()
 
-        # Adicionando o gráfico de linha
-        fig_serie_respond.add_trace(go.Scatter(
-            x=categorias[:len(valores_barra)],  # Ajustar o x para corresponder ao comprimento dos y
-            y=valores_meta,
-            name='Meta',
-            hovertemplate="%{customdata} de %{y}<extra></extra>",
-            customdata=valores_barra,  # Valores da barra associados aos pontos da linha
-            text=valores_meta,
-            textposition='top center',  # Posição do texto
-            mode='lines+markers+text', 
-            line=dict(color='darkblue')
-        ))
+        # Gráfico de prioridade de controle
+        cont_prioridade_controle = self.view_count_prioridade_controle()
 
-        # Configurações adicionais do layout
-        fig_serie_respond.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=20, r=0, t=0, b=0),  # Margens
-                height=240,
-                width=None,
-                font=dict(
-                    family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0,18],  # Ajusta o intervalo do eixo Y
-                    dtick=1.0                # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                        yanchor="top",         # Ancoragem na parte inferior
-                        x=0,                # Orientação horizontal
-                        y=0.9,                 # Ajusta a posição vertical da legenda
-                )
-        )
+        # Gráfico de barra de nota 
+        grafico_barra_nota_secao_html = self.view_grafico_barra_nota_secao()
 
-        # Converter o gráfico para HTML 
-        grafico_serie_respond_html = fig_serie_respond.to_html(full_html=False)
-        
-        ## Gráfico serie_RECOVER temporal com histograma
-        categorias = ["Execução do plano <br> de recuperação de incidentes", "Comunicação de recuperação de incidentes"]
-        valores_barra = [1, 2]
-        valores_meta = [1, 10] # valores da linha devem ser maiores
-        
-        fig_serie_recover = go.Figure()
+        # Gráfico de linha
+        grafico_linha_html = self.view_grafico_linha(request)
+        # FIM GRÁFICOS DO ASSESSMENT ######################################################
 
-        # Adicionando o gráfico de barras
-        fig_serie_recover.add_trace(go.Bar(
-                x=categorias,
-                y=valores_barra,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Nota',
-                text=valores_barra,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='#90ee90')  # Define a cor das barras
-        ))
+        # INÍCIO GRÁFICOS DO PLANO DE AÇÃO ##################################################
+        # Quantidade de ações cadastradas
+        qtd_acoes_cad = self.view_qtd_acoes_cad()
 
-        # Adicionando o gráfico de linha
-        fig_serie_recover.add_trace(go.Scatter(
-            x=categorias[:len(valores_barra)],  # Ajustar o x para corresponder ao comprimento dos y
-            y=valores_meta,
-            name='Meta',
-            hovertemplate="%{customdata} de %{y}<extra></extra>",
-            customdata=valores_barra,  # Valores da barra associados aos pontos da linha
-            text=valores_meta,
-            textposition='top center',  # Posição do texto
-            mode='lines+markers+text', 
-            line=dict(color='darkblue')
-        ))
+        # Porcentagem de ações cadastradas concluidas
+        percentual_acoes_cad = self.view_porcentagem_acoes_cad()
 
-        # Configurações adicionais do layout
-        fig_serie_recover.update_layout(
-                plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
-                margin=dict(l=20, r=0, t=0, b=50),  # Margens
-                height=240,
-                width=None,
-                font=dict(
-                    family="Arial",
-                    size=9,
-                    color='#000000'
-                ),
-                yaxis=dict(
-                    visible=False,      # Oculta o eixo Y
-                    range=[0,18],       # Ajusta o intervalo do eixo Y
-                    dtick=1.0           # Define o intervalo dos ticks
-                ),
-                showlegend=True,
-                legend=dict(
-                        yanchor="top",         # Ancoragem na parte superior
-                        x=0,                   # Orientação horizontal
-                        y=0.9,                 # Ajusta a posição vertical da legenda
-                )
-        )
+        # Gráfico de pizza dos status do Plano de ação 
+        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao()
+        # FIM GRÁFICOS DO PLANO DE AÇÃO ################################################
 
-        # Converter o gráfico para HTML 
-        grafico_serie_recover_html = fig_serie_recover.to_html(full_html=False)
-       
+        # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
+        soma_custo_estimado = self.view_custo_estimado()
+        # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #########################################
+
         ## Grafico pizza
         # Dados
         status = [
@@ -514,8 +420,7 @@ class PaineldeResultadosIso(View):
             pull=[0, 0, 0, 0, 0, 0],  # Distância entre fatias
             textinfo='value',  # Exibir valores dentro das fatias
             textposition='inside',  # Posição do texto dentro das fatias
-            
-            
+                        
         ))
     
         # Ajustar rótulos e valores
@@ -545,40 +450,6 @@ class PaineldeResultadosIso(View):
 
         # Converter o gráfico para HTML
         grafico_pizza_html = fig_pizza.to_html(full_html=False, config={'responsive': True})
-        
-        ## Grafico roda
-        status = ['não iniciado', 'andamento', 'atrasado', 'finalizado']
-        valores = [1000, 20000, 50000, 100000]
-        cormarcador = ["#F4a460","#fffacd", "#d3d3d3", "#90ee90"]
-
-        fig_roda = go.Figure(data=go.Pie(labels=status,
-                                      marker_colors=cormarcador,
-                                      hole=0.5, # furo do centro do grafico
-                                      pull=[0, 0, 0, 0])) # distancia entre fatias
-
-        # Rótulos
-        fig_roda.update_traces(textposition="inside", textinfo="percent")
-
-        # Legenda
-        fig_roda.update_layout(
-                        legend=dict(
-                        orientation="h",          # Orientação horizontal
-                        yanchor="bottom",         # Ancoragem na parte inferior
-                        x=0.1,                    # Posiciona no centro
-                        y=-0.4,                   # Ajusta a posição vertical da legenda
-                        font_size=10,
-                    )
-        )
-
-        # Ajustar o layout para tamanho definido. testes: autosize=True/height='50%',
-        fig_roda.update_layout(
-               margin=dict(l=0, r=0, t=2, b=0),  # Margens
-               height=200,
-               width=None
-        )
-
-        # Converter o gráfico para HTML
-        grafico_roda_html = fig_roda.to_html(full_html=False, config={'responsive': True})
         
         ##Grafico Barra Responsavel
         x = ['João', 'Luis', 'Jose', 'Maria', 'Pedro']
@@ -618,7 +489,28 @@ class PaineldeResultadosIso(View):
         grafico_barra_r_html = fig_barra_r.to_html(full_html=False,config={'responsive': True})
         
         ## Gráfico de Barras
-        categoriasb = ["Contexto organizacional", "Estratégia de <br> gerenciamento de riscos", "Papéis,responsabilidades,<br>autoridades", "Política", "Supervisão", "Gestão de riscos <br> cadeia suprimentos", "Gestão de <br>ativos", "Avaliação de Riscos", "Melhoria", "Gestão de <br>identidade", "Concientização", "Segurança de <br> dados","Segurança de <br> plataforma", "Resiliência da <br> infraestrutura", "Monitoramento", "Análise de eventos", "Gestão de <br>incidentes", "Análise de incidentes", "Relatório de incidentes", "Mitigação", "Plano de incidentes", "Comunicação de <br> Recuperação"]
+        categoriasb = ["Contexto organizacional", 
+                        "Estratégia de <br> gerenciamento de riscos", 
+                        "Papéis,responsabilidades,<br>autoridades", 
+                        "Política", 
+                        "Supervisão", 
+                        "Gestão de riscos <br> cadeia suprimentos", 
+                        "Gestão de <br>ativos", 
+                        "Avaliação de Riscos", 
+                        "Melhoria", 
+                        "Gestão de <br>identidade",
+                        "Concientização", 
+                        "Segurança de <br> dados",
+                        "Segurança de <br> plataforma",
+                        "Resiliência da <br> infraestrutura",
+                        "Monitoramento", 
+                        "Análise de eventos", 
+                        "Gestão de <br>incidentes", 
+                        "Análise de incidentes", 
+                        "Relatório de incidentes", 
+                        "Mitigação", 
+                        "Plano de incidentes", 
+                        "Comunicação de <br> Recuperação"]
         valores_barrab = [100, 200, 300, 400, 500, 600, 70, 800, 900, 200, 500, 100, 200, 300, 30, 30, 30, 30, 300, 300, 300, 300]
         fig_barra = go.Figure()
 
@@ -722,16 +614,22 @@ class PaineldeResultadosIso(View):
     
         context = {
             'assessments': assessments,
-            'grafico_velocimetro': grafico_velocimetro_html,
-            'grafico_linha': grafico_linha_html,
+            # INÍCIO GRÁFICOS DO ASSESSMENT 
+            'grafico_velocimetro_html': grafico_velocimetro_html,
+            'cont_parcial_nao_conformes': cont_parcial_nao_conformes,
+            'cont_prioridade_controle': cont_prioridade_controle,
+            'grafico_barra_nota_secao_html': grafico_barra_nota_secao_html,
+            'grafico_linha_html': grafico_linha_html,
+            # FIM GRÁFICOS DO ASSESSMENT 
+            # INÍCIO GRÁFICOS DO PLANO DE AÇÃO 
+            'qtd_acoes_cad': qtd_acoes_cad,
+            'percentual_acoes_cad': percentual_acoes_cad,
+            'grafico_pizza_conclusao_html': grafico_pizza_conclusao_html,
+            # FIM GRÁFICOS DO PLANO DE AÇÃO
+            # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
+            'soma_custo_estimado': soma_custo_estimado,
+            # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
             'grafico_pizza': grafico_pizza_html,
-            'grafico_serie_govern': grafico_serie_govern_html,
-            'grafico_serie_identify': grafico_serie_identify_html,
-            'grafico_serie_protect': grafico_serie_protect_html,
-            'grafico_serie_detect': grafico_serie_detect_html,
-            'grafico_serie_respond': grafico_serie_respond_html,
-            'grafico_serie_recover': grafico_serie_recover_html,
-            'grafico_roda': grafico_roda_html,
             'grafico_barra_r': grafico_barra_r_html,
             'grafico_barra': grafico_barra_html,
             'grafico_serie_maturidade':grafico_serie_maturidade_html,

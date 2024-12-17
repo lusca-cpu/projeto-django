@@ -53,6 +53,7 @@
                         <th>Cod. Categoria</th>
                         <th>Categoria</th>
                         <th>Controle</th>
+                        <th>Prioridade do Controle</th>
                         <th>Nota(CSS)</th>
                         <th>Nota(Cl.)</th>
                         <th>Comentários</th>
@@ -76,6 +77,18 @@
                         <td style="text-align: center;">{{ iso.codCatecoria }}</td>
                         <td>{{ iso.categoria }}</td>
                         <td>{{ iso.controle }}</td>
+                        <td>
+                            {% if assessment.status == 'Andamento' %}
+                                <select name="prioControle_{{ iso.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
+                                    <option value="" disabled selected>...</option>
+                                    <option value="Mandatório" {% if iso.prioControle == "Mandatório" %}selected{% endif %} style="font-size: 0.875rem;">Mandatório</option>
+                                    <option value="Good to have" {% if iso.prioControle == "Good to have" %}selected{% endif %} style="font-size: 0.875rem;">Good to have</option> 
+                                    <option value="Não" {% if iso.prioControle == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não aplica</option>
+                                </select>
+                            {% else %}
+                                {{ iso.prioControle }}
+                            {% endif %}
+                        </td>
                         <td>
                             <select name="notaCss_{{ iso.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                 <option value="" disabled selected>...</option>

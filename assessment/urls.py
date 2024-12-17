@@ -61,7 +61,6 @@ urlpatterns = [
 
     # urls para a pagina painel_result_cis.html
     path('painel_result_cis/', views.PaineldeResultadosCis.as_view(), name='painel_result_cis'),
-    path('painel/resultados/cis/ajax/', views.PaineldeResultadosCis.as_view(), name='painel_resultados_cis_ajax'),
 
     # urls para a pagina painel_result_nist.html
     path('painel_result_nist/', views.PaineldeResultadosNist.as_view(), name='painel_result_nist'),

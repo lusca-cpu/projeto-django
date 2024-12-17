@@ -34,11 +34,11 @@
           <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
         </svg>
       </button>
-    <ul class="dropdown-menu font-small">
-      {% for assessment in assessments %}
-          <li><a class="dropdown-item" href="{% url 'redirecionar_painel_result2' assessment.id %}">{{ assessment.nome }} - {{ assessment.data_upload|date:"d/m/Y" }}</a></li>
-      {% endfor %}
-    </ul>
+      <ul class="dropdown-menu font-small">
+        {% for assessment in assessments %}
+            <li><a class="dropdown-item" href="{% url 'redirecionar_painel_result2' assessment.id %}">{{ assessment.nome }} - {{ assessment.data_upload|date:"d/m/Y" }}</a></li>
+        {% endfor %}
+      </ul>
       <!--botao exportar
       <button id="generate-pdf" type="button" onclick="downloadPDF()"
         class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center me-2">
@@ -197,14 +197,32 @@
         <!-----------------------------------Gráfico de linha/nota-->
         <div class="col-xl-8 col-sm-8 mb-xl-0">
           <div class="card p-1 pb-0 d-flex justify-content-center"  style=" box-sizing: border-box; margin: 0; padding: 0;">
-            <span class="font-titulo">
-              Aderência ao CIS por função de segurança</span>
-            <p class="subtitulo">
-              Comparação entre a nota e meta de cada assessment CIS Controls V8.1 realizados
-            </p>
+            <div class="d-flex flex-row">
+              <div class="d-flex flex-column">
+                <span class="font-titulo">
+                  Aderência ao CIS por função de segurança
+                </span>
+                <p class="subtitulo">
+                  Comparação entre a nota e meta de cada assessment CIS Controls V8.1 realizados
+                </p>
+              </div>
+              <div class="d-flex mb-3 ms-auto text-nowrap">
+                <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
+                  
+                  <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
+                    <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
+                  </svg>
+                </button>
+                <ul class="dropdown-menu font-small">
+                    <li><a class="dropdown-item" href="?limite=3">3 Assessments</a></li>
+                    <li><a class="dropdown-item" href="?limite=6">6 Assessments</a></li>
+                    <li><a class="dropdown-item" href="?limite=12">12 Assessments</a></li>
+                </ul>
+              </div>
+            </div>
             <div class="card-body pb-2 d-flex justify-content-center p-0" style="box-sizing: border-box; margin: 0; padding: 0;">
               <div class="row p-0 w-100">
-                <div class="col-xl-11 col-sm-11 mb-xl-0 justify-content-center">
+                <div class="col-xl-11 col-sm-11 mb-xl-0 justify-content-center" id="grafico_linha">
                   {{ grafico_linha_html|safe }}
               </div>
             </div> 
@@ -560,28 +578,5 @@
     </div>
 </div>  
 </main>
-
-<script>
-  // Função para atualizar o gráfico via AJAX
-  function atualizarGrafico() {
-      fetch("{% url 'painel_resultados_cis_ajax' %}", {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": "{{ csrf_token }}",
-          }
-      })
-      .then(response => response.json())
-      .then(data => {
-          document.getElementById('grafico-velocimetro').innerHTML = data.grafico_html;
-      })
-      .catch(error => console.error('Erro ao atualizar gráfico:', error));
-  }
-
-  // Aqui você pode chamar a função para atualizar o gráfico, por exemplo, em um intervalo ou após uma ação
-  // setInterval(atualizarGrafico, 5000);  // Atualizar a cada 5 segundos
-
-  // Ou chamar a função sempre que uma instância for adicionada ou removida
-</script>
 
 {% endblock %}
