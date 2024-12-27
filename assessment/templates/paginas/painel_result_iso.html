@@ -1,6 +1,13 @@
 {% extends 'base.html' %} 
 {% block title %}Painel de Resultados{% endblock %} 
 {% load static %} 
+
+{% block nav %}
+    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: #0691c0;">
+        Security Assessment - Painel de Resultados
+    </div>
+{% endblock %}
+
 {% block content %}
 
 <link href="{% static 'assets/css/graficos.css' %}" rel="stylesheet" />
@@ -174,7 +181,6 @@
               </div>
               <div class="d-flex mb-3 ms-auto text-nowrap">
                 <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
-                  Período
                   <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
                     <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
                   </svg>

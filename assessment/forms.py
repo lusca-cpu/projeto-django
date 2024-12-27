@@ -82,16 +82,17 @@ class NovoAssessmentForm(forms.ModelForm):
             widget=forms.Select(attrs={'class': 'form-control', 'style': 'font-size: 10px;'}),
             label='Tipo de Framework'
         )
-        
-        # Campo para exibir a data atual
-        self.fields['data_upload_display'] = forms.DateField(
-            initial=datetime.date.today,  # Preenche com a data atual
+
+        # Adicionando um campo fictício para exibir a data atual
+        self.fields['data'] = forms.CharField(
+            initial=datetime.date.today().strftime('%Y-%m-%d'),
             widget=forms.DateInput(attrs={
                 'class': 'form-control',
                 'style': 'font-size: 11px;',
                 'type': 'date',
                 'readonly': True  # Desabilita a edição
-            })
+            }),
+            required=False  # Não é necessário para validação do formulário
         )
 
         self.helper = FormHelper()
@@ -120,7 +121,7 @@ class MeuModeloAcaoForm(forms.ModelForm):
         model = CadPlanodeAcaoModel
         fields = ['projeto', 'subcontrole', 'acao', 'onde', 'responsavel', 'inicio_pla', 'fim_pla', 'inicio_real', 'fim_real', 'quanto', 'observacao']
         widgets = {
-            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'required': True}),
+            'projeto': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 10px;'}),
             'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'required': True}),
             'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
             'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;', 'required': True}),
@@ -159,7 +160,7 @@ class MeuModeloAcaoEditForm(forms.ModelForm):
         model = CadPlanodeAcaoModel
         fields = ['projeto', 'subcontrole', 'acao', 'onde', 'responsavel', 'inicio_pla', 'fim_pla', 'inicio_real', 'fim_real', 'quanto', 'observacao']
         widgets = {
-            'projeto': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
+            'projeto': forms.Select(attrs={'class': 'form-select font-small', 'style': 'font-size: 10px;'}),
             'acao': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
             'onde': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
             'responsavel': forms.TextInput(attrs={'class': 'form-control', 'style': 'font-size: 11px;'}),
@@ -188,7 +189,7 @@ class MeuModeloAcaoEditForm(forms.ModelForm):
         super(MeuModeloAcaoEditForm, self).__init__(*args, **kwargs)
 
         # Atualizações dos placeholders e classes dos inputs
-        self.fields['projeto'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Projeto'})
+        self.fields['projeto'].widget.attrs.update({'class': 'form-select', 'placeholder': 'Projeto'})
         self.fields['subcontrole'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Subcontrole', 'style': 'font-size: 11px;', 'readonly': 'readonly'})
         self.fields['acao'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Ação'})
         self.fields['onde'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Onde (escopo)'})

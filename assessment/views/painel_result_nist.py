@@ -96,7 +96,7 @@ class PaineldeResultadosNist(View):
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
-                'Recover': 0,
+                'Recovery': 0,
                 'Govern': 0,
                 'Detect': 0,
                 'Identify': 0,
@@ -142,7 +142,7 @@ class PaineldeResultadosNist(View):
             media = funcao_result.get(funcao, 0)  
             media_result[funcao] = round(media/total, 2) if total > 0 else 0 
 
-        categorias = ['Recover','Govern','Detect', 'Identify', 'Protect', 'Respond']
+        categorias = ['Recovery','Govern','Detect', 'Identify', 'Protect', 'Respond']
 
         # Organizar os valores na ordem das categorias
         r_meta = [media_meta.get(cat, 0) for cat in categorias]
@@ -318,14 +318,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Identify')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Identify')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -333,7 +333,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Identify')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -438,14 +438,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Protect')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Protect')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -453,7 +453,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Protect')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -557,14 +557,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Detect')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Detect')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -572,7 +572,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Detect')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -675,14 +675,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Respond')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Respond')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -690,7 +690,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Respond')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -780,8 +780,8 @@ class PaineldeResultadosNist(View):
         # Converter o gráfico para HTML 
         return fig_serie_respond.to_html(full_html=False)
 
-    # Responsável por calcular a média e por retornar o gráfico de barra da função RECOVER
-    def view_grafico_barra_linha_recover(self):
+    # Responsável por calcular a média e por retornar o gráfico de barra da função RECOVERY
+    def view_grafico_barra_linha_recovery(self):
         # Total de registros no NistModel
         total_nist = NistModel.objects.count()
 
@@ -793,14 +793,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Recovery')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Recovery')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -808,7 +808,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(funcao='Recovery')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -843,10 +843,10 @@ class PaineldeResultadosNist(View):
         sorted_data = sorted(zip(y_result, y_meta, categorias), key=lambda x: x[0], reverse=True)
         y_result_sorted, y_meta_sorted, categorias_sorted = zip(*sorted_data)
         
-        fig_serie_recover = go.Figure()
+        fig_serie_recovery = go.Figure()
 
         # Adicionando o gráfico de barras
-        fig_serie_recover.add_trace(go.Bar(
+        fig_serie_recovery.add_trace(go.Bar(
                 x=categorias_sorted,
                 y= y_result_sorted,
                 hovertemplate="%{y} em %{x}<extra></extra>",
@@ -857,7 +857,7 @@ class PaineldeResultadosNist(View):
         ))
 
         # Adicionando o gráfico de linha
-        fig_serie_recover.add_trace(go.Scatter(
+        fig_serie_recovery.add_trace(go.Scatter(
             x=categorias_sorted[:len(y_result_sorted)],  # Ajustar o x para corresponder ao comprimento dos y
             y=y_meta_sorted,
             name='Meta',
@@ -870,7 +870,7 @@ class PaineldeResultadosNist(View):
         ))
 
         # Configurações adicionais do layout
-        fig_serie_recover.update_layout(
+        fig_serie_recovery.update_layout(
                 plot_bgcolor='rgba(0, 0, 0, 0)',  # Fundo do gráfico transparente
                 margin=dict(l=20, r=0, t=0, b=50),  # Margens
                 height=240,
@@ -894,7 +894,7 @@ class PaineldeResultadosNist(View):
         )
 
         # Converter o gráfico para HTML 
-        return fig_serie_recover.to_html(full_html=False)
+        return fig_serie_recovery.to_html(full_html=False)
 
     # Gráfico de linha
     def view_grafico_linha(self, request):
@@ -1067,71 +1067,122 @@ class PaineldeResultadosNist(View):
 
         return total_custo_estimado
     
-    # Resposável por calcular a soma de custos de cada controle
-    def calcular_soma_custos_de_cada_controle(self):
-        categorias = ["Contexto Organizacional (GV.OC)", 
-                        "Estratégia de Gerenciamento <br>de Riscos (GV.RM)", 
-                        "Papéis, Responsabilidades e <br>Autoridades (GV.RR)", 
-                        "Política (GV.PO)", 
-                        "Supervisão (GV.OV)", 
-                        "Gestão de Riscos da <br>Cadeia de Suprimentos de <br>Cibersegurança (GV.SC)",
-                        "Gestão de Ativos (ID.AM)",
-                        "Avaliação de Riscos (ID.RA)", 
-                        "Melhoria (ID.IM)",
-                        "Gestão de Identidade, Autenticação <br>e Controle de Acesso (PR.AA)", 
-                        "Conscientização e Treinamento (PR.AT)", 
-                        "Segurança de Dados (PR.DS)", 
-                        "Segurança da Plataforma (PR.PS)", 
-                        "Resiliência da Infraestrutura <br>Tecnológica (PR.IR)",
-                        "Monitoramento Contínuo (DE.CM)", 
-                        "Análise de Eventos Adversos (DE.AE)",
-                        "Gestão de Incidentes (RS.MA)", 
-                        "Análise de Incidentes (RS.AN)",    
-                        "Relatório e Comunicação de <br>Resposta a Incidentes (RS.CO)",
-                        "Mitigação de Incidentes (RS.MI)",
-                        "Execução do Plano de Recuperação <br>de Incidentes (RC.RP)", 
-                        "Comunicação de Recuperação <br>de Incidentes (RC.CO)"]
-        categorias_limpa = [re.sub(r"<br>", "", cat).strip() for cat in categorias]
-        
+    # Responsável por mostra o gráfico de pizza do custo estimado por função do plano de ação
+    def view_grafico_pizza_custo_estimado(self):
+        funcoes = [
+            'Govern', 
+            'Identify', 
+            'Protect', 
+            'Detect', 
+            'Respond', 
+            'Recovery'
+        ]
+
         subcontrole_somas = CadPlanodeAcaoModel.objects.values('subcontrole').annotate(total=Sum('quanto'))
 
         controle_subcontrole_map = {
-            categoria: list(NistModel.objects.filter(categoria=categoria).values_list('subcategoria', flat=True))
-            for categoria in categorias_limpa
+            funcao: list(NistModel.objects.filter(funcao=funcao).values_list('subcategoria', flat=True))
+            for funcao in funcoes
         }
 
-        controle_somas = {categoria: 0 for categoria in categorias_limpa}
+        controle_somas = {funcao: 0 for funcao in funcoes}
         for item in subcontrole_somas:
             subcontrole = item['subcontrole']
             total = item['total']
 
-            for categoria, subcontroles in controle_subcontrole_map.items():
+            for funcao, subcontroles in controle_subcontrole_map.items():
                 if subcontrole in subcontroles:
-                    controle_somas[categoria] += total
+                    controle_somas[funcao] += total
                     break
 
-        valores_barra = [controle_somas[categoria] for categoria in categorias_limpa]
+        valores = [controle_somas[funcao] for funcao in funcoes]
+
+        cormarcador = ["DarkBlue", "RoyalBlue", "blue", "LightBlue", "SteelBlue", "SkyBlue"]
+        
+        # Combinar status e valores para exibição
+        labels = [f"{s}<br>R$ {v:,.0f}" for s, v in zip(funcoes, valores)]  # Formatação dos valores
+
+         # Criação do gráfico de pizza
+        fig_pizza = go.Figure(data=go.Pie(
+            labels=labels,  # Rótulos fora do gráfico
+            values=valores,  # Valores a serem utilizados
+            marker_colors=cormarcador,
+            hole=0,  # Furo do centro do gráfico
+            pull=[0, 0, 0, 0, 0, 0],  # Distância entre fatias
+            textinfo='value',  # Exibir valores dentro das fatias
+            textposition='inside',  # Posição do texto dentro das fatias
+        ))
+    
+        # Ajustar rótulos e valores
+        fig_pizza.update_traces(
+            textposition='outside',  # Rótulos fora do gráfico
+            textinfo='label',  # Exibir de fora das fatias
+            textfont=dict(size=8)  # Tamanho da fonte dos rótulos
+        )
+    
+        # Ajustar o layout
+        fig_pizza.update_layout(
+            margin=dict(l=0, r=0, t=2, b=0),  # Margens
+            height=300,
+            width=None
+        )       
+                                
+        # Ajustar o layout para tamanho definido. testes: autosize=True/height='50%',
+        fig_pizza.update_layout(
+               showlegend=False,  # não mostrar legenda
+               margin=dict(l=0, r=0, t=2, b=0),  # Margens
+               height=200,
+               width=None
+        )
+
+        # Converter o gráfico para HTML
+        return fig_pizza.to_html(full_html=False, config={'responsive': True})
+        
+
+    # Resposável por calcular a soma de custos de cada controle
+    def calcular_soma_custos_de_cada_controle(self):
+        categorias = ["Governança e <br>Estratégia",
+                        "Gestão de Riscos",
+                        "Gestão de Terceiros",
+                        "Privacidade",
+                        "Gestão de Identidade <br>e Acessos",
+                        "Gestão de Ativos",
+                        "Security Mobile <br>(computadores e <br>celulares)",
+                        "Cloud Security",
+                        "Proteção da <br>Infraestrutura",
+                        "Gestão de <br>Conformidades",
+                        "Gestão de <br>Vulnerabilidades",
+                        "Gestão de Patch",
+                        "Desenvolvimento <br>Seguro",
+                        "Gestão de Crise e <br>Continuidade do Negócio",
+                        "Gestão de Incidentes",
+                        "Plano de Backup e <br>Recuperação",
+                        "SOC",
+                        "Conscientização"
+                    ]
+        categorias_limpa = [re.sub(r"<br>", "", cat).strip() for cat in categorias]
+        
+        projetos_somas = (
+            CadPlanodeAcaoModel.objects.filter(planoacao__nome__icontains="nist")
+            .values('projeto')
+            .annotate(total=Sum('quanto'))
+        )
+
+        controle_somas = {controle: 0 for controle in categorias_limpa}
+        for item in projetos_somas:
+            projeto_nome = item['projeto']  # Nome do projeto
+            total = item['total']          # Total associado ao projeto
+
+
+            for controle, soma_atual in controle_somas.items():
+                # Verifica se o nome do controle está no nome do projeto
+                if controle in projeto_nome:  # Agora 'controle' e 'projeto_nome' são strings
+                    controle_somas[controle] += total  # Atualiza o total para o controle
+                    break
+
+        valores_barra = [controle_somas[controle] for controle in categorias_limpa]
 
         return categorias, categorias_limpa, controle_somas, valores_barra
-    # Responsável por abreviar a categoria
-    def abreviar_categoria(self,cat):
-        # Remover o texto entre parênteses e os próprios parênteses
-        cat_sem_parenteses = re.sub(r"\s*\(.*?\)", "", cat).strip()
-        palavras = cat_sem_parenteses.split()
-        
-        # Se a categoria tiver até 3 palavras, retornamos como está
-        if len(palavras) <= 3:
-            if len(palavras) > 1 and palavras[1].lower() == "de":
-                return " ".join(palavras[:2]) + "<br>" + " ".join(palavras[2:])
-            else:    
-                return palavras[0] + "<br>" + " ".join(palavras[1:])
-        
-        # Se tiver mais de 3 palavras, pegamos apenas as 3 primeiras
-        else:
-            if len(palavras) > 1 and palavras[1].lower() == "de":
-                return " ".join(palavras[:2]) + "<br>" + " ".join(palavras[2:3])
-            else:
-                return palavras[0] + "<br>" + " ".join(palavras[1:3])
 
     # Responsavel por somar todos os valores no cuso estimado do plano de ação por meta
     def view_grafico_serie_maturidade(self):
@@ -1222,15 +1273,13 @@ class PaineldeResultadosNist(View):
 
         # Restaurar os <br> nas categorias ordenadas
         categorias_sorted = [mapa_categorias[categoria] for categoria in categorias_sorted]
-        
-        rodape = [self.abreviar_categoria(cat) for cat in categorias_sorted]
-
+    
         # Criar o gráfico
         fig_serie_mat = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_serie_mat.add_trace(go.Bar(
-            x=rodape,
+            x=categorias_sorted,
             y=valores_barra_sorted,
             hovertemplate="%{y} em %{x}<extra></extra>",
             name='Aumento Maturidade',
@@ -1241,7 +1290,7 @@ class PaineldeResultadosNist(View):
 
         # Adicionando o gráfico de linha com um segundo eixo Y
         fig_serie_mat.add_trace(go.Scatter(
-            x=rodape[:len(valores_barra_sorted)],
+            x=categorias_sorted[:len(valores_barra_sorted)],
             y=valores_meta_sorted_only,
             name='Custos',
             hovertemplate="%{y}<extra></extra>",
@@ -1264,7 +1313,7 @@ class PaineldeResultadosNist(View):
                 color='#000000'
             ),
             yaxis=dict(
-                range=[0, 1000],  # Ajusta o intervalo do eixo Y para as barras
+                range=[0, max(valores_meta_sorted_only) + 100],  # Ajusta o intervalo do eixo Y para as barras
                 showgrid=False,
                 dtick = 500
             ),
@@ -1295,13 +1344,12 @@ class PaineldeResultadosNist(View):
         )
         categorias_ordenadas, valores_barra_ordenados = zip(*valores_barra_e_categorias)
         
-        rodape = [self.abreviar_categoria(cat) for cat in categorias_ordenadas]
         
         fig_barra = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_barra.add_trace(go.Bar(
-            x=rodape,
+            x=categorias_ordenadas,
             y=valores_barra_ordenados,
             hovertemplate="%{y} em %{x}<extra></extra>",
             name='Custo',
@@ -1324,7 +1372,7 @@ class PaineldeResultadosNist(View):
             ),
             yaxis=dict(
                 visible=False,  # Oculta o eixo Y  
-                range=[0, max(valores_barra_ordenados) * 1.1],  # Ajusta o intervalo do eixo Y
+                range=[0, max(valores_barra_ordenados)*2],  # Ajusta o intervalo do eixo Y
                 dtick=0.5                # Define o intervalo dos ticks
             ),
             showlegend=True,
@@ -1365,8 +1413,8 @@ class PaineldeResultadosNist(View):
         # Gráfico de barra e elinha do RESPOND
         grafico_barra_linha_respond_html = self.view_grafico_barra_linha_respond()
 
-        # Gráfico de barra e elinha do RECOVER
-        grafico_barra_linha_recover_html = self.view_grafico_barra_linha_recover()
+        # Gráfico de barra e elinha do RECOVERY
+        grafico_barra_linha_recovery_html = self.view_grafico_barra_linha_recovery()
 
         # Gráfico de linha
         grafico_linha_html = self.view_grafico_linha(request)
@@ -1386,6 +1434,8 @@ class PaineldeResultadosNist(View):
         # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
         soma_custo_estimado = self.view_custo_estimado()
 
+        grafico_pizza_custo_estimado_html = self.view_grafico_pizza_custo_estimado()
+
         # Gráfico de barra de custo estimado das ações por maturidade
         grafico_serie_maturidade_html = self.view_grafico_serie_maturidade()
 
@@ -1395,61 +1445,7 @@ class PaineldeResultadosNist(View):
          
         ## Grafico pizza
         # Dados
-        status = [
-            'Resposta<br>Incidentes', 
-            'SOC', 
-            'GVUL', 
-            'Proteção<br>Dados', 
-            'Gestão<br>Riscos', 
-            'Treinamento<br>Segurança'
-         ]
-        valores = [67000, 85000, 65000, 58000, 50000, 48000]  
-        cormarcador = ["DarkBlue", "RoyalBlue", "blue", "LightBlue", "SteelBlue", "SkyBlue"]
-        
-        # Combinar status e valores para exibição
-        labels = [f"{s}<br>R$ {v:,.0f}" for s, v in zip(status, valores)]  # Formatação dos valores
-
-         # Criação do gráfico de pizza
-        fig_pizza = go.Figure(data=go.Pie(
-            labels=labels,  # Rótulos fora do gráfico
-            values=valores,  # Valores a serem utilizados
-            marker_colors=cormarcador,
-            hole=0,  # Furo do centro do gráfico
-            pull=[0, 0, 0, 0, 0, 0],  # Distância entre fatias
-            textinfo='value',  # Exibir valores dentro das fatias
-            textposition='inside',  # Posição do texto dentro das fatias
-            
-            
-        ))
-    
-        # Ajustar rótulos e valores
-        fig_pizza.update_traces(
-            textposition='outside',  # Rótulos fora do gráfico
-            textinfo='label',  # Exibir de fora das fatias
-            textfont=dict(size=8)  # Tamanho da fonte dos rótulos
-        )
-    
-        # Ajustar o layout
-        fig_pizza.update_layout(
-            margin=dict(l=0, r=0, t=2, b=0),  # Margens
-            height=300,
-            width=None
-        )
-    
-        # Converter o gráfico para HTML
-        grafico_pizza_html = fig_pizza.to_html(full_html=False, config={'responsive': True})            
-                                
-        # Ajustar o layout para tamanho definido. testes: autosize=True/height='50%',
-        fig_pizza.update_layout(
-               showlegend=False,  # não mostrar legenda
-               margin=dict(l=0, r=0, t=2, b=0),  # Margens
-               height=200,
-               width=None
-        )
-
-        # Converter o gráfico para HTML
-        grafico_pizza_html = fig_pizza.to_html(full_html=False, config={'responsive': True})
-        
+       
         
         ##Grafico Barra Responsavel
         x = ['João', 'Luis', 'Jose', 'Maria', 'Pedro']
@@ -1500,7 +1496,7 @@ class PaineldeResultadosNist(View):
             'grafico_barra_linha_protect_html': grafico_barra_linha_protect_html,
             'grafico_barra_linha_detect_html': grafico_barra_linha_detect_html,
             'grafico_barra_linha_respond_html': grafico_barra_linha_respond_html,
-            'grafico_barra_linha_recover_html': grafico_barra_linha_recover_html,
+            'grafico_barra_linha_recovery_html': grafico_barra_linha_recovery_html,
             'grafico_linha_html': grafico_linha_html,
             # FIM GRÁFICOS DO ASSESSMENT
             # INÍCIO GRÁFICOS DO PLANO DE AÇÃO 
@@ -1510,10 +1506,10 @@ class PaineldeResultadosNist(View):
             # FIM GRÁFICOS DO PLANO DE AÇÃO
             # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
             'soma_custo_estimado': soma_custo_estimado,
+            'grafico_pizza_custo_estimado_html': grafico_pizza_custo_estimado_html,
             'grafico_serie_maturidade_html': grafico_serie_maturidade_html,
             'grafico_barra_acao_categoria_html': grafico_barra_acao_categoria_html,
             # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
-            'grafico_pizza': grafico_pizza_html,
             'grafico_barra_r': grafico_barra_r_html,
         }
 

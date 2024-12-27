@@ -208,8 +208,48 @@ class PlanoAcaoModel(models.Model):
 
 # Modelo para cadastar os planos de ação
 class CadPlanodeAcaoModel(models.Model):
+    GOVERRNAÇA_e_ESTRATEGIA = 'Governança e Estratégia'
+    GESTAO_de_RISCOS = 'Gestão de Riscos'
+    GESTAO_de_TERCEIROS = 'Gestão de Terceiros'
+    PRIVACIDADE = 'Privacidade'
+    GESTAO_de_IDENTIDADE_e_ACESSOS = 'Gestão de Identidade e Acessos'
+    GESTAO_de_ATIVOS = 'Gestão de Ativos'
+    SECURITY_MOBILE = 'Security Mobile (computadores e celulares)'
+    CLOUD_SECURITY = 'Cloud Security'
+    PROTECACAO_DA_INFRAESTRUTURA = 'Proteção da Infraestrutura'
+    GESTAO_de_CONFORMIDADES = 'Gestão de Conformidades'
+    GESTAO_de_VULNERABILIDADES = 'Gestão de Vulnerabilidades'
+    GESTAO_de_PATCH = 'Gestão de Patch'
+    DESENVOLVIMENTO_SEGURO = 'Desenvolvimento Seguro'
+    GESTAO_de_CRISE = 'Gestão de Crise e Continuidade do Negócio'
+    GESTAO_de_INCIDENTES = 'Gestão de Incidentes'
+    PALNO_de_BACKUP = 'Plano de Backup e Recuperação'
+    SOC ='SOC'
+    CONSCIENTIZAÇAO = 'Conscientização'
+
+    CRITERIO_CHOICES = [
+        (GOVERRNAÇA_e_ESTRATEGIA, 'Governança e Estratégia'),
+        (GESTAO_de_RISCOS, 'Gestão de Riscos'),
+        (GESTAO_de_TERCEIROS, 'Gestão de Terceiros'),
+        (PRIVACIDADE, 'Privacidade'),
+        (GESTAO_de_IDENTIDADE_e_ACESSOS, 'Gestão de Identidade e Acessos'),
+        (GESTAO_de_ATIVOS, 'Gestão de Ativos'),
+        (SECURITY_MOBILE, 'Security Mobile (computadores e celulares)'),
+        (CLOUD_SECURITY, 'Cloud Security'),
+        (PROTECACAO_DA_INFRAESTRUTURA, 'Proteção da Infraestrutura'),
+        (GESTAO_de_CONFORMIDADES, 'Gestão de Conformidades'),
+        (GESTAO_de_VULNERABILIDADES, 'Gestão de Vulnerabilidades'),
+        (GESTAO_de_PATCH, 'Gestão de Patch'),
+        (DESENVOLVIMENTO_SEGURO, 'Desenvolvimento Seguro'),
+        (GESTAO_de_CRISE, 'Gestão de Crise e Continuidade do Negócio'),
+        (GESTAO_de_INCIDENTES, 'Gestão de Incidentes'),
+        (PALNO_de_BACKUP, 'Plano de Backup e Recuperação'),
+        (SOC, 'SOC'),
+        (CONSCIENTIZAÇAO, 'Conscientização'),
+    ]
+
     planoacao = models.ForeignKey(PlanoAcaoModel, on_delete=models.CASCADE, related_name='cad_planode_acao_model')
-    projeto = models.CharField(max_length=255, null=False, blank=False)
+    projeto = models.CharField(max_length=255, null=False, blank=False, choices=CRITERIO_CHOICES)
     subcontrole = models.CharField(max_length=255, null=False, blank=False)
     acao = models.CharField(max_length=255, null=False, blank=False)
     onde = models.CharField(max_length=255, blank=True)

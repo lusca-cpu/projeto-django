@@ -3,7 +3,14 @@
 -->
 {% extends 'base.html' %} 
 {% block title %}Painel de Resultados{% endblock %} 
-{% load static %} 
+{% load static %}
+
+{% block nav %}
+    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: #0691c0;">
+        Security Assessment - Painel de Resultados
+    </div>
+{% endblock %}
+
 {% block content %}
 
 <!--avaliar alteração para bloco editavel dentro da página do painel_result-->
@@ -175,15 +182,15 @@
                   </div>
                 </div>
             </div>  <!--end coluna grafico ações-->
-          <!-------------------------------------- Gráfico serie recover-->
+          <!-------------------------------------- Gráfico serie recovery-->
           <div class="col-xl-5 col-sm-5 mb-xl-0">
             <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
-            <span class="font-titulo"> Nota e meta por categoria da função RECOVER </span>
+            <span class="font-titulo"> Nota e meta por categoria da função RECOVERY </span>
             <p class="subtitulo">Nota e Meta do Assessment por categoria</p>
               <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
                 <div class="row p-0 w-100">
                   <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                     {{ grafico_barra_linha_recover_html|safe }}
+                     {{ grafico_barra_linha_recovery_html|safe }}
                   </div>
                 </div> 
               </div>
@@ -209,7 +216,6 @@
               </div>
               <div class="d-flex mb-3 ms-auto text-nowrap">
                 <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
-                  Período
                   <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
                     <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
                   </svg>
@@ -369,7 +375,7 @@
                 <div class="card-body m-0" style="box-sizing: border-box;margin: 0; padding: 0;">  
                   <div class="row p-0 w-100">
                     <div class="col-11 p-0 mb-3 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                      {{ grafico_pizza|safe }}
+                      {{ grafico_pizza_custo_estimado_html|safe }}
                     </div>
                   </div>
                 </div>

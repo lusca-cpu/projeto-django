@@ -40,7 +40,7 @@ class PaineldeResultadosIso(View):
                 'bordercolor': "white",
                 'steps': [
                     {'range': [0, valores[0]], 'color': cormarcador[0]},
-                    {'range': [valores[0], 100], 'color': cormarcador[2]}
+                    {'range': [valores[0], acao_iso], 'color': cormarcador[2]}
                 ],
                 'threshold': {
                     'line': {'color': "red", 'width': 3},
@@ -97,12 +97,12 @@ class PaineldeResultadosIso(View):
             }
 
         # Contar "Parcialmente" e "Não" na coluna notaCss
-        parcial_notaCss = IsoModel.objects.filter(notaCss="Parcialmente").count()
-        nao_notaCss = IsoModel.objects.filter(notaCss="Não").count()
+        parcial_notaCss = IsoModel.objects.filter(notaCss="Parcialmente Conforme").count()
+        nao_notaCss = IsoModel.objects.filter(notaCss="Não conforme").count()
 
         # Contar "Parcialmente" e "Não" na coluna meta
-        parcial_meta = IsoModel.objects.filter(meta="Parcialmente").count()
-        nao_meta = IsoModel.objects.filter(meta="Não").count()
+        parcial_meta = IsoModel.objects.filter(meta="Parcialmente Conforme").count()
+        nao_meta = IsoModel.objects.filter(meta="Não conforme").count()
 
         # Retornar os resultados separados
         return {

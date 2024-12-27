@@ -98,20 +98,20 @@
                             <td>
                                 <select name="resultadoCss_{{ cis.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
-                                    <option value="Sim" {% if cis.resultadoCss == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
-                                    <option value="Não" {% if cis.resultadoCss == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
+                                    <option value="Aderente" {% if cis.resultadoCss == "Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Aderente</option>
+                                    <option value="Não Aderente" {% if cis.resultadoCss == "Não Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Não Aderente</option>
                                 </select>
                             </td>
                             <td>
                                 <select name="resultadoCl_{{ cis.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
-                                    <option value="Sim" {% if cis.resultadoCl == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
-                                    <option value="Não" {% if cis.resultadoCl == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
+                                    <option value="Aderente" {% if cis.resultadoCl == "Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Aderente</option>
+                                    <option value="Não Aderente" {% if cis.resultadoCl == "Não Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Não Aderente</option>
                                 </select>
                             </td>                      
                             <td>
                                 <textarea name="comentarios_{{ cis.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
-                                    {% if cis.comentarios and cis.comentarios != 'nan' %}
+                                    {% if cis.comentarios != 'nan' %}
                                         {{ cis.comentarios }}
                                     {% endif %}
                                 </textarea>
@@ -119,8 +119,8 @@
                             <td>
                                 <select name="meta_{{ cis.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
-                                    <option value="Sim" {% if cis.meta == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
-                                    <option value="Não" {% if cis.meta == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
+                                    <option value="Aderente" {% if cis.meta == "Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Aderente</option>
+                                    <option value="Não Aderente" {% if cis.meta == "Não Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Não Aderente</option>
                                 </select>
                             </td>
                         </tr>

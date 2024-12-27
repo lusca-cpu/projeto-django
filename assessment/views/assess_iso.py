@@ -28,14 +28,14 @@ def process_save_iso(request, assessment):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
-                if value in ['Conforme', 'Parcialmente','Não']:
+                if value in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
                     iso.notaCss = value
                     iso.save()
         elif key.startswith('notaCl_'):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
-                if value in ['Conforme', 'Parcialmente','Não']:
+                if value in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
                     iso.notaCl = value
                     iso.save()
         elif key.startswith('comentarios_'):
@@ -51,7 +51,7 @@ def process_save_iso(request, assessment):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:   
-                if value in ['Conforme', 'Parcialmente','Não']:
+                if value in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
                     iso.meta = value
                     iso.save()
 
@@ -82,7 +82,7 @@ def process_submit_iso(request, assessment):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
-                if value in ['Conforme', 'Parcialmente', 'Não']:
+                if value in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
                     iso.notaCss = value
                     iso.save()
                     # Contagem para o nota CSS
@@ -93,7 +93,7 @@ def process_submit_iso(request, assessment):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
-                if value in ['Conforme', 'Parcialmente', 'Não']:
+                if value in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
                     iso.notaCl = value
                     iso.save()
         elif key.startswith('comentarios_'):
@@ -108,7 +108,7 @@ def process_submit_iso(request, assessment):
             iso_id = key.split('_')[1]
             iso = IsoModel.objects.filter(id=iso_id).first()
             if iso:
-                if value in ['Conforme', 'Parcialmente', 'Não']:
+                if value in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
                     iso.meta = value
                     iso.save()
                     # Contagem para o resultado CSS

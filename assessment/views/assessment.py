@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.views import View
 
 from datetime import date
 
 from ..forms import NovoAssessmentForm
-from ..models import FrameworkModel, AssessmentModel, CisModel, IsoModel, NistModel, PlanilhaGenericaModel
+from ..models import FrameworkModel, AssessmentModel, CisModel, IsoModel, NistModel, PlanilhaGenericaModel, PlanoAcaoModel
 
 import os
 import pandas as pd
@@ -22,11 +23,11 @@ def andamento_excel_cis(excel_file, assessment):
     for cis, (_, row) in zip(cis_models, df.iterrows()):
         # Processa resultado CSS
         if 'ResultadoCss' in row and pd.notna(row['ResultadoCss']):
-            cis.resultadoCss = row['ResultadoCss'] if row['ResultadoCss'] in ['Sim', 'Não'] else cis.resultadoCss
+            cis.resultadoCss = row['ResultadoCss'] if row['ResultadoCss'] in ['Aderente', 'Não Aderente'] else cis.resultadoCss
 
         # Processa resultado CL
         if 'ResultadoCl' in row and pd.notna(row['ResultadoCl']):
-            cis.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Sim', 'Não'] else cis.resultadoCl
+            cis.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Aderente', 'Não Aderente'] else cis.resultadoCl
 
         # Processa comentários
         if 'Comentários' in row and pd.notna(row['Comentários']):
@@ -34,7 +35,7 @@ def andamento_excel_cis(excel_file, assessment):
 
         # Processa meta
         if 'Meta' in row and pd.notna(row['Meta']):
-            cis.meta = row['Meta'] if row['Meta'] in ['Sim', 'Não'] else cis.meta
+            cis.meta = row['Meta'] if row['Meta'] in ['Aderente', 'Não Aderente'] else cis.meta
 
         # Atualizar a data de upload para a data atual
         assessment.data_upload = timezone.now().date()
@@ -60,14 +61,14 @@ def concluido_excel_cis(excel_file, assessment):
     for index, row in df.iterrows():
         # Processar resultado CSS
         resultado_css = row['Resultado (Css)'] 
-        if resultado_css in ['Sim', 'Não']:
-            if resultado_css == 'Sim':
+        if resultado_css in ['Aderente', 'Não Aderente']:
+            if resultado_css == 'Aderente':
                 total_css_sim += 1
             total_css_count += 1
 
         # Processa resultado CL
         if 'ResultadoCl' in row and pd.notna(row['ResultadoCl']):
-            cis.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Sim', 'Não'] else cis.resultadoCl
+            cis.resultadoCl = row['ResultadoCl'] if row['ResultadoCl'] in ['Aderente', 'Não Aderente'] else cis.resultadoCl
 
         # Processa comentários
         if 'Comentários' in row and pd.notna(row['Comentários']):
@@ -75,8 +76,8 @@ def concluido_excel_cis(excel_file, assessment):
         
         # Processar meta
         meta = row['Meta'] 
-        if meta in ['Sim', 'Não']:
-            if meta == 'Sim':
+        if meta in ['Aderente', 'Não Aderente']:
+            if meta == 'Aderente':
                 total_meta_sim += 1
             total_meta_count += 1
 
@@ -182,7 +183,7 @@ def andamento_excel_nist(excel_file, assessment):
 # Função para processar o arquivo excel do Nist
 def concluido_excel_nist(excel_file, assessment):
     df = pd.read_excel(excel_file)
-    print("ENTROU NO CONCLUIDO")
+
     total_css = 0
     total_css_count = 0
     total_meta = 0
@@ -281,15 +282,19 @@ def andamento_excel_iso(excel_file, assessment):
 
     # Filtra os IsoModel que estão associados ao assessment atual
     iso_models = IsoModel.objects.filter(assessment=assessment)
-
+    
     for iso, (_, row) in zip(iso_models, df.iterrows()):
+        # Precessa prioridade do controle
+        if 'Prioridade do controle' in row and pd.notna(row['Prioridade do controle']):
+            iso.prioControle = row['Prioridade do controle'] if row['Prioridade do controle'] in ['Conforme', 'Parcialmente', 'Não'] else iso.prioControle
+
         # Processa nota CSS
         if 'NotaCss' in row and pd.notna(row['NotaCss']):
-            iso.notaCss = row['NotaCss'] if row['NotaCss'] in ['Conforme', 'Parcialmente', 'Não'] else iso.notaCss
+            iso.notaCss = row['NotaCss'] if row['NotaCss'] in ['Conforme', 'Parcialmente Conforme', 'Não conforme'] else iso.notaCss
 
         # Processa nota CL
         if 'NotaCl' in row and pd.notna(row['NotaCl']):
-            iso.notaCl = row['NotaCl'] if row['NotaCl'] in ['Conforme', 'Parcialmente', 'Não'] else iso.notaCl
+            iso.notaCl = row['NotaCl'] if row['NotaCl'] in ['Conforme', 'Parcialmente Conforme', 'Não conforme'] else iso.notaCl
 
         # Processa comentários
         if 'Comentários' in row and pd.notna(row['Comentários']):
@@ -297,7 +302,7 @@ def andamento_excel_iso(excel_file, assessment):
 
         # Processa meta
         if 'Meta' in row and pd.notna(row['Meta']):
-            iso.meta = row['Meta'] if row['Meta'] in ['Conforme', 'Parcialmente', 'Não'] else iso.meta
+            iso.meta = row['Meta'] if row['Meta'] in ['Conforme', 'Parcialmente Conforme', 'Não conforme'] else iso.meta
 
         # Atualizar a data de upload para a data atual
         assessment.data_upload = timezone.now().date()
@@ -320,14 +325,14 @@ def concluido_excel_iso(excel_file, assessment):
     for index, row in df.iterrows():
         # Processar nota CSS
         nota_css = row['Nota (Css)']  
-        if nota_css in ['Conforme', 'Parcialmente', 'Não']:
+        if nota_css in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
             if nota_css == 'Conforme':
                 total_css_conf += 1
             total_css_count += 1
 
         # Processa nota CL
         if 'NotaCl' in row and pd.notna(row['NotaCl']):
-            iso.notaCl = row['NotaCl'] if row['NotaCl'] in ['Conforme', 'Parcialmente', 'Não'] else iso.notaCl
+            iso.notaCl = row['NotaCl'] if row['NotaCl'] in ['Conforme', 'Parcialmente Conforme', 'Não conforme'] else iso.notaCl
 
         # Processa comentários
         if 'Comentários' in row and pd.notna(row['Comentários']):
@@ -335,7 +340,7 @@ def concluido_excel_iso(excel_file, assessment):
         
         # Processar meta
         meta = row['Meta']  
-        if meta in ['Conforme', 'Parcialmente', 'Não']:
+        if meta in ['Conforme', 'Parcialmente Conforme', 'Não conforme']:
             if meta == 'Conforme':
                 total_meta_conf += 1
             total_meta_count += 1
@@ -559,7 +564,7 @@ class Assessment(View):
     def post(self, request):
         form1 = NovoAssessmentForm(request.POST, request.FILES)
         if form1.is_valid():
-            print("ENTROU NO POST")
+            form1.save()
             # Salva o formulário e obtém a instância salva
             form1.save()
             frameworks = FrameworkModel.objects.all()
@@ -571,11 +576,9 @@ class Assessment(View):
 
             if excel_file:
                 df = pd.read_excel(excel_file)
-                print("Arquivo carregado com sucesso!")
 
                 # Verifica o nome do framework e o status para chamar a função correta
                 if "nist" in nome_framework:  # Função para salvar os dados do NIST
-                    print("ENTROU NO NIST")
                     for _, row in df.iterrows():
                         NistModel.objects.create(
                             assessment=assessment, 
@@ -592,7 +595,6 @@ class Assessment(View):
                     if assessment.status == 'Andamento':  # Corrigido de 'staus' para 'status'
                         andamento_excel_nist(excel_file, assessment)
                     elif assessment.status == 'Concluído':
-                        print("Entrou1")
                         concluido_excel_nist(excel_file, assessment)
 
                 elif "iso" in nome_framework:  # Função para salvar os dados do Iso

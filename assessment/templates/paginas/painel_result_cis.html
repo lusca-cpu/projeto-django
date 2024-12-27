@@ -4,6 +4,13 @@
 {% extends 'base.html' %} 
 {% block title %}Painel de Resultados{% endblock %} 
 {% load static %} 
+
+{% block nav %}
+    <div class="d-none d-md-inline-block sb-sidenav-menu-heading font-small" style="color: #0691c0;">
+        Security Assessment - Painel de Resultados
+    </div>
+{% endblock %}
+
 {% block content %}
 
 <!--avaliar alteração para bloco editavel dentro da página do painel_result-->
@@ -208,7 +215,6 @@
               </div>
               <div class="d-flex mb-3 ms-auto text-nowrap">
                 <button type="button" class="btn btn-primary btn-sm font-small text-center d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false">
-                  
                   <svg id="caretIcon" width="16" height="16" fill="#FFFFFF" class="bi bi-caret-right-fill ms-1" viewBox="0 0 448 512">
                     <path d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
                   </svg>
@@ -263,7 +269,19 @@
                         </h5>
                         <h5
                           style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
-                          <span>{{ card_tipo_ativo.Applications }}/{{ total_tipo_ativo.Applications }}</span>
+                          <span>
+                            {% if card_tipo_ativo.Applications is None %}
+                              0
+                            {% else %}
+                              {{ card_tipo_ativo.Applications }}
+                            {% endif %}
+                            /
+                            {% if total_tipo_ativo.Applications is None %}
+                              0
+                            {% else %}
+                              {{ total_tipo_ativo.Applications }}
+                            {% endif %}
+                          </span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                         <p></p>
@@ -287,7 +305,19 @@
                       <div class="col-6 text-center">
                         <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">Data</h5>
                         <h5 style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;" >
-                          <span>{{ card_tipo_ativo.Data }}/{{ total_tipo_ativo.Data }}</span>
+                          <span>
+                            {% if card_tipo_ativo.Data is None %}
+                              0
+                            {% else %}
+                              {{ card_tipo_ativo.Data }}
+                            {% endif %}
+                            /
+                            {% if total_tipo_ativo.Data is None %}
+                              0
+                            {% else %}
+                              {{ total_tipo_ativo.Data }}
+                            {% endif %}
+                          </span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -310,7 +340,19 @@
                         </h5>
                         <h5
                           style="font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
-                          <span>{{  card_tipo_ativo.Devices }}/{{ total_tipo_ativo.Devices }}</span>
+                          <span>
+                            {% if card_tipo_ativo.Devices is None %}
+                              0
+                            {% else %}
+                              {{ card_tipo_ativo.Devices }}
+                            {% endif %}
+                            /
+                            {% if total_tipo_ativo.Devices is None %}
+                              0
+                            {% else %}
+                              {{ total_tipo_ativo.Devices }}
+                            {% endif %}
+                          </span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -332,7 +374,19 @@
                         </h5>
                         <h5
                           style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
-                          <span>{{ card_tipo_ativo.Users }}/{{ total_tipo_ativo.Users }}</span>
+                          <span>
+                            {% if card_tipo_ativo.Users is None %} 
+                              0 
+                            {% else %} 
+                              {{ card_tipo_ativo.Users }} 
+                            {% endif %}
+                            /
+                            {% if total_tipo_ativo.Users is None %}
+                              0
+                            {% else %}
+                              {{ total_tipo_ativo.Users }}
+                            {% endif %}
+                          </span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -353,7 +407,19 @@
                           Network
                         </h5>
                         <h5 style=" font-weight: bold;font-size: 12px; line-height: 1px; color: darkblue;" >
-                          <span>{{ card_tipo_ativo.Network }}/{{ total_tipo_ativo.Network }}</span>
+                          <span>
+                            {% if card_tipo_ativo.Network is None %} 
+                              0 
+                            {% else %} 
+                              {{ card_tipo_ativo.Network }} 
+                            {% endif %}
+                            /
+                            {% if total_tipo_ativo.Network is None %}
+                              0
+                            {% else %}
+                              {{ total_tipo_ativo.Network }}
+                            {% endif %}
+                          </span>
                         </h5><p style="font-size: 10px">Aderentes</p>
                       </div>
                     </div>
@@ -373,7 +439,19 @@
                       <div class="col-6 text-center">
                         <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">N/A</h5>
                         <h5 style=" font-weight: bold; font-size: 12px; line-height: 1px; ">
-                          <span>{{ total_por_nivel.NA }}/{{ sim_por_ativo.NA }}</span>
+                          <span>
+                            {% if card_tipo_ativo.nan is None %}  
+                              0 
+                            {% else %}
+                              {{ card_tipo_ativo.nan }}
+                            {% endif %}
+                            /
+                            {% if total_tipo_ativo.nan is None %}
+                              0
+                            {% else %}
+                              {{ total_tipo_ativo.nan }}
+                            {% endif %}
+                          </span>
                         </h5>
                         <p style="font-size: 10px">Aderentes</p>
                       </div>
@@ -537,7 +615,7 @@
           <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
             <div class="row p-0 w-100">
               <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                 {{ grafico_barra_acao_controle_html|safe }}
+                 {{ grafico_barra_acao_projeto_html|safe }}
               </div>
             </div> 
           </div>

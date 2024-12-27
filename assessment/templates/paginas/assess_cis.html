@@ -111,22 +111,30 @@
                             {% if assessment.status == 'Andamento' %}
                                 <select name="resultadoCss_{{ cis.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
-                                    <option value="Sim" {% if cis.resultadoCss == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
-                                    <option value="Não" {% if cis.resultadoCss == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
+                                    <option value="Aderente" {% if cis.resultadoCss == "Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Aderente</option>
+                                    <option value="Não Aderente" {% if cis.resultadoCss == "Não Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Não Aderente</option>
                                 </select>
                             {% else %}
-                                {{ cis.resultadoCss }}
+                                {% if cis.resultadoCss == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ cis.resultadoCss }}
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td style="text-align: center;">
                             {% if assessment.status == 'Andamento' %}
                                 <select name="resultadoCl_{{ cis.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
-                                    <option value="Sim" {% if cis.resultadoCl == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
-                                    <option value="Não" {% if cis.resultadoCl == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
+                                    <option value="Aderente" {% if cis.resultadoCl == "Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Aderente</option>
+                                    <option value="Não Aderente" {% if cis.resultadoCl == "Não Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Não Aderente</option>
                                 </select>
                             {% else %}
-                                {{ cis.resultadoCl }}
+                                {% if cis.resultadoCl == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ cis.resultadoCl }}
+                                {% endif %}
                             {% endif %}
                         </td>                      
                         <td>
@@ -137,18 +145,26 @@
                                     {% endif %}
                                 </textarea>
                             {% else %}
-                                {{ cis.comentarios }}
+                                {% if cis.comentarios != 'nan' %}
+                                    {{ cis.comentarios }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td>
                             {% if assessment.status == 'Andamento' %}
                                 <select name="meta_{{ cis.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
-                                    <option value="Sim" {% if cis.meta == "Sim" %}selected{% endif %} style="font-size: 0.875rem;">Sim</option>
-                                    <option value="Não" {% if cis.meta == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não</option>
+                                    <option value="Aderente" {% if cis.meta == "Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Aderente</option>
+                                    <option value="Não Aderente" {% if cis.meta == "Não Aderente" %}selected{% endif %} style="font-size: 0.875rem;">Não Aderente</option>
                                 </select>
                             {% else %}
-                                {{ cis.meta }}
+                                {% if cis.meta == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ cis.meta }}
+                                {% endif %}
                             {% endif %}
                         </td>
                     </tr>

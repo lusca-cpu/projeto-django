@@ -133,23 +133,23 @@
         </table>
     </div>
     <!-- Modal de Adicionar/Upload--> 
-    <div class="modal fade font-small" id="uploadModal" tabindex="-1" aria-labelledby="uploadModal" aria-hidden="true">
+    <div class="modal fade font-small" id="uploadModal" tabindex="-1" aria-labelledby="uploadModal" aria-hidden="true"> 
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <header class="modal-title" id="uploadModal">Importar novo Assessment</header>
+                    <header class="modal-title" id="uploadModal">Importar novo Assessments</header>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
                 </div>
                 <div class="modal-body font-small mb-2">
                     <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="uploadForm">
                         {% csrf_token %}
                         {{ form1|crispy }}
-    
+
                         <div class="mb-2 d-flex align-items-center font-small">
                             <div class="modal-body font-small modal-footer">
                                 <button type="submit" class="btn btn-primary btn-sm font-small">Salvar</button>
                                 <div class="invalid-feedback font-small">
-                                    Por favor, selecione um arquivo.
+                                    Por favor, selecione um arquivo válido.
                                 </div>
                             </div>
                         </div>

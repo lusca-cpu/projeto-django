@@ -21,14 +21,14 @@ def process_save_cis(request, assessment):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
-                if value in ['Sim', 'Não']:
+                if value in ['Aderente', 'Não Aderente']:
                     cis.resultadoCss = value
                     cis.save()
         elif key.startswith('resultadoCl_'):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
-                if value in ['Sim', 'Não']:
+                if value in ['Aderente', 'Não Aderente']:
                     cis.resultadoCl = value
                     cis.save()
         elif key.startswith('comentarios_'):
@@ -44,7 +44,7 @@ def process_save_cis(request, assessment):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
-                if value in ['Sim', 'Não']:
+                if value in ['Aderente', 'Não Aderente']:
                     cis.meta = value
                     cis.save()
 
@@ -67,18 +67,18 @@ def process_submit_cis(request, assessment):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
-                if value in ['Sim', 'Não']:
+                if value in ['Aderente', 'Não Aderente']:
                     cis.resultadoCss = value
                     cis.save()
                     # Contagem para o resultado CSS
-                    if value == 'Sim':
+                    if value == 'Aderente':
                         total_css_sim += 1
                     total_css_count += 1
         elif key.startswith('resultadoCl_'):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
-                if value in ['Sim', 'Não']:
+                if value in ['Aderente', 'Não Aderente']:
                     cis.resultadoCl = value
                     cis.save()
         elif key.startswith('comentarios_'):
@@ -94,11 +94,11 @@ def process_submit_cis(request, assessment):
             cis_id = key.split('_')[1]
             cis = CisModel.objects.filter(id=cis_id).first()
             if cis:
-                if value in ['Sim', 'Não']:
+                if value in ['Aderente', 'Não Aderente']:
                     cis.meta = value
                     cis.save()
                     # Contagem para a meta
-                    if value == 'Sim':
+                    if value == 'Aderente':
                         total_meta_sim += 1
                     total_meta_count += 1
 

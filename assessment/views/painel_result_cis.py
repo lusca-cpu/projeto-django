@@ -163,7 +163,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada nível
         counts_sim = (
             CisModel.objects
-            .filter(meta='Sim')  # Filtrar apenas registros com meta "Sim"
+            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
             .values('nivel')
             .annotate(count=Count('nivel'))
         )
@@ -207,7 +207,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada função
         counts_sim_result = (
             CisModel.objects
-            .filter(resultadoCss='Sim')  # Filtrar apenas registros com resultado(CSS) "Sim"
+            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Sim"
             .values('funcao')
             .annotate(count=Count('funcao'))
         )
@@ -215,7 +215,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada meta
         counts_sim_meta = (
             CisModel.objects
-            .filter(meta='Sim')  # Filtrar apenas registros com meta "Sim"
+            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
             .values('funcao')
             .annotate(count=Count('funcao'))
         )
@@ -318,7 +318,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada função
         counts_sim_controle = (
             CisModel.objects
-            .filter(resultadoCss='Sim')  # Filtrar apenas registros com resultado(CSS) "Sim"
+            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Sim"
             .values('controle')
             .annotate(count=Count('controle'))
         )
@@ -326,7 +326,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada meta
         counts_sim_meta = (
             CisModel.objects
-            .filter(meta='Sim')  # Filtrar apenas registros com meta "Sim"
+            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
             .values('controle')
             .annotate(count=Count('controle'))
         )
@@ -511,13 +511,13 @@ class PaineldeResultadosCis(View):
                 'Devices': 0,
                 'Users': 0,
                 'Network': 0,
-                'NA': 0
+                'nan': 0
             }
 
         # Contar "Sim" para cada função
         counts_sim = (
             CisModel.objects
-            .filter(resultadoCss='Sim')  # Filtrar apenas registros com resultado(CSS) "Sim"
+            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Aderente"
             .values('tipoAtivo')
             .annotate(count=Count('tipoAtivo'))
         )
@@ -531,13 +531,9 @@ class PaineldeResultadosCis(View):
 
         # Criar dicionário com totais por nível
         total_por_nivel = {item['tipoAtivo']: item['count'] for item in counts_total}
-        if "N/A" in total_por_nivel:
-            total_por_nivel["NA"] = total_por_nivel.pop("N/A")
 
         # Criar dicionário com contagem de "Sim" por nível
         sim_por_ativo = {item['tipoAtivo']: item['count'] for item in counts_sim}
-        if "N/A" in total_por_nivel:
-            total_por_nivel["NA"] = total_por_nivel.pop("N/A")
 
         return total_por_nivel, sim_por_ativo
     # FIM DOS GRÁFICOS DO ASSESSMENT ##############################################################
@@ -631,20 +627,40 @@ class PaineldeResultadosCis(View):
 
         return total_custo_estimado
     
+    # Responsável por mostra o gráfico de pizza do custo estimado por função do plano de ação
     def view_grafico_pizza_custo_estimado(self):
-        status = [
-            'Resposta<br>Incidentes', 
-            'SOC', 
-            'GVUL', 
-            'Proteção<br>Dados', 
-            'Gestão<br>Riscos', 
-            'Treinamento<br>Segurança'
-         ]
-        valores = [67000, 85000, 65000, 58000, 50000, 48000]  
+        funcoes = [
+            'Govern', 
+            'Identify', 
+            'Protect', 
+            'Detect', 
+            'Respond', 
+            'Recovery'
+        ]
+
+        subcontrole_somas = CadPlanodeAcaoModel.objects.values('subcontrole').annotate(total=Sum('quanto'))
+
+        controle_subcontrole_map = {
+            funcao: list(CisModel.objects.filter(funcao=funcao).values_list('subConjunto', flat=True))
+            for funcao in funcoes
+        }
+
+        controle_somas = {funcao: 0 for funcao in funcoes}
+        for item in subcontrole_somas:
+            subcontrole = item['subcontrole']
+            total = item['total']
+
+            for funcao, subcontroles in controle_subcontrole_map.items():
+                if subcontrole in subcontroles:
+                    controle_somas[funcao] += total
+                    break
+
+        valores = [controle_somas[funcao] for funcao in funcoes]
+
         cormarcador = ["DarkBlue", "RoyalBlue", "blue", "LightBlue", "SteelBlue", "SkyBlue"]
         
         # Combinar status e valores para exibição
-        labels = [f"{s}<br>R$ {v:,.0f}" for s, v in zip(status, valores)]  # Formatação dos valores
+        labels = [f"{s}<br>R$ {v:,.0f}" for s, v in zip(funcoes, valores)]  # Formatação dos valores
 
          # Criação do gráfico de pizza
         fig_pizza = go.Figure(data=go.Pie(
@@ -654,7 +670,7 @@ class PaineldeResultadosCis(View):
             hole=0,  # Furo do centro do gráfico
             pull=[0, 0, 0, 0, 0, 0],  # Distância entre fatias
             textinfo='value',  # Exibir valores dentro das fatias
-            textposition='inside',  # Posição do texto dentro das fatias           
+            textposition='inside',  # Posição do texto dentro das fatias
         ))
     
         # Ajustar rótulos e valores
@@ -662,7 +678,14 @@ class PaineldeResultadosCis(View):
             textposition='outside',  # Rótulos fora do gráfico
             textinfo='label',  # Exibir de fora das fatias
             textfont=dict(size=8)  # Tamanho da fonte dos rótulos
-        )     
+        )
+    
+        # Ajustar o layout
+        fig_pizza.update_layout(
+            margin=dict(l=0, r=0, t=2, b=0),  # Margens
+            height=300,
+            width=None
+        )       
                                 
         # Ajustar o layout para tamanho definido. testes: autosize=True/height='50%',
         fig_pizza.update_layout(
@@ -675,68 +698,68 @@ class PaineldeResultadosCis(View):
         # Converter o gráfico para HTML
         return fig_pizza.to_html(full_html=False, config={'responsive': True})
     
-    # Resposável por calcular a soma de custos de cada controle
-    def calcular_soma_custos_de_cada_controle(self):
-        categorias = ["Inventário e controle <br>de ativos corporativos",
-                        "Inventário e controle de <br>ativos de software",
-                        "Proteção de Dados",
-                        "Configuração segura de <br>ativos corporativos e software",
-                        "Gestão de Contas",
-                        "Gestão do Controle <br>de Acessos",
-                        "Gestão contínua <br>de vulnerabilidades",
-                        "Gestão de registros <br>de xauditoria",
-                        "Proteções de e-mail <br>e navegador Web",
-                        "Defesas contra Malware",
-                        "Recuperação de Dados",
-                        "Gestão da <br>Infraestrutura de Rede",
-                        "Monitoramento e <br>defesa da Rede",
-                        "Conscientização sobre segurança <br>e treinamento de competências",
-                        "Gestão de provedor <br>de serviços",
-                        "Segurança de Aplicações",
-                        "Gestão de respostas <br>a incidentes",
-                        "Testes de invasão"
+    # Resposável por calcular a soma de custos de cada projeto
+    def calcular_soma_custos_de_cada_projeto(self):
+        categorias = ["Governança e <br>Estratégia",
+                        "Gestão de Riscos",
+                        "Gestão de Terceiros",
+                        "Privacidade",
+                        "Gestão de Identidade <br>e Acessos",
+                        "Gestão de Ativos",
+                        "Security Mobile <br>(computadores e <br>celulares)",
+                        "Cloud Security",
+                        "Proteção da <br>Infraestrutura",
+                        "Gestão de <br>Conformidades",
+                        "Gestão de <br>Vulnerabilidades",
+                        "Gestão de Patch",
+                        "Desenvolvimento <br>Seguro",
+                        "Gestão de Crise e <br>Continuidade do Negócio",
+                        "Gestão de Incidentes",
+                        "Plano de Backup e <br>Recuperação",
+                        "SOC",
+                        "Conscientização"
                     ]
         categorias_limpa = [re.sub(r"<br>", "", cat).strip() for cat in categorias]
         
-        subcontrole_somas = CadPlanodeAcaoModel.objects.values('subcontrole').annotate(total=Sum('quanto'))
-
-        controle_subcontrole_map = {
-            controle: list(CisModel.objects.filter(controle=controle).values_list('subConjunto', flat=True))
-            for controle in categorias_limpa
-        }
+        projetos_somas = (
+            CadPlanodeAcaoModel.objects.filter(planoacao__nome__icontains="cis")
+            .values('projeto')
+            .annotate(total=Sum('quanto'))
+        )
 
         controle_somas = {controle: 0 for controle in categorias_limpa}
-        for item in subcontrole_somas:
-            subcontrole = item['subcontrole']
-            total = item['total']
+        for item in projetos_somas:
+            projeto_nome = item['projeto']  # Nome do projeto
+            total = item['total']          # Total associado ao projeto
 
-            for controle, subcontroles in controle_subcontrole_map.items():
-                if subcontrole in subcontroles:
-                    controle_somas[controle] += total
+
+            for controle, soma_atual in controle_somas.items():
+                # Verifica se o nome do controle está no nome do projeto
+                if controle in projeto_nome:  # Agora 'controle' e 'projeto_nome' são strings
+                    controle_somas[controle] += total  # Atualiza o total para o controle
                     break
 
         valores_barra = [controle_somas[controle] for controle in categorias_limpa]
 
         return categorias, categorias_limpa, controle_somas, valores_barra
     
-    # Responsanvel por somar todos os valores no cuso estimado do plano de ação porr controle
-    def view_grafico_barra_acao_controle(self):
-        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_controle()
+    # Responsanvel por somar todos os valores no cuso estimado do plano de ação por projeto
+    def view_grafico_barra_acao_projeto(self):
+        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_projeto()
 
         valores_barra_e_categorias = sorted(
             zip(categorias, controle_somas.values()), 
             key=lambda x: x[1], 
             reverse=True
         )
+
         categorias_ordenadas, valores_barra_ordenados = zip(*valores_barra_e_categorias)
 
-        rodape = [self.abreviar_categoria(cat) for cat in categorias_ordenadas]
-        
         fig_barra = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_barra.add_trace(go.Bar(
-                x=rodape,
+                x=categorias_ordenadas,
                 y=valores_barra_ordenados,
                 hovertemplate="%{y} em %{x}<extra></extra>",
                 name='Custo',
@@ -759,7 +782,7 @@ class PaineldeResultadosCis(View):
                 ),
                 yaxis=dict(
                     visible=False,  # Oculta o eixo Y  
-                    range=[0, max(valores_barra_ordenados) * 1.1],  # Ajusta o intervalo do eixo Y
+                    range=[0, max(valores_barra_ordenados)*2],  # Ajusta o intervalo do eixo Y
                     dtick=0.5                # Define o intervalo dos ticks
                 ),
                 showlegend=True,
@@ -775,7 +798,7 @@ class PaineldeResultadosCis(View):
     
     # Responsavel por somar todos os valores no cuso estimado do plano de ação por meta
     def view_grafico_serie_maturidade(self):
-        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_controle()
+        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_projeto()
 
         # Total de registros no CisModel
         total_cis = CisModel.objects.count()
@@ -805,7 +828,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada função
         counts_sim_controle = (
             CisModel.objects
-            .filter(resultadoCss='Sim')  # Filtrar apenas registros com resultado(CSS) "Sim"
+            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Sim"
             .values('controle')
             .annotate(count=Count('controle'))
         )
@@ -813,7 +836,7 @@ class PaineldeResultadosCis(View):
         # Contar "Sim" para cada meta
         counts_sim_meta = (
             CisModel.objects
-            .filter(meta='Sim')  # Filtrar apenas registros com meta "Sim"
+            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
             .values('controle')
             .annotate(count=Count('controle'))
         )
@@ -868,14 +891,12 @@ class PaineldeResultadosCis(View):
         # Restaurar os <br> nas categorias ordenadas
         categorias_sorted = [mapa_categorias[categoria] for categoria in categorias_sorted]
 
-        rodape = [self.abreviar_categoria(cat) for cat in categorias_sorted]
-
         # Criar o gráfico
         fig_serie_mat = go.Figure()
 
         # Adicionando o gráfico de barras
         fig_serie_mat.add_trace(go.Bar(
-                x=rodape,
+                x=categorias_sorted,
                 y=valores_barra_sorted,
                 hovertemplate="%{y} em %{x}<extra></extra>",
                 name='Aumento Maturidade',
@@ -886,7 +907,7 @@ class PaineldeResultadosCis(View):
 
         # Adicionando o gráfico de linha
         fig_serie_mat.add_trace(go.Scatter(
-            x=rodape[:len(valores_barra_sorted)],
+            x=categorias_sorted[:len(valores_barra_sorted)],
             y=valores_meta_sorted_only,
             name='Custos',
             hovertemplate="%{y}%<extra></extra>",
@@ -909,7 +930,7 @@ class PaineldeResultadosCis(View):
                 color='#000000'
             ),
             yaxis=dict(
-                range=[0, 1000],  # Ajusta o intervalo do eixo Y para as barras
+                range=[0, max(valores_barra_sorted) + 100],    # Ajusta o intervalo do eixo Y para as barras
                 showgrid=False
             ),
             yaxis2=dict(
@@ -971,7 +992,7 @@ class PaineldeResultadosCis(View):
         grafico_pizza_custo_estimado_html = self.view_grafico_pizza_custo_estimado()
 
         # Gráfico de barra de custo estimado das ações por controle
-        grafico_barra_acao_controle_html = self.view_grafico_barra_acao_controle()
+        grafico_barra_acao_projeto_html = self.view_grafico_barra_acao_projeto()
 
         # Gráfico de barra de custo estimado das ações por maturidade
         grafico_serie_maturidade_html = self.view_grafico_serie_maturidade()
@@ -1035,7 +1056,7 @@ class PaineldeResultadosCis(View):
             # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
             'soma_custo_estimado': soma_custo_estimado,
             'grafico_pizza_custo_estimado_html': grafico_pizza_custo_estimado_html,
-            'grafico_barra_acao_controle_html': grafico_barra_acao_controle_html,
+            'grafico_barra_acao_projeto_html': grafico_barra_acao_projeto_html,
             'grafico_serie_maturidade_html': grafico_serie_maturidade_html,
             # FIM GRÁFICOS DO PLANO DE AÇÃO
             'grafico_barra_r': grafico_barra_r_html,         

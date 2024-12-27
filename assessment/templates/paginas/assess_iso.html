@@ -105,11 +105,15 @@
                                 <select name="notaCss_{{ iso.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
                                     <option value="Conforme" {% if iso.notaCss == "Conforme" %}selected{% endif %} style="font-size: 0.875rem;">Conforme</option>
-                                    <option value="Parcialmente" {% if iso.notaCss == "Parcialmente" %}selected{% endif %} style="font-size: 0.875rem;">Parcialmente</option> 
-                                    <option value="Não" {% if iso.notaCss == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não Conforme</option>
+                                    <option value="Parcialmente" {% if iso.notaCss == "Parcialmente Conforme" %}selected{% endif %} style="font-size: 0.875rem;">Parcialmente Conforme</option> 
+                                    <option value="Não" {% if iso.notaCss == "Não conforme" %}selected{% endif %} style="font-size: 0.875rem;">Não conforme</option>
                                 </select>
                             {% else %}
-                                {{ iso.notaCss }}
+                                {% if iso.notaCss == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ iso.notaCss }}
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td>
@@ -117,22 +121,30 @@
                                 <select name="notaCl_{{ iso.id }}" class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
                                     <option value="Conforme" {% if iso.notaCl == "Conforme" %}selected{% endif %} style="font-size: 0.875rem;">Conforme</option>
-                                    <option value="Parcialmente" {% if iso.notaCl == "Parcialmente" %}selected{% endif %} style="font-size: 0.875rem;">Parcialmente</option> 
-                                    <option value="Não" {% if iso.notaCl == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não Conforme</option>
+                                    <option value="Parcialmente" {% if iso.notaCl == "Parcialmente" %}selected{% endif %} style="font-size: 0.875rem;">Parcialmente Conforme</option> 
+                                    <option value="Não" {% if iso.notaCl == "Não conforme" %}selected{% endif %} style="font-size: 0.875rem;">Não conforme</option>
                                 </select>
                             {% else %}
-                                {{ iso.notaCl }}
+                                {% if iso.notaCl == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ iso.notaCl }}
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td>
                             {% if assessment.status == 'Andamento' %}
                                 <textarea name="comentarios_{{ iso.id }}" class="form-control border-only font-small" rows="3" oninput="autoResize(this)" style="overflow: hidden; resize: none; box-sizing: border-box; padding: 2px; line-height: 1.5;">
-                                    {% if iso.comentarios and iso.comentarios != 'nan' %}
+                                    {% if iso.comentarios != 'nan' %}
                                         {{ iso.comentarios }}
                                     {% endif %}
                                 </textarea>
                             {% else %}
-                                {{ iso.comentarios }}
+                                {% if iso.comentarios == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ iso.comentarios }}
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td>
@@ -140,11 +152,15 @@
                                 <select name="meta_{{ iso.id }}"  class="form-select form-select-sm w-auto border border-light" style="line-height: 1;">
                                     <option value="" disabled selected>...</option>
                                     <option value="Conforme" {% if iso.meta == "Conforme" %}selected{% endif %} style="font-size: 0.875rem;">Conforme</option>
-                                    <option value="Parcialmente" {% if iso.meta == "Parcialmente" %}selected{% endif %} style="font-size: 0.875rem;">Parcialmente</option> 
-                                    <option value="Não" {% if iso.meta == "Não" %}selected{% endif %} style="font-size: 0.875rem;">Não Conforme</option>
+                                    <option value="Parcialmente" {% if iso.meta == "Parcialmente Conforme" %}selected{% endif %} style="font-size: 0.875rem;">Parcialmente Conforme</option> 
+                                    <option value="Não" {% if iso.meta == "Não conforme" %}selected{% endif %} style="font-size: 0.875rem;">Não conforme</option>
                                 </select>
                             {% else %}
-                                {{ iso.meta }}
+                                {% if iso.meta == 'nan' %}
+                                    N/A
+                                {% else %}
+                                    {{ iso.meta }}
+                                {% endif %}
                             {% endif %}
                         </td>
                     </tr>
