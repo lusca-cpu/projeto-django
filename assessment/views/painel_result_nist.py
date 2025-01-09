@@ -13,9 +13,9 @@ class PaineldeResultadosNist(View):
     
     # INÍCIO GRÁFICOS DO ASSESSMENT ########################################################
     # Responsável pela criação do gráfico de velocímetro
-    def view_grafico_velocimetro(self):
+    def view_grafico_velocimetro(self, framework_id):
         # Filtrar apenas as instâncias relacionadas ao CisModel
-        assessments_nist = AssessmentModel.objects.filter(framework__nome__icontains='nist', status='Concluído')
+        assessments_nist = AssessmentModel.objects.filter(framework__id=framework_id, framework__nome__icontains='nist', status='Concluído')
 
         # Calcular soma de meta e resultado
         soma_meta = assessments_nist.aggregate(Sum('meta'))['meta__sum'] or 0
@@ -90,9 +90,9 @@ class PaineldeResultadosNist(View):
         return fig_velocimetro.to_html(full_html=False)
     
     # Respoosanvel porr calcular a porcentagem e por retornar o gráfico de radar
-    def view_grafico_radar(self):
+    def view_grafico_radar(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -106,12 +106,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('funcao')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('funcao')
             .annotate(total_meta=Sum('meta'))
         )
@@ -119,6 +121,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('funcao')
             .annotate(count=Count('funcao'))
         )
@@ -182,9 +185,9 @@ class PaineldeResultadosNist(View):
         return fig_radar.to_html(full_html=False)
     
     # Responsável por calcular a média e por retornar o gráfico de barra da função GOVERN
-    def view_grafico_barra_linha_govern(self):
+    def view_grafico_barra_linha_govern(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -198,14 +201,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(assessment__framework_id=framework_id, funcao='Govern')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(assessment__framework_id=framework_id, funcao='Govern')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -213,7 +216,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Govern')
+            .filter(assessment__framework_id=framework_id, funcao='Govern')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -305,9 +308,9 @@ class PaineldeResultadosNist(View):
         return fig_serie_govern.to_html(full_html=False)
 
     # Responsável por calcular a média e por retornar o gráfico de barra da função IDENTIFY
-    def view_grafico_barra_linha_identify(self):
+    def view_grafico_barra_linha_identify(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -318,14 +321,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Identify')
+            .filter(assessment__framework_id=framework_id, funcao='Identify')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Identify')
+            .filter(assessment__framework_id=framework_id, funcao='Identify')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -333,7 +336,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Identify')
+            .filter(assessment__framework_id=framework_id, funcao='Identify')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -423,9 +426,9 @@ class PaineldeResultadosNist(View):
         return fig_serie_identify.to_html(full_html=False)
 
     # Responsável por calcular a média e por retornar o gráfico de barra da função PROTECT
-    def view_grafico_barra_linha_protect(self):
+    def view_grafico_barra_linha_protect(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -438,14 +441,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Protect')
+            .filter(assessment__framework_id=framework_id, funcao='Protect')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Protect')
+            .filter(assessment__framework_id=framework_id, funcao='Protect')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -453,7 +456,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Protect')
+            .filter(assessment__framework_id=framework_id, funcao='Protect')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -545,9 +548,9 @@ class PaineldeResultadosNist(View):
         return fig_serie_protect.to_html(full_html=False)
 
     # Responsável por calcular a média e por retornar o gráfico de barra da função DETECT
-    def view_grafico_barra_linha_detect(self):
+    def view_grafico_barra_linha_detect(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -557,14 +560,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Detect')
+            .filter(assessment__framework_id=framework_id, funcao='Detect')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Detect')
+            .filter(assessment__framework_id=framework_id, funcao='Detect')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -572,7 +575,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Detect')
+            .filter(assessment__framework_id=framework_id, funcao='Detect')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -661,9 +664,9 @@ class PaineldeResultadosNist(View):
         return fig_serie_detect.to_html(full_html=False)
 
     # Responsável por calcular a média e por retornar o gráfico de barra da função RESPOND
-    def view_grafico_barra_linha_respond(self):
+    def view_grafico_barra_linha_respond(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -675,14 +678,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Respond')
+            .filter(assessment__framework_id=framework_id, funcao='Respond')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Respond')
+            .filter(assessment__framework_id=framework_id, funcao='Respond')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -690,7 +693,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Respond')
+            .filter(assessment__framework_id=framework_id, funcao='Respond')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -781,9 +784,9 @@ class PaineldeResultadosNist(View):
         return fig_serie_respond.to_html(full_html=False)
 
     # Responsável por calcular a média e por retornar o gráfico de barra da função RECOVERY
-    def view_grafico_barra_linha_recovery(self):
+    def view_grafico_barra_linha_recovery(self, framework_id):
         # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
+        total_nist = NistModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_nist == 0:  # Evitar divisão por zero
             return {
@@ -793,14 +796,14 @@ class PaineldeResultadosNist(View):
 
         result = (
             NistModel.objects
-            .filter(funcao='Recovery')
+            .filter(assessment__framework_id=framework_id, funcao='Recovery')
             .values('categoria')
             .annotate(total_notaCss=Sum('notaCss'))
         )
 
         meta = (
             NistModel.objects
-            .filter(funcao='Recovery')
+            .filter(assessment__framework_id=framework_id, funcao='Recovery')
             .values('categoria')
             .annotate(total_meta=Sum('meta'))
         )
@@ -808,7 +811,7 @@ class PaineldeResultadosNist(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             NistModel.objects
-            .filter(funcao='Recovery')
+            .filter(assessment__framework_id=framework_id, funcao='Recovery')
             .values('categoria')
             .annotate(count=Count('categoria'))
         )
@@ -897,10 +900,10 @@ class PaineldeResultadosNist(View):
         return fig_serie_recovery.to_html(full_html=False)
 
     # Gráfico de linha
-    def view_grafico_linha(self, request):
+    def view_grafico_linha(self, request, framework_id):
         limite = int(request.GET.get('limite', 12))
         # Filtrar apenas as instâncias relacionadas ao CisModel
-        assessments_nist = AssessmentModel.objects.filter(framework__nome__icontains='nist', status='Concluído').order_by('-data_upload')[:limite]
+        assessments_nist = AssessmentModel.objects.filter(framework__id=framework_id, framework__nome__icontains='nist', status='Concluído').order_by('-data_upload')[:limite]
 
         # Total de registros filtrados
         total_nist = assessments_nist.count()
@@ -979,8 +982,8 @@ class PaineldeResultadosNist(View):
 
     # INÍCIO DAS DOS GRÁFICOS DO PLANO DE AÇÃO ################################################
     # Responsável por mostra os quantidades de ações cadastradas do plano de ação
-    def view_qtd_acoes_cad(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='nist')
+    def view_qtd_acoes_cad(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='nist')
 
         # Soma os valores de 'acoes_cad' das instâncias filtradas
         total_acoes_cad = plano_acao.aggregate(total=Sum('acoes_cad'))['total'] or 0
@@ -988,10 +991,10 @@ class PaineldeResultadosNist(View):
         return total_acoes_cad
    
     # Responsável por mostra o percentual de ações cadastradas do plano de ação já concluidas
-    def view_porcentagem_acoes_cad(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='nist')
+    def view_porcentagem_acoes_cad(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='nist')
 
-        qtn_plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='nist').count()
+        qtn_plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='nist').count()
 
         por_plano_acao = plano_acao.aggregate(total=Sum('conclusao'))['total']
 
@@ -1000,8 +1003,8 @@ class PaineldeResultadosNist(View):
         return percentual_concluido
     
     # Responsável por mostra o gráfico de pizza do status do plano de ação
-    def view_grafico_pizza_conclusao(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='nist')
+    def view_grafico_pizza_conclusao(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='nist')
 
         cad_planos = CadPlanodeAcaoModel.objects.filter(planoacao__in=plano_acao)
 
@@ -1059,8 +1062,8 @@ class PaineldeResultadosNist(View):
 
     # INÍCIO DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
     # Resposánvel por somar todos os valores no cuso estimado do plano de ação
-    def view_custo_estimado(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='Nist')
+    def view_custo_estimado(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='Nist')
 
         # Soma os valores de 'custo_estimado' das instâncias filtradas
         total_custo_estimado = plano_acao.aggregate(total=Sum('custo_estimado'))['total'] or 0
@@ -1068,7 +1071,7 @@ class PaineldeResultadosNist(View):
         return total_custo_estimado
     
     # Responsável por mostra o gráfico de pizza do custo estimado por função do plano de ação
-    def view_grafico_pizza_custo_estimado(self):
+    def view_grafico_pizza_custo_estimado(self, framework_id):
         funcoes = [
             'Govern', 
             'Identify', 
@@ -1078,7 +1081,7 @@ class PaineldeResultadosNist(View):
             'Recovery'
         ]
 
-        subcontrole_somas = CadPlanodeAcaoModel.objects.values('subcontrole').annotate(total=Sum('quanto'))
+        subcontrole_somas = CadPlanodeAcaoModel.objects.filter(planoacao__assessment__framework_id=framework_id).values('subcontrole').annotate(total=Sum('quanto'))
 
         controle_subcontrole_map = {
             funcao: list(NistModel.objects.filter(funcao=funcao).values_list('subcategoria', flat=True))
@@ -1140,7 +1143,7 @@ class PaineldeResultadosNist(View):
         
 
     # Resposável por calcular a soma de custos de cada controle
-    def calcular_soma_custos_de_cada_controle(self):
+    def calcular_soma_custos_de_cada_controle(self, framework_id):
         categorias = ["Governança e <br>Estratégia",
                         "Gestão de Riscos",
                         "Gestão de Terceiros",
@@ -1163,7 +1166,7 @@ class PaineldeResultadosNist(View):
         categorias_limpa = [re.sub(r"<br>", "", cat).strip() for cat in categorias]
         
         projetos_somas = (
-            CadPlanodeAcaoModel.objects.filter(planoacao__nome__icontains="nist")
+            CadPlanodeAcaoModel.objects.filter(planoacao__assessment__framework_id=framework_id)
             .values('projeto')
             .annotate(total=Sum('quanto'))
         )
@@ -1184,158 +1187,9 @@ class PaineldeResultadosNist(View):
 
         return categorias, categorias_limpa, controle_somas, valores_barra
 
-    # Responsavel por somar todos os valores no cuso estimado do plano de ação por meta
-    def view_grafico_serie_maturidade(self):
-        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_controle()
-
-        # Total de registros no NistModel
-        total_nist = NistModel.objects.count()
-
-        if total_nist == 0:  # Evitar divisão por zero
-            return {
-                'Contexto Organizacional (GV.OC)': 0, 
-                'Estratégia de Gerenciamento <br>de Riscos (GV.RM)': 0, 
-                'Papéis, Responsabilidades e <br>Autoridades (GV.RR)': 0, 
-                'Política (GV.PO)': 0, 
-                'Supervisão (GV.OV)': 0, 
-                'Gestão de Riscos da <br>Cadeia de Suprimentos de <br>Cibersegurança (GV.SC)': 0,
-                'Gestão de Ativos (ID.AM)': 0,
-                'Avaliação de Riscos (ID.RA)': 0, 
-                'Melhoria (ID.IM)': 0,
-                'Gestão de Identidade, Autenticação <br>e Controle de Acesso (PR.AA)': 0, 
-                'Conscientização e Treinamento (PR.AT)': 0, 
-                'Segurança de Dados (PR.DS)': 0, 
-                'Segurança da Plataforma (PR.PS)': 0, 
-                'Resiliência da Infraestrutura <br>Tecnológica (PR.IR)': 0,
-                'Monitoramento Contínuo (DE.CM)': 0, 
-                'Análise de Eventos Adversos (DE.AE)': 0,
-                'Gestão de Incidentes (RS.MA)': 0, 
-                'Análise de Incidentes (RS.AN)': 0,    
-                'Relatório e Comunicação de <br>Resposta a Incidentes (RS.CO)': 0,
-                'Mitigação de Incidentes (RS.MI)': 0,
-                'Execução do Plano de Recuperação <br>de Incidentes (RC.RP)': 0, 
-                'Comunicação de Recuperação <br>de Incidentes (RC.CO)': 0
-            }
-
-        # Obter soma das notas para cada categoria
-        result = (
-            NistModel.objects
-            .values('categoria')
-            .annotate(total_notaCss=Sum('notaCss'))
-        )
-
-        # Obter soma das metas para cada categoria
-        meta = (
-            NistModel.objects
-            .values('categoria')
-            .annotate(total_meta=Sum('meta'))
-        )
-
-        # Contar total de instâncias para cada categoria
-        counts_total = (
-            NistModel.objects
-            .values('categoria')
-            .annotate(count=Count('categoria'))
-        )
-
-        # Criar dicionários para armazenar os valores de soma e contagem
-        total_por_nivel = {item['categoria']: item['count'] for item in counts_total}
-        funcao_result = {item['categoria']: item['total_notaCss'] for item in result}
-        funcao_meta = {item['categoria']: item['total_meta'] for item in meta}
-
-        # Calcular a média de meta e notaCss por categoria e a diferença entre elas
-        valores_meta = []
-        for categoria in categorias_limpa:
-            total = total_por_nivel.get(categoria, 1)  # Evitar divisão por zero, assume 1 se não houver total
-            meta_total = funcao_meta.get(categoria, 0)
-            notaCss_total = funcao_result.get(categoria, 0)
-            
-            # Calcular médias
-            media_meta = meta_total / total
-            media_notaCss = notaCss_total / total
-
-            # Calcular a diferença média
-            diferenca = media_meta - media_notaCss
-
-            valores_meta.append((categoria, media_meta, diferenca))
-
-    
-        # Ordenar as categorias pela média de meta em ordem decrescente
-        valores_meta_sorted = sorted(valores_meta, key=lambda x: x[1], reverse=True)
-
-        # Extrair os valores ordenados
-        categorias_sorted = [item[0] for item in valores_meta_sorted]
-        valores_meta_sorted_only = [item[2] for item in valores_meta_sorted]  # Diferenças médias
-        valores_barra_sorted = [controle_somas.get(cat, 0) for cat in categorias_sorted]
-
-        # Criar um dicionário que mapeia as categorias limpas para as originais
-        mapa_categorias = {re.sub(r"<br>", "", cat).strip(): cat for cat in categorias}
-
-        # Restaurar os <br> nas categorias ordenadas
-        categorias_sorted = [mapa_categorias[categoria] for categoria in categorias_sorted]
-    
-        # Criar o gráfico
-        fig_serie_mat = go.Figure()
-
-        # Adicionando o gráfico de barras
-        fig_serie_mat.add_trace(go.Bar(
-            x=categorias_sorted,
-            y=valores_barra_sorted,
-            hovertemplate="%{y} em %{x}<extra></extra>",
-            name='Aumento Maturidade',
-            text=valores_barra_sorted,
-            textposition='inside',
-            marker=dict(color='RoyalBlue')
-        ))
-
-        # Adicionando o gráfico de linha com um segundo eixo Y
-        fig_serie_mat.add_trace(go.Scatter(
-            x=categorias_sorted[:len(valores_barra_sorted)],
-            y=valores_meta_sorted_only,
-            name='Custos',
-            hovertemplate="%{y}<extra></extra>",
-            text=[f"<b>{p:.1f}</b>" for p in valores_meta_sorted_only],
-            textposition='top center',
-            mode='lines+text',
-            line=dict(color='darkblue'),
-            yaxis='y2'  # Referencia o segundo eixo Y
-        ))
-
-        # Configurações adicionais do layout
-        fig_serie_mat.update_layout(
-            plot_bgcolor='rgba(0, 0, 0, 0)',
-            margin=dict(l=0, r=0, t=0, b=0),
-            height=270,
-            width=None,
-            font=dict(
-                family="Arial",
-                size=9,
-                color='#000000'
-            ),
-            yaxis=dict(
-                range=[0, max(valores_meta_sorted_only) + 100],  # Ajusta o intervalo do eixo Y para as barras
-                showgrid=False,
-                dtick = 500
-            ),
-            yaxis2=dict(
-                range=[0, 7],  # Ajusta o intervalo do eixo Y para a linha
-                overlaying='y',  # Sobrepõe ao eixo Y primário
-                side='right'     # Coloca o eixo Y2 do lado direito
-            ),
-            showlegend=True,
-            legend=dict(
-                yanchor="top",
-                x=0,
-                y=0.9
-            )
-        )
-
-        # Converter o gráfico para HTML 
-        return fig_serie_mat.to_html(full_html=False)
-
     # Responsanvel por somar todos os valores no cuso estimado do plano de ação porr categoria
-    def view_grafico_barra_acao_categoria(self):
-        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_controle()
+    def view_grafico_barra_acao_categoria(self, framework_id):
+        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_controle(framework_id)
 
         valores_barra_e_categorias = sorted(
             zip(categorias, controle_somas.values()), 
@@ -1387,65 +1241,57 @@ class PaineldeResultadosNist(View):
         return fig_barra.to_html(full_html=False)
     # FIM DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
 
-    def get(self, request):
-
+    def get(self, request, framework_id):
         assessments = AssessmentModel.objects.all()
 
         # INÍCIO GRÁFICOS DO ASSESSMENT ######################################################     
         # Gráfico de velocímetro
-        grafico_velocimetro_html = self.view_grafico_velocimetro()
+        grafico_velocimetro_html = self.view_grafico_velocimetro(framework_id)
 
         # Gráfico Radar ref:https://plotly.com/python/radar-chart/
-        grafico_radar_html = self.view_grafico_radar()
+        grafico_radar_html = self.view_grafico_radar(framework_id)
 
         # Gráfico de barra e elinha do GOVERN
-        grafico_barra_linha_govern_html = self.view_grafico_barra_linha_govern()
+        grafico_barra_linha_govern_html = self.view_grafico_barra_linha_govern(framework_id)
 
         # Gráfico de barra e elinha do IDENTIFY
-        grafico_barra_linha_identify_html = self.view_grafico_barra_linha_identify()
+        grafico_barra_linha_identify_html = self.view_grafico_barra_linha_identify(framework_id)
 
         # Gráfico de barra e elinha do PROTECT
-        grafico_barra_linha_protect_html = self.view_grafico_barra_linha_protect()
+        grafico_barra_linha_protect_html = self.view_grafico_barra_linha_protect(framework_id)
 
         # Gráfico de barra e elinha do DETECT
-        grafico_barra_linha_detect_html = self.view_grafico_barra_linha_detect()
+        grafico_barra_linha_detect_html = self.view_grafico_barra_linha_detect(framework_id)
 
         # Gráfico de barra e elinha do RESPOND
-        grafico_barra_linha_respond_html = self.view_grafico_barra_linha_respond()
+        grafico_barra_linha_respond_html = self.view_grafico_barra_linha_respond(framework_id)
 
         # Gráfico de barra e elinha do RECOVERY
-        grafico_barra_linha_recovery_html = self.view_grafico_barra_linha_recovery()
+        grafico_barra_linha_recovery_html = self.view_grafico_barra_linha_recovery(framework_id)
 
         # Gráfico de linha
-        grafico_linha_html = self.view_grafico_linha(request)
+        grafico_linha_html = self.view_grafico_linha(request, framework_id)
         # FIM GRÁFICOS DO ASSESSMENT ######################################################
         
         # INÍCIO GRÁFICOS DO PLANO DE AÇÃO ##################################################
         # Quantidade de ações cadastradas
-        qtd_acoes_cad = self.view_qtd_acoes_cad()
+        qtd_acoes_cad = self.view_qtd_acoes_cad(framework_id)
 
         # Porcentagem de ações cadastradas concluidas
-        percentual_acoes_cad = self.view_porcentagem_acoes_cad()
+        percentual_acoes_cad = self.view_porcentagem_acoes_cad(framework_id)
 
         # Gráfico de pizza dos status do Plano de ação 
-        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao()
+        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao(framework_id)
         # FIM GRÁFICOS DO PLANO DE AÇÃO ################################################
 
         # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
-        soma_custo_estimado = self.view_custo_estimado()
+        soma_custo_estimado = self.view_custo_estimado(framework_id)
 
-        grafico_pizza_custo_estimado_html = self.view_grafico_pizza_custo_estimado()
-
-        # Gráfico de barra de custo estimado das ações por maturidade
-        grafico_serie_maturidade_html = self.view_grafico_serie_maturidade()
+        grafico_pizza_custo_estimado_html = self.view_grafico_pizza_custo_estimado(framework_id)
 
         # Gráfico de barra de custo estimado das ações por categoria
-        grafico_barra_acao_categoria_html = self.view_grafico_barra_acao_categoria()
+        grafico_barra_acao_categoria_html = self.view_grafico_barra_acao_categoria(framework_id)
         # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
-         
-        ## Grafico pizza
-        # Dados
-       
         
         ##Grafico Barra Responsavel
         x = ['João', 'Luis', 'Jose', 'Maria', 'Pedro']
@@ -1507,7 +1353,6 @@ class PaineldeResultadosNist(View):
             # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
             'soma_custo_estimado': soma_custo_estimado,
             'grafico_pizza_custo_estimado_html': grafico_pizza_custo_estimado_html,
-            'grafico_serie_maturidade_html': grafico_serie_maturidade_html,
             'grafico_barra_acao_categoria_html': grafico_barra_acao_categoria_html,
             # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO
             'grafico_barra_r': grafico_barra_r_html,

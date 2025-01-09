@@ -12,7 +12,7 @@ class PaineldeResultadosIso(View):
 
     # INÍCIO GRÁFICOS DO ASSESSMENT ########################################################
     # Responsável pela criação do gráfico de velocímetro
-    def view_grafico_velocimetro(self):
+    def view_grafico_velocimetro(self, framework_id):
         # Filtrar apenas as instâncias relacionadas ao IsoModel
         acao_iso = IsoModel.objects.count()
 
@@ -360,12 +360,12 @@ class PaineldeResultadosIso(View):
         return total_custo_estimado
     # FIM DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
     
-    def get(self, request):
+    def get(self, request, framework_id):
         assessments = AssessmentModel.objects.all()
 
         # INÍCIO GRÁFICOS DO ASSESSMENT ######################################################     
         # Gráfico de velocímetro
-        grafico_velocimetro_html = self.view_grafico_velocimetro()
+        grafico_velocimetro_html = self.view_grafico_velocimetro(framework_id)
 
         # Gráfico de parcialmente e não conformes
         cont_parcial_nao_conformes = self.view_count_parcial_nao_conformes()

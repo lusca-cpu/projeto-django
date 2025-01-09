@@ -15,7 +15,7 @@ class PaineldeResultadosCis(View):
     template_name = 'paginas/painel_result_cis.html'
 
     # Responsável por abreviar a categoria
-    def abreviar_categoria(self,cat):
+    def abreviar_categoria(self, cat):
         # Remover o texto entre parênteses e os próprios parênteses
         cat_sem_parenteses = re.sub(r"\s*\(.*?\)", "", cat).strip()
         palavras = cat_sem_parenteses.split()
@@ -37,15 +37,19 @@ class PaineldeResultadosCis(View):
 
     # INÍCIO GRÁFICOS DO ASSESSMENT ########################################################
     # Responsável pela criação do gráfico de velocímetro
-    def view_grafico_velocimetro(self):
-        # Filtrar apenas as instâncias relacionadas ao CisModel
-        assessments_cis = AssessmentModel.objects.filter(framework__nome__icontains='cis', status='Concluído')
+    def view_grafico_velocimetro(self, framework_id):
+        # Filtrar apenas as instâncias relacionadas ao CisModel e ao framework específico
+        assessments_cis = AssessmentModel.objects.filter(
+            framework__id=framework_id,
+            framework__nome__icontains='cis',
+            status='Concluído'
+        )
 
         # Calcular soma de meta e resultado
         soma_meta = assessments_cis.aggregate(Sum('meta'))['meta__sum'] or 0
         soma_resultado = assessments_cis.aggregate(Sum('resultado'))['resultado__sum'] or 0
 
-        total_instancias = AssessmentModel.objects.filter(framework__nome__icontains='cis', status='Concluído').count()
+        total_instancias = AssessmentModel.objects.filter(framework__id=framework_id, framework__nome__icontains='cis', status='Concluído').count()
 
         soma_meta = soma_meta/total_instancias
         soma_resultado = soma_resultado/total_instancias
@@ -119,9 +123,9 @@ class PaineldeResultadosCis(View):
         return fig_velocimetro.to_html(full_html=False)
 
     # Responsável por cacular a porcentagem do IGS
-    def view_percentuais_igs(self):
+    def view_percentuais_igs(self, framework_id):
         # Total de registros no AssessmentModel relacionados ao CisModel
-        total_cis = CisModel.objects.count()
+        total_cis = CisModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_cis == 0:  # Evitar divisão por zero
             return {
@@ -133,6 +137,7 @@ class PaineldeResultadosCis(View):
         # Contar instâncias de cada nível IG
         counts = (
             CisModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('nivel')
             .annotate(count=Count('nivel'))
         )
@@ -149,9 +154,9 @@ class PaineldeResultadosCis(View):
 
         return percentuais
     # Responsável por cacular a porcentagem dos metas dos níveis IGS
-    def calcular_percentual_meta(self):
+    def calcular_percentual_meta(self, framework_id):
         # Total de registros no CisModel
-        total_cis = CisModel.objects.count()
+        total_cis = CisModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_cis == 0:  # Evitar divisão por zero
             return {
@@ -160,10 +165,10 @@ class PaineldeResultadosCis(View):
                 'IG3': 0,
             }
 
-        # Contar "Sim" para cada nível
+        # Contar "Aderente" para cada nível
         counts_sim = (
             CisModel.objects
-            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
+            .filter(assessment__framework_id=framework_id, meta='Aderente')  # Filtrar apenas registros com meta "Aderente"
             .values('nivel')
             .annotate(count=Count('nivel'))
         )
@@ -171,6 +176,7 @@ class PaineldeResultadosCis(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             CisModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('nivel')
             .annotate(count=Count('nivel'))
         )
@@ -190,9 +196,9 @@ class PaineldeResultadosCis(View):
         return percentuais
 
     # Respoosanvel porr calcular a porcentagem e por retornar o gráfico de radar
-    def view_grafico_radar(self):
+    def view_grafico_radar(self, framework_id):
         # Total de registros no CisModel
-        total_cis = CisModel.objects.count()
+        total_cis = CisModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_cis == 0:  # Evitar divisão por zero
             return {
@@ -204,29 +210,27 @@ class PaineldeResultadosCis(View):
                 'Respond': 0
             }
 
-        # Contar "Sim" para cada função
+        # Contar "Aderente" para cada função
         counts_sim_result = (
             CisModel.objects
-            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Sim"
+            .filter(assessment__framework_id=framework_id, resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Aderente"
             .values('funcao')
             .annotate(count=Count('funcao'))
         )
-
-        # Contar "Sim" para cada meta
+        # Contar "Aderente" para cada meta
         counts_sim_meta = (
             CisModel.objects
-            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
+            .filter(assessment__framework_id=framework_id, meta='Aderente')  # Filtrar apenas registros com meta "Aderente"
             .values('funcao')
             .annotate(count=Count('funcao'))
         )
-
         # Contar total de instâncias para cada nível
         counts_total = (
             CisModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('funcao')
             .annotate(count=Count('funcao'))
         )
-
         # Criar dicionário com totais por nível
         total_por_nivel = {item['funcao']: item['count'] for item in counts_total}
 
@@ -289,9 +293,9 @@ class PaineldeResultadosCis(View):
         return fig_radar.to_html(full_html=False)
     
     # Responsavel por calcular a porcentagem e por retornar o gráfico de barra
-    def view_grafico_barra_linha(self):
+    def view_grafico_barra_linha(self, framework_id):
         # Total de registros no CisModel
-        total_cis = CisModel.objects.count()
+        total_cis = CisModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_cis == 0:  # Evitar divisão por zero
             return {
@@ -315,18 +319,18 @@ class PaineldeResultadosCis(View):
                 'Testes de invasão': 0
             }
 
-        # Contar "Sim" para cada função
+        # Contar "Aderente" para cada função
         counts_sim_controle = (
             CisModel.objects
-            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Sim"
+            .filter(assessment__framework_id=framework_id, resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Aderente"
             .values('controle')
             .annotate(count=Count('controle'))
         )
 
-        # Contar "Sim" para cada meta
+        # Contar "Aderente" para cada meta
         counts_sim_meta = (
             CisModel.objects
-            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
+            .filter(assessment__framework_id=framework_id, meta='Aderente')  # Filtrar apenas registros com meta "Aerente"
             .values('controle')
             .annotate(count=Count('controle'))
         )
@@ -334,6 +338,7 @@ class PaineldeResultadosCis(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             CisModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('controle')
             .annotate(count=Count('controle'))
         )      
@@ -436,11 +441,11 @@ class PaineldeResultadosCis(View):
         return fig_serie.to_html(full_html=False)
 
     # Responsável por criar o gráfico de linha
-    def view_grafico_linha(self, request):
+    def view_grafico_linha(self, request, framework_id):
         # Obter o parâmetro 'limite' da requisição (padrão para 3 se não fornecido)
         limite = int(request.GET.get('limite', 12))
         # Filtrar apenas as instâncias relacionadas ao CisModel com status 'Concluído'
-        assessments_cis = AssessmentModel.objects.filter(framework__nome__icontains='cis', status='Concluído').order_by('-data_upload')[:limite]
+        assessments_cis = AssessmentModel.objects.filter(framework__id=framework_id, framework__nome__icontains='cis', status='Concluído').order_by('-data_upload')[:limite]
         # Total de registros filtrados
         total_cis = assessments_cis.count()
 
@@ -501,8 +506,8 @@ class PaineldeResultadosCis(View):
         return fig_linha.to_html(full_html=False, config={'responsive': True})
     
     # Responsável por contar os tipor de ativos
-    def view_card_tipo_ativo(self):
-        total_cis = CisModel.objects.count()
+    def view_card_tipo_ativo(self, framework_id):
+        total_cis = CisModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_cis == 0:  # Evitar divisão por zero
             return {
@@ -514,10 +519,10 @@ class PaineldeResultadosCis(View):
                 'nan': 0
             }
 
-        # Contar "Sim" para cada função
+        # Contar "Aderente" para cada função
         counts_sim = (
             CisModel.objects
-            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Aderente"
+            .filter(assessment__framework_id=framework_id, resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Aderente"
             .values('tipoAtivo')
             .annotate(count=Count('tipoAtivo'))
         )
@@ -525,6 +530,7 @@ class PaineldeResultadosCis(View):
         # Contar total de instâncias para cada nível
         counts_total = (
             CisModel.objects
+            .filter(assessment__framework_id=framework_id)
             .values('tipoAtivo')
             .annotate(count=Count('tipoAtivo'))
         )
@@ -540,8 +546,8 @@ class PaineldeResultadosCis(View):
 
     # INÍCIO DAS DOS GRÁFICOS DO PLANO DE AÇÃO ################################################
     # Responsável por mostra os quantidades de ações cadastradas do plano de ação
-    def view_qtd_acoes_cad(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='cis')
+    def view_qtd_acoes_cad(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='cis')
 
         # Soma os valores de 'acoes_cad' das instâncias filtradas
         total_acoes_cad = plano_acao.aggregate(total=Sum('acoes_cad'))['total'] or 0
@@ -549,10 +555,10 @@ class PaineldeResultadosCis(View):
         return total_acoes_cad
 
     # Responsável por mostra o percentual de ações cadastradas do plano de ação já concluidas
-    def view_porcentagem_acoes_cad(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='cis')
+    def view_porcentagem_acoes_cad(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='cis')
 
-        qtn_plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='cis').count()
+        qtn_plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='cis').count()
 
         por_plano_acao = plano_acao.aggregate(total=Sum('conclusao'))['total']
 
@@ -561,8 +567,8 @@ class PaineldeResultadosCis(View):
         return percentual_concluido
 
     # Responsável por mostra o gráfico de pizza do status do plano de ação
-    def view_grafico_pizza_conclusao(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='cis')
+    def view_grafico_pizza_conclusao(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='cis')
 
         cad_planos = CadPlanodeAcaoModel.objects.filter(planoacao__in=plano_acao)
 
@@ -619,8 +625,8 @@ class PaineldeResultadosCis(View):
 
     # INÍCIO DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
     # Resposánvel por somar todos os valores no cuso estimado do plano de ação
-    def view_custo_estimado(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='cis')
+    def view_custo_estimado(self, framework_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment__framework_id=framework_id, nome__icontains='cis')
 
         # Soma os valores de 'custo_estimado' das instâncias filtradas
         total_custo_estimado = plano_acao.aggregate(total=Sum('custo_estimado'))['total'] or 0
@@ -628,7 +634,7 @@ class PaineldeResultadosCis(View):
         return total_custo_estimado
     
     # Responsável por mostra o gráfico de pizza do custo estimado por função do plano de ação
-    def view_grafico_pizza_custo_estimado(self):
+    def view_grafico_pizza_custo_estimado(self, framework_id):
         funcoes = [
             'Govern', 
             'Identify', 
@@ -638,7 +644,7 @@ class PaineldeResultadosCis(View):
             'Recovery'
         ]
 
-        subcontrole_somas = CadPlanodeAcaoModel.objects.values('subcontrole').annotate(total=Sum('quanto'))
+        subcontrole_somas = CadPlanodeAcaoModel.objects.filter(planoacao__assessment__framework_id=framework_id).values('subcontrole').annotate(total=Sum('quanto'))
 
         controle_subcontrole_map = {
             funcao: list(CisModel.objects.filter(funcao=funcao).values_list('subConjunto', flat=True))
@@ -699,7 +705,7 @@ class PaineldeResultadosCis(View):
         return fig_pizza.to_html(full_html=False, config={'responsive': True})
     
     # Resposável por calcular a soma de custos de cada projeto
-    def calcular_soma_custos_de_cada_projeto(self):
+    def calcular_soma_custos_de_cada_projeto(self, framework_id):
         categorias = ["Governança e <br>Estratégia",
                         "Gestão de Riscos",
                         "Gestão de Terceiros",
@@ -722,7 +728,7 @@ class PaineldeResultadosCis(View):
         categorias_limpa = [re.sub(r"<br>", "", cat).strip() for cat in categorias]
         
         projetos_somas = (
-            CadPlanodeAcaoModel.objects.filter(planoacao__nome__icontains="cis")
+            CadPlanodeAcaoModel.objects.filter(planoacao__assessment__framework_id=framework_id)
             .values('projeto')
             .annotate(total=Sum('quanto'))
         )
@@ -744,8 +750,8 @@ class PaineldeResultadosCis(View):
         return categorias, categorias_limpa, controle_somas, valores_barra
     
     # Responsanvel por somar todos os valores no cuso estimado do plano de ação por projeto
-    def view_grafico_barra_acao_projeto(self):
-        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_projeto()
+    def view_grafico_barra_acao_projeto(self, framework_id):
+        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_projeto(framework_id)
 
         valores_barra_e_categorias = sorted(
             zip(categorias, controle_somas.values()), 
@@ -795,207 +801,51 @@ class PaineldeResultadosCis(View):
 
         # Converter o gráfico para HTML 
         return fig_barra.to_html(full_html=False)
-    
-    # Responsavel por somar todos os valores no cuso estimado do plano de ação por meta
-    def view_grafico_serie_maturidade(self):
-        categorias, categorias_limpa, controle_somas, valores_barra = self.calcular_soma_custos_de_cada_projeto()
-
-        # Total de registros no CisModel
-        total_cis = CisModel.objects.count()
-
-        if total_cis == 0:  # Evitar divisão por zero
-            return {
-                'Inventário e controle de ativos corporativos': 0,
-                'Inventário e controle de ativos de software': 0,
-                'Proteção de Dados': 0,
-                'Configuração segura de ativos corporativos e software': 0,
-                'Gestão de Contas': 0,
-                'Gestão do Controle de Acessos': 0,
-                'Gestão contínua de vulnerabilidades': 0,
-                'Gestão de registros de auditoria': 0,
-                'Proteções de e-mail e navegador Web': 0,
-                'Defesas contra Malware': 0,
-                'Recuperação de Dados': 0,
-                'Gestão da Infraestrutura de Rede': 0,
-                'Monitoramento e defesa da Rede': 0,
-                'Conscientização sobre segurança e treinamento de competências': 0,
-                'Gestão de provedor de serviços': 0,
-                'Segurança de Aplicações': 0,
-                'Gestão de respostas a incidentes': 0,
-                'Testes de invasão': 0
-            }
-
-        # Contar "Sim" para cada função
-        counts_sim_controle = (
-            CisModel.objects
-            .filter(resultadoCss='Aderente')  # Filtrar apenas registros com resultado(CSS) "Sim"
-            .values('controle')
-            .annotate(count=Count('controle'))
-        )
-
-        # Contar "Sim" para cada meta
-        counts_sim_meta = (
-            CisModel.objects
-            .filter(meta='Aderente')  # Filtrar apenas registros com meta "Sim"
-            .values('controle')
-            .annotate(count=Count('controle'))
-        )
-
-        # Contar total de instâncias para cada nível
-        counts_total = (
-            CisModel.objects
-            .values('controle')
-            .annotate(count=Count('controle'))
-        )      
-
-        # Criar dicionário com totais por nível
-        total_por_nivel = {item['controle']: item['count'] for item in counts_total}
-
-        # Criar dicionário com contagem de "Sim" por nível
-        sim_por_funcao_controle = {item['controle']: item['count'] for item in counts_sim_controle}
-
-        # Criar dicionário com contagem de "Sim" por nível
-        sim_por_funcao_meta = {item['controle']: item['count'] for item in counts_sim_meta}
-
-        y_meta = [sim_por_funcao_meta.get(cat, 0) for cat in categorias_limpa]
-        y_result = [sim_por_funcao_controle.get(cat, 0) for cat in categorias_limpa]
-
-        valores_meta = []
-
-        # Calcular a diferença e armazenar os valores de meta
-        for categoria in categorias_limpa:
-            total = total_por_nivel.get(categoria, 1)  # Evitar divisão por zero, assume 1 se não houver total
-            meta = sim_por_funcao_meta.get(categoria, 0)
-            resultado = sim_por_funcao_controle.get(categoria, 0)
-
-            # Calcular as porcentagens
-            percentual_meta = (meta / total) * 100
-            percentual_resultado = (resultado / total) * 100
-
-            # Calcular a diferença em porcentagem
-            diferenca = percentual_meta - percentual_resultado
-
-            # Armazenar os resultados em uma lista de tuplas (categoria, percentual_meta, diferenca)
-            valores_meta.append((categoria, percentual_meta, diferenca))
-
-        # Ordenar as categorias pela porcentagem de meta em ordem decrescente
-        valores_meta_sorted = sorted(valores_meta, key=lambda x: x[1], reverse=True)
-        # Extrair os valores ordenados
-        categorias_sorted = [item[0] for item in valores_meta_sorted]
-        valores_meta_sorted_only = [item[2] for item in valores_meta_sorted]  # Somente as diferenças
-        valores_barra_sorted = [controle_somas.get(cat, 0) for cat in categorias_sorted]  # Acompanhar as categorias ordenadas
-
-        # Criar um dicionário que mapeia as categorias limpas para as originais
-        mapa_categorias = {re.sub(r"<br>", "", cat).strip(): cat for cat in categorias}
-
-        # Restaurar os <br> nas categorias ordenadas
-        categorias_sorted = [mapa_categorias[categoria] for categoria in categorias_sorted]
-
-        # Criar o gráfico
-        fig_serie_mat = go.Figure()
-
-        # Adicionando o gráfico de barras
-        fig_serie_mat.add_trace(go.Bar(
-                x=categorias_sorted,
-                y=valores_barra_sorted,
-                hovertemplate="%{y} em %{x}<extra></extra>",
-                name='Aumento Maturidade',
-                text=valores_barra_sorted,
-                textposition='inside',  # Posição do texto
-                marker=dict(color='RoyalBlue')  # Define a cor das barras
-        ))
-
-        # Adicionando o gráfico de linha
-        fig_serie_mat.add_trace(go.Scatter(
-            x=categorias_sorted[:len(valores_barra_sorted)],
-            y=valores_meta_sorted_only,
-            name='Custos',
-            hovertemplate="%{y}%<extra></extra>",
-            text=[f"<b>{p:.1f}%</b>" for p in valores_meta_sorted_only],
-            textposition='top center',
-            mode='lines+text',
-            line=dict(color='darkblue'),
-            yaxis='y2'  # Referencia o segundo eixo Y
-        ))
-
-        # Configurações adicionais do layout
-        fig_serie_mat.update_layout(
-            plot_bgcolor='rgba(0, 0, 0, 0)',
-            margin=dict(l=0, r=0, t=0, b=0),
-            height=270,
-            width=None,
-            font=dict(
-                family="Arial",
-                size=9,
-                color='#000000'
-            ),
-            yaxis=dict(
-                range=[0, max(valores_barra_sorted) + 100],    # Ajusta o intervalo do eixo Y para as barras
-                showgrid=False
-            ),
-            yaxis2=dict(
-                range=[0, 120],  # Ajusta o intervalo do eixo Y para a linha
-                overlaying='y',  # Sobrepõe ao eixo Y primário
-                side='right'     # Coloca o eixo Y2 do lado direito
-            ),
-            showlegend=True,
-            legend=dict(
-                yanchor="top",
-                x=0,
-                y=0.9
-            )
-        )
-
-        # Converter o gráfico para HTML 
-        return fig_serie_mat.to_html(full_html=False)
     # FIM DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
 
-    def get(self, request):
+    def get(self, request, framework_id):
         assessments = AssessmentModel.objects.all()
 
         # INÍCIO GRÁFICOS DO ASSESSMENT ######################################################     
         # Gráfico de velocímetro
-        grafico_velocimetro_html = self.view_grafico_velocimetro()
+        grafico_velocimetro_html = self.view_grafico_velocimetro(framework_id)
 
         # Percentuais IGs
-        percentuais_igs = self.view_percentuais_igs()
-        percentuais_meta = self.calcular_percentual_meta()
+        percentuais_igs = self.view_percentuais_igs(framework_id)
+        percentuais_meta = self.calcular_percentual_meta(framework_id)
         
         # Gráfico Radar ref:https://plotly.com/python/radar-chart/
-        grafico_radar_html = self.view_grafico_radar()
+        grafico_radar_html = self.view_grafico_radar(framework_id)
         
         # Gráfico serie temporal com histograma 
-        grafico_barra_linha_html = self.view_grafico_barra_linha()
+        grafico_barra_linha_html = self.view_grafico_barra_linha(framework_id)
 
         # Gráfico de linha
-        grafico_linha_html = self.view_grafico_linha(request)
+        grafico_linha_html = self.view_grafico_linha(request, framework_id)
 
         # Card do tipo de ativo
-        total_tipo_ativo, card_tipo_ativo = self.view_card_tipo_ativo()
+        total_tipo_ativo, card_tipo_ativo = self.view_card_tipo_ativo(framework_id)
         # FIM GRÁFICOS DO ASSESSMENT ######################################################
 
         # INÍCIO GRÁFICOS DO PLANO DE AÇÃO ##################################################
         # Quantidade de ações cadastradas
-        qtd_acoes_cad = self.view_qtd_acoes_cad()
+        qtd_acoes_cad = self.view_qtd_acoes_cad(framework_id)
 
         # Porcentagem de ações cadastradas concluidas
-        percentual_acoes_cad = self.view_porcentagem_acoes_cad()
+        percentual_acoes_cad = self.view_porcentagem_acoes_cad(framework_id)
 
         # Gráfico de pizza dos status do Plano de ação 
-        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao()
+        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao(framework_id)
         # FIM GRÁFICOS DO PLANO DE AÇÃO ################################################
 
         # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
-        soma_custo_estimado = self.view_custo_estimado()
+        soma_custo_estimado = self.view_custo_estimado(framework_id)
 
         # Gráfico de pizza custos do Plano de ação
-        grafico_pizza_custo_estimado_html = self.view_grafico_pizza_custo_estimado()
+        grafico_pizza_custo_estimado_html = self.view_grafico_pizza_custo_estimado(framework_id)
 
         # Gráfico de barra de custo estimado das ações por controle
-        grafico_barra_acao_projeto_html = self.view_grafico_barra_acao_projeto()
-
-        # Gráfico de barra de custo estimado das ações por maturidade
-        grafico_serie_maturidade_html = self.view_grafico_serie_maturidade()
+        grafico_barra_acao_projeto_html = self.view_grafico_barra_acao_projeto(framework_id)
         # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
               
         ##Grafico Barra Responsavel
@@ -1057,7 +907,6 @@ class PaineldeResultadosCis(View):
             'soma_custo_estimado': soma_custo_estimado,
             'grafico_pizza_custo_estimado_html': grafico_pizza_custo_estimado_html,
             'grafico_barra_acao_projeto_html': grafico_barra_acao_projeto_html,
-            'grafico_serie_maturidade_html': grafico_serie_maturidade_html,
             # FIM GRÁFICOS DO PLANO DE AÇÃO
             'grafico_barra_r': grafico_barra_r_html,         
         }

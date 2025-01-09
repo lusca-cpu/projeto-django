@@ -60,29 +60,33 @@ class RedirecionarPlanoAcao(View):
 
 class RedirecionarPainelResultados(View):
     def get(self, request):
+        # Obtém o último assessment criado
         ultimo_assessment = AssessmentModel.objects.order_by('-id').first()
-    
-        if ultimo_assessment:
 
+        if ultimo_assessment:
             nome = ultimo_assessment.nome.lower()
-            
+            framework_id = ultimo_assessment.framework.id  # Obtém o ID do framework associado
+
+            # Redireciona com base no nome e framework
             if 'cis' in nome:
-                return redirect('painel_result_cis') 
+                return redirect('painel_result_cis', framework_id=framework_id)
             elif 'nist' in nome:
-                return redirect('painel_result_nist')  
+                return redirect('painel_result_nist', framework_id=framework_id)
             elif 'iso' in nome:
-                return redirect('painel_result_iso')  
+                return redirect('painel_result_iso', framework_id=framework_id)
+
+        # Se não houver um assessment válido, redireciona para uma página padrão
+        return redirect('pagina_padrao')
+
     
 class RedirecionarPainelResultados2(View):
-    def get(self, request, id):
+    def get(self, request, id, framework_id):
         assessment = AssessmentModel.objects.get(id=id)
-    
-        # Normaliza o nome para comparação
         nome = assessment.nome.lower()
-        
+
         if 'cis' in nome:
-            return redirect('painel_result_cis')  # Substitua pelo nome correto da URL
+            return redirect('painel_result_cis', framework_id=framework_id)  
         elif 'nist' in nome:
-            return redirect('painel_result_nist')  # Substitua pelo nome correto da URL
+            return redirect('painel_result_nist', framework_id=framework_id)  
         elif 'iso' in nome:
-            return redirect('painel_result_iso')  # Substitua pelo nome correto da URL
+            return redirect('painel_result_iso', framework_id=framework_id)    

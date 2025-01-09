@@ -43,7 +43,7 @@
       </button>
       <ul class="dropdown-menu font-small">
         {% for assessment in assessments %}
-            <li><a class="dropdown-item" href="{% url 'redirecionar_painel_result2' assessment.id %}">{{ assessment.nome }} - {{ assessment.data_upload|date:"d/m/Y" }}</a></li>
+            <li><a class="dropdown-item" href="{% url 'redirecionar_painel_result2' assessment.id assessment.framework.id %}">{{ assessment.nome }} - {{ assessment.data_upload|date:"d/m/Y" }}</a></li>
         {% endfor %}
       </ul>
       <!--botao exportar
@@ -438,7 +438,7 @@
                       </div>
                       <div class="col-6 text-center">
                         <h5 style="font-weight: bold; font-size: 10px; color: darkblue;">N/A</h5>
-                        <h5 style=" font-weight: bold; font-size: 12px; line-height: 1px; ">
+                        <h5 style=" font-weight: bold; font-size: 12px; line-height: 1px; color: darkblue;">
                           <span>
                             {% if card_tipo_ativo.nan is None %}  
                               0 
@@ -610,8 +610,8 @@
       <!-------------------------------------- Gráfico de barra Custo-->
       <div class="col-xl-7 col-sm-7 mb-xl-0">
         <div class="card p-1 d-flex justify-content-center" style=" box-sizing: border-box; margin: 0; padding: 0;">
-          <span class="font-titulo"> Custo estimado das ações por controle </span>
-          <p class="subtitulo">Custo estimado de todas as ações do plano de ação separadas por categoria em reais (R$)</p>
+          <span class="font-titulo"> Custo estimado das ações por projeto </span>
+          <p class="subtitulo">Custo estimado de todas as ações do plano de ação separadas por prorjeto em reais (R$)</p>
           <div class="card-body m-0" style="box-sizing: border-box; margin: 0; padding: 0;">
             <div class="row p-0 w-100">
               <div class="col-10 justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
@@ -621,30 +621,8 @@
           </div>
         </div>
       </div>
-
     </div> <!--end row-->
     </div> <!-- container-->
-          <!--linha 2 dividida em 1 coluna -->
-          <div class="row g-0"> 
-            <!-----------------------------------Gráfico de Aderencia/Serie-->
-            <div class="col-xl-9 col-sm-9 mb-xl-0">
-              <div class="card p-1 d-flex justify-content-center">
-                <span class="font-titulo"> Custo estimado e aumento da maturidade por controle
-                </span>
-                <p class="subtitulo">
-                  Comparação entre o custo estimado das ações por controle e aumento de maturidade planejado 
-                </p>
-                <div class="card-body pb-1 d-flex justify-content-center" style="box-sizing: border-box; margin: 0; padding: 0;">
-                  <div class="row p-0 g-0 w-100">
-                    <div class="col-11" style="margin-left:-5px;">
-                       {{ grafico_serie_maturidade_html|safe }}
-                    </div>
-                  </div> 
-                </div>
-            
-              </div>
-            </div> 
-          </div> <!--end row-->
           <!-----------------------------------------Fim CIS-------------------------------->
     </div> <!-- container-->
     </div> <!--<div id="content3">-->
