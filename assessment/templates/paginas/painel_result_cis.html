@@ -106,7 +106,13 @@
                           <span style="font-weight: bold;">{{ percentuais_igs.IG1 }}%</span>
                         </h6>
                         <p style="font-size: 9px; line-height: 1; margin: 0;">
-                          <span> x </span> de y subconjuntos
+                          <span> 
+                            {% if 'IG1' in count_igs %} 
+                              {{ count_igs.IG1 }}
+                            {% else %}
+                               0
+                            {% endif %}
+                          </span> de {{ total_igs.IG1 }} subconjuntos
                         </p>
                         <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0">
                           Meta:<span>{{ percentuais_meta.IG1 }}%</span>
@@ -127,7 +133,13 @@
                           <span style="font-weight: bold;">{{ percentuais_igs.IG2 }}%</span>
                         </h6>
                         <p style="font-size: 9px; line-height: 1; margin: 0;">
-                          <span> x </span> de y subconjuntos
+                          <span> 
+                            {% if 'IG2' in count_igs %} 
+                              {{ count_igs.IG2 }} 
+                            {% else %}
+                              0
+                            {% endif %}
+                         </span> de {{ total_igs.IG2 }} subconjuntos
                         </p>
                         <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0">
                           Meta:<span>{{ percentuais_meta.IG2 }}%</span>
@@ -148,7 +160,13 @@
                           <span style="font-weight: bold;">{{ percentuais_igs.IG3 }}%</span>
                         </h6>
                         <p style="font-size: 9px; line-height: 1; margin: 0;">
-                          <span> x </span> de y subconjuntos
+                          <span>
+                            {% if 'IG3' in count_igs %} 
+                              {{ count_igs.IG3 }}
+                            {% else %}
+                               0
+                            {% endif %}
+                          </span> de {{ total_igs.IG3 }} subconjuntos
                         </p>
                         <p style="font-weight: bold; font-size: 10px; line-height: 1.5; margin: 0">
                           Meta:<span>{{ percentuais_meta.IG3 }}%</span>

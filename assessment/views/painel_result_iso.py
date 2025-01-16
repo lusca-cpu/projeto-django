@@ -14,10 +14,10 @@ class PaineldeResultadosIso(View):
     # Responsável pela criação do gráfico de velocímetro
     def view_grafico_velocimetro(self, framework_id):
         # Filtrar apenas as instâncias relacionadas ao IsoModel
-        acao_iso = IsoModel.objects.count()
+        acao_iso = IsoModel.objects.filter(assessment__framework_id=framework_id).count()
 
-        soma_meta = IsoModel.objects.filter(meta="Conforme").count()
-        soma_resultado = IsoModel.objects.filter(notaCss="Conforme").count()
+        soma_meta = IsoModel.objects.filter(assessment__framework_id=framework_id, meta="Conforme").count()
+        soma_resultado = IsoModel.objects.filter(assessment__framework_id=framework_id, notaCss="Conforme").count()
 
         # Dados para o gráfico
         valores = [soma_resultado, soma_meta]
@@ -86,9 +86,9 @@ class PaineldeResultadosIso(View):
         return fig_velocimetro.to_html(full_html=False)
     
     # Reponsável por contar quantos controles Parcialmente conforme e Não conforme 
-    def view_count_parcial_nao_conformes(self):
+    def view_count_parcial_nao_conformes(self, framework_id):
         # Total de registros no AssessmentModel relacionados ao IsoModel
-        total_iso = IsoModel.objects.count()
+        total_iso = IsoModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_iso == 0:  # Evitar divisão por zero
             return {
@@ -97,8 +97,8 @@ class PaineldeResultadosIso(View):
             }
 
         # Contar "Parcialmente" e "Não" na coluna notaCss
-        parcial_notaCss = IsoModel.objects.filter(notaCss="Parcialmente Conforme").count()
-        nao_notaCss = IsoModel.objects.filter(notaCss="Não conforme").count()
+        parcial_notaCss = IsoModel.objects.filter(assessment__framework_id=framework_id, notaCss="Parcialmente Conforme").count()
+        nao_notaCss = IsoModel.objects.filter(assessment__framework_id=framework_id,notaCss="Não conforme").count()
 
         # Contar "Parcialmente" e "Não" na coluna meta
         parcial_meta = IsoModel.objects.filter(meta="Parcialmente Conforme").count()
@@ -114,9 +114,9 @@ class PaineldeResultadosIso(View):
         }
     
     # Reponsável por contar quantos controles Parcialmente
-    def view_count_prioridade_controle(self):
+    def view_count_prioridade_controle(self, framework_id):
         # Total de registros no AssessmentModel relacionados ao IsoModel
-        total_iso = IsoModel.objects.count()
+        total_iso = IsoModel.objects.filter(assessment__framework_id=framework_id).count()
 
         if total_iso == 0:  # Evitar divisão por zero
             return {
@@ -126,9 +126,9 @@ class PaineldeResultadosIso(View):
             }
 
         # Contar "Parcialmente" e "Não" na coluna notaCss
-        mandatorio = IsoModel.objects.filter(prioControle="Mandatório").count()
-        good_to_have = IsoModel.objects.filter(prioControle="Good to have").count()
-        nao = IsoModel.objects.filter(prioControle="Não").count()
+        mandatorio = IsoModel.objects.filter(assessment__framework_id=framework_id,prioControle="Mandatório").count()
+        good_to_have = IsoModel.objects.filter(assessment__framework_id=framework_id, prioControle="Good to have").count()
+        nao = IsoModel.objects.filter(assessment__framework_id=framework_id, prioControle="Não").count()
 
         # Retornar os resultados separados
         return {
@@ -139,7 +139,7 @@ class PaineldeResultadosIso(View):
         }
 
     # Responsável por mostrar no grafico de quantos resultados possuem 
-    def view_grafico_barra_nota_secao(self):
+    def view_grafico_barra_nota_secao(self, framework_id):
         ##Grafico Barra Nota seção
         x = ['Política de Segurança <br>da informação', 
                 'Organizando a Segurança <br>da informação',
@@ -188,10 +188,10 @@ class PaineldeResultadosIso(View):
         return fig_barra_nota.to_html(full_html=False,config={'responsive': True})
 
     # Responsável por criar o gráfico de linha
-    def view_grafico_linha(self, request):
+    def view_grafico_linha(self, request, framework_id):
         limite = int(request.GET.get('limite', 12))
         # Filtrar apenas as instâncias relacionadas ao CisModel
-        assessments_iso = AssessmentModel.objects.filter(framework__nome__icontains='iso', status='Concluído').order_by('-data_upload')[:limite]
+        assessments_iso = AssessmentModel.objects.filter(assessment__framework_id=framework_id, framework__nome__icontains='iso', status='Concluído').order_by('-data_upload')[:limite]
 
         # Total de registros filtrados
         total_iso = assessments_iso.count()
@@ -272,8 +272,8 @@ class PaineldeResultadosIso(View):
 
     # INÍCIO DAS DOS GRÁFICOS DO PLANO DE AÇÃO ################################################
     # Responsável por mostra os quantidades de ações cadastradas do plano de ação
-    def view_qtd_acoes_cad(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
+    def view_qtd_acoes_cad(self, framework_id, assessment_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment_id=assessment_id, assessment__framework_id=framework_id, nome__icontains='cis')
 
         # Soma os valores de 'acoes_cad' das instâncias filtradas
         total_acoes_cad = plano_acao.aggregate(total=Sum('acoes_cad'))['total'] or 0
@@ -281,10 +281,10 @@ class PaineldeResultadosIso(View):
         return total_acoes_cad
 
     # Responsável por mostra o percentual de ações cadastradas do plano de ação já concluidas
-    def view_porcentagem_acoes_cad(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
+    def view_porcentagem_acoes_cad(self, framework_id, assessment_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment_id=assessment_id, assessment__framework_id=framework_id, nome__icontains='iso')
 
-        qtn_plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso').count()
+        qtn_plano_acao = PlanoAcaoModel.objects.filter(assessment_id=assessment_id, assessment__framework_id=framework_id, nome__icontains='iso').count()
 
         por_plano_acao = plano_acao.aggregate(total=Sum('conclusao'))['total']
 
@@ -293,8 +293,8 @@ class PaineldeResultadosIso(View):
         return percentual_concluido
 
     # Responsável por mostra o gráfico de pizza do status do plano de ação
-    def view_grafico_pizza_conclusao(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
+    def view_grafico_pizza_conclusao(self, framework_id, assessment_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment_id=assessment_id, assessment__framework_id=framework_id, nome__icontains='iso')
 
         cad_planos = CadPlanodeAcaoModel.objects.filter(planoacao__in=plano_acao)
 
@@ -351,8 +351,8 @@ class PaineldeResultadosIso(View):
 
     # INÍCIO DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
     # Resposánvel por somar todos os valores no cuso estimado do plano de ação
-    def view_custo_estimado(self):
-        plano_acao = PlanoAcaoModel.objects.filter(nome__icontains='iso')
+    def view_custo_estimado(self, framework_id, assessment_id):
+        plano_acao = PlanoAcaoModel.objects.filter(assessment_id=assessment_id, assessment__framework_id=framework_id, nome__icontains='iso')
 
         # Soma os valores de 'custo_estimado' das instâncias filtradas
         total_custo_estimado = plano_acao.aggregate(total=Sum('custo_estimado'))['total'] or 0
@@ -360,7 +360,7 @@ class PaineldeResultadosIso(View):
         return total_custo_estimado
     # FIM DOS GRÁFICOS DE CUSTO DO PLANO DE AÇÃO ############################################
     
-    def get(self, request, framework_id):
+    def get(self, request, framework_id, assessment_id):
         assessments = AssessmentModel.objects.all()
 
         # INÍCIO GRÁFICOS DO ASSESSMENT ######################################################     
@@ -368,31 +368,31 @@ class PaineldeResultadosIso(View):
         grafico_velocimetro_html = self.view_grafico_velocimetro(framework_id)
 
         # Gráfico de parcialmente e não conformes
-        cont_parcial_nao_conformes = self.view_count_parcial_nao_conformes()
+        cont_parcial_nao_conformes = self.view_count_parcial_nao_conformes(framework_id)
 
         # Gráfico de prioridade de controle
-        cont_prioridade_controle = self.view_count_prioridade_controle()
+        cont_prioridade_controle = self.view_count_prioridade_controle(framework_id)
 
         # Gráfico de barra de nota 
-        grafico_barra_nota_secao_html = self.view_grafico_barra_nota_secao()
+        grafico_barra_nota_secao_html = self.view_grafico_barra_nota_secao(framework_id)
 
         # Gráfico de linha
-        grafico_linha_html = self.view_grafico_linha(request)
+        grafico_linha_html = self.view_grafico_linha(request, framework_id)
         # FIM GRÁFICOS DO ASSESSMENT ######################################################
 
         # INÍCIO GRÁFICOS DO PLANO DE AÇÃO ##################################################
         # Quantidade de ações cadastradas
-        qtd_acoes_cad = self.view_qtd_acoes_cad()
+        qtd_acoes_cad = self.view_qtd_acoes_cad(framework_id, assessment_id)
 
         # Porcentagem de ações cadastradas concluidas
-        percentual_acoes_cad = self.view_porcentagem_acoes_cad()
+        percentual_acoes_cad = self.view_porcentagem_acoes_cad(framework_id, assessment_id)
 
         # Gráfico de pizza dos status do Plano de ação 
-        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao()
+        grafico_pizza_conclusao_html = self.view_grafico_pizza_conclusao(framework_id, assessment_id)
         # FIM GRÁFICOS DO PLANO DE AÇÃO ################################################
 
         # INÍCIO GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #######################################
-        soma_custo_estimado = self.view_custo_estimado()
+        soma_custo_estimado = self.view_custo_estimado(framework_id, assessment_id)
         # FIM GRÁFICOS DE CUSTO DO PLANO DE AÇÃO #########################################
 
         ## Grafico pizza

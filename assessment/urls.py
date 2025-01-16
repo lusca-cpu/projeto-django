@@ -60,13 +60,13 @@ urlpatterns = [
     path('redirecionar_painel2/<int:id>/<int:framework_id>/', views.RedirecionarPainelResultados2.as_view(), name='redirecionar_painel_result2'),
 
     # urls para a pagina painel_result_cis.html
-    path('painel_result_cis/<int:framework_id>/', views.PaineldeResultadosCis.as_view(), name='painel_result_cis'),
+    path('painel_result_cis/<int:framework_id>/<int:assessment_id>/', views.PaineldeResultadosCis.as_view(), name='painel_result_cis'),
 
     # urls para a pagina painel_result_nist.html
-    path('painel_result_nist/<int:framework_id>/', views.PaineldeResultadosNist.as_view(), name='painel_result_nist'),
+    path('painel_result_nist/<int:framework_id>/<int:assessment_id>/', views.PaineldeResultadosNist.as_view(), name='painel_result_nist'),
 
     # urls para a pagina painel_result_nist.html
-    path('painel_result_iso/<int:framework_id>/', views.PaineldeResultadosIso.as_view(), name='painel_result_iso'),
+    path('painel_result_iso/<int:framework_id>/<int:assessment_id>/', views.PaineldeResultadosIso.as_view(), name='painel_result_iso'),
 ]
 
 if settings.DEBUG:

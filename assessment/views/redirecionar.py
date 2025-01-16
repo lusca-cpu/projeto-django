@@ -64,19 +64,19 @@ class RedirecionarPainelResultados(View):
         ultimo_assessment = AssessmentModel.objects.order_by('-id').first()
 
         if ultimo_assessment:
+            assessment_id = ultimo_assessment.id
             nome = ultimo_assessment.nome.lower()
             framework_id = ultimo_assessment.framework.id  # Obtém o ID do framework associado
 
             # Redireciona com base no nome e framework
             if 'cis' in nome:
-                return redirect('painel_result_cis', framework_id=framework_id)
+                return redirect('painel_result_cis', framework_id=framework_id, assessment_id=assessment_id)
             elif 'nist' in nome:
-                return redirect('painel_result_nist', framework_id=framework_id)
+                return redirect('painel_result_nist', framework_id=framework_id, assessment_id=assessment_id)
             elif 'iso' in nome:
-                return redirect('painel_result_iso', framework_id=framework_id)
+                return redirect('painel_result_iso', framework_id=framework_id, assessment_id=assessment_id)
 
-        # Se não houver um assessment válido, redireciona para uma página padrão
-        return redirect('pagina_padrao')
+        return redirect('assessment')
 
     
 class RedirecionarPainelResultados2(View):
@@ -85,8 +85,8 @@ class RedirecionarPainelResultados2(View):
         nome = assessment.nome.lower()
 
         if 'cis' in nome:
-            return redirect('painel_result_cis', framework_id=framework_id)  
+            return redirect('painel_result_cis', framework_id=framework_id, assessment_id=id)  
         elif 'nist' in nome:
-            return redirect('painel_result_nist', framework_id=framework_id)  
+            return redirect('painel_result_nist', framework_id=framework_id, assessment_id=id)  
         elif 'iso' in nome:
-            return redirect('painel_result_iso', framework_id=framework_id)    
+            return redirect('painel_result_iso', framework_id=framework_id, assessment_id=id)    
